@@ -126,7 +126,7 @@ class Graph:
         """Remove the edge between vertices v and u."""
         self._set_edge(v, u, directed, 0)
 
-    def _get_connected_vertices(self, vertex: Vertex, previous: Vertex | None) -> list[Vertex]:
+    def _get_connected_vertices(self, vertex: Vertex, avoid: list[Vertex]) -> list[Vertex]:
         """Return a list of vertices that are connected to the vertex, ignoring the last visited vertex."""
         # Look at all the connections in this row of the matrix, and if the weight != 0, then that vertex is connected
         return [
@@ -135,7 +135,7 @@ class Graph:
             # If the weight != 0 and it's not the vertex we just came from, then it's connected
             # We're excluding the previously visited vertex to avoid infinite loops
             # We have to check for an empty list here, and if visited == [], then we just `w != 0 and True` == `w != 0`
-            if w != 0 and self.vertices[i] != previous
+            if w != 0 and self.vertices[i] not in avoid
         ]
 
     def _is_connected(self, vertex: Vertex, visited: list[Vertex]) -> bool:
@@ -144,13 +144,13 @@ class Graph:
         if set(visited + [vertex]) == set(self.vertices):
             return True
 
-        cycle_found = False
+        connected = False
 
-        for v in self._get_connected_vertices(vertex, visited[-1] if visited != [] else None):
+        for v in self._get_connected_vertices(vertex, visited):
             if self._is_connected(v, visited + [vertex]):
-                cycle_found = True
+                connected = True
 
-        return cycle_found
+        return connected
 
     def _has_cycles(self, vertex: Vertex, visited: list[Vertex]) -> bool:
         """Recursively find cycles in the graph by a depth first search, tracking previously visited vertices in a list."""
@@ -160,7 +160,7 @@ class Graph:
 
         cycle_found = False
 
-        for v in self._get_connected_vertices(vertex, visited[-1] if visited != [] else None):
+        for v in self._get_connected_vertices(vertex, [visited[-1]] if visited != [] else []):
             if self._has_cycles(v, visited + [vertex]):
                 cycle_found = True
 
