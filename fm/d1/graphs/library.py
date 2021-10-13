@@ -37,7 +37,7 @@ class Vertex:
 
     def __repr__(self) -> str:
         """Return a simple repr of the vertex with its name."""
-        return f'<{self.__class__.__module__}.{self.__class__.__name__} object with label "{self.name}">'
+        return f'{self.__class__.__module__}.{self.__class__.__name__}(name="{self.name}")'
 
     def __str__(self) -> str:
         """Return the string name of the vertex."""
@@ -87,7 +87,7 @@ class Graph:
     def __repr__(self) -> str:
         """Return a simple repr of the graph with the number of vertices."""
         return f'<{self.__class__.__module__}.{self.__class__.__name__} object with ' \
-            f'{len(self.vertices)} vertices [{", ".join([v.name for v in self.vertices])}]>'
+            f'{len(self.vertices)} vertices [' + ", ".join(["\"" + str(v) + "\"" for v in self.vertices]) + ']>'
 
     def __str__(self) -> str:
         """Return the string representation of the distance matrix."""
