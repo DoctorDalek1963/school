@@ -77,6 +77,15 @@ class Graph:
 
         is_tree: bool
             Check if the graph is a tree.
+
+        number_of_odd_nodes: int
+            Return the number of odd nodes in the graph.
+
+        is_eulerian: bool
+            Check if the graph is Eulerian.
+
+        is_semi_eulerian: bool
+            Check if the graph is semi-Eulerian.
     """
 
     def __init__(self):
