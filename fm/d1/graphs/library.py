@@ -267,8 +267,10 @@ def test():
     g.add_edge(b, c, weight=4)
     g.add_edge(b, d, weight=5)
 
-    print(g.matrix, g.is_tree)
-    print(kruskal(g).matrix, g.is_tree)
+    print(g, g.has_cycles)
+    print()
+    k = kruskal(g)
+    print(k, k.has_cycles)
 
 
 if __name__ == "__main__":
