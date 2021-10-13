@@ -212,6 +212,23 @@ class Graph:
         """Check if the graph is a tree."""
         return not self.has_cycles
 
+    @property
+    def number_of_odd_nodes(self) -> int:
+        """Return the number of odd nodes in the graph."""
+        return sum([
+            len(list(filter(lambda e: e != 0, row))) % 2 for row in self.matrix
+        ])
+
+    @property
+    def is_eulerian(self) -> bool:
+        """Check if the graph is Eulerian."""
+        return self.number_of_odd_nodes == 0
+
+    @property
+    def is_semi_eulerian(self) -> bool:
+        """Check if the graph is semi-Eulerian."""
+        return self.number_of_odd_nodes == 2
+
 
 def kruskal(graph: Graph) -> Graph:
     """Perform Kruskal's algorithm to find the minimum spanning tree of this graph."""
