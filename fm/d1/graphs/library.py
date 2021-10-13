@@ -35,9 +35,13 @@ class Vertex:
         """Create a Vertex object with just a name."""
         self.name = name
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Return a simple repr of the vertex with its name."""
         return f'<{self.__class__.__module__}.{self.__class__.__name__} object with label "{self.name}">'
+
+    def __str__(self) -> str:
+        """Return the string name of the vertex."""
+        return self.name
 
 
 def create_vertices(names: str) -> tuple[Vertex, ...]:
@@ -82,7 +86,16 @@ class Graph:
 
     def __repr__(self) -> str:
         """Return a simple repr of the graph with the number of vertices."""
-        return f'<{self.__class__.__module__}.{self.__class__.__name__} object with {len(self.vertices)} vertices>'
+        return f'<{self.__class__.__module__}.{self.__class__.__name__} object with ' \
+            f'{len(self.vertices)} vertices [{", ".join([v.name for v in self.vertices])}]>'
+
+    def __str__(self) -> str:
+        """Return the string representation of the distance matrix."""
+        return '\n'.join([
+            '\t'.join([
+                str(cell) for cell in row
+            ]) for row in self.matrix
+        ])
 
     def add_vertex(self, vertex: Vertex) -> None:
         """Add a vertex to the graph."""
