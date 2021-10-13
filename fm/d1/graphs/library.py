@@ -19,6 +19,9 @@ Functions:
         Perform Kruskal's algorithm to find the minimum spanning tree of this graph.
 """
 
+import math
+from dataclasses import dataclass
+
 
 class VertexAlreadyAddedError(Exception):
     """A simple exception class."""
@@ -28,12 +31,10 @@ class VertexDoesntExistError(Exception):
     """A simple exception class."""
 
 
+@dataclass
 class Vertex:
-    """A simple Vertex class holding only a name."""
-
-    def __init__(self, name: str):
-        """Create a Vertex object with just a name."""
-        self.name = name
+    """A dataclass for a Vertex, holding only a name."""
+    name: str
 
     def __repr__(self) -> str:
         """Return a simple repr of the vertex with its name."""
@@ -278,6 +279,29 @@ def kruskal(graph: Graph) -> Graph:
             break
 
     return tree
+
+
+@dataclass
+class DijkstraVertex:
+    """A dataclass to hold the information Dijkstra needs about vertices."""
+    vertex: Vertex
+    order: int | None = None
+    final_distance: int | float | None = None
+    working_distance: int | float = math.inf
+
+    def __repr__(self) -> str:
+        """Return a simple repr of the DijkstraVertex."""
+        return f'{self.__class__.__module__}.{self.__class__.__name__}(vertex={repr(self.vertex)}, ' + \
+            f'order={self.order}, final_distance={self.final_distance}, working_distance={self.working_distance})'
+
+
+def dijkstra(graph: Graph, start: Vertex, end: Vertex) -> list[Vertex]:
+    """Implement Dijkstra's algorithm on graph, starting at the start vertex and ending at the end vertex.
+
+    Returns a list of Vertex objects, representing the path taken through the graph.
+    """
+    # A list of lists, where each sublist contains the vertex, its order in the processing, its label, and its working distance
+    stack: list[DijkstraVertex] = [DijkstraVertex(start, 0, 0, 0)] + [DijkstraVertex(vertex) for vertex in graph.vertices if vertex != start]
 
 
 def test():
