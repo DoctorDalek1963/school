@@ -285,14 +285,14 @@ def kruskal(graph: Graph) -> Graph:
 class DijkstraVertex:
     """A dataclass to hold the information Dijkstra needs about vertices."""
     vertex: Vertex
-    order: int | None = None
-    final_distance: int | float | None = None
+    visited: bool = False
     working_distance: int | float = math.inf
+    final_distance: int | float | None = None
 
     def __repr__(self) -> str:
         """Return a simple repr of the DijkstraVertex."""
         return f'{self.__class__.__module__}.{self.__class__.__name__}(vertex={repr(self.vertex)}, ' + \
-            f'order={self.order}, final_distance={self.final_distance}, working_distance={self.working_distance})'
+            f'visited={self.visited}, working_distance={self.working_distance}, final_distance={self.final_distance})'
 
 
 def dijkstra(graph: Graph, start: Vertex, end: Vertex) -> list[Vertex]:
@@ -300,8 +300,8 @@ def dijkstra(graph: Graph, start: Vertex, end: Vertex) -> list[Vertex]:
 
     Returns a list of Vertex objects, representing the path taken through the graph.
     """
-    # A list of lists, where each sublist contains the vertex, its order in the processing, its label, and its working distance
-    stack: list[DijkstraVertex] = [DijkstraVertex(start, 0, 0, 0)] + [DijkstraVertex(vertex) for vertex in graph.vertices if vertex != start]
+    # A list of DijkstraVertex objects, each containing the Vertex, a visited boolean, a working_distance and a final_distance
+    stack: list[DijkstraVertex] = [DijkstraVertex(start, True, 0, 0)] + [DijkstraVertex(vertex) for vertex in graph.vertices if vertex != start]
 
 
 def test():
