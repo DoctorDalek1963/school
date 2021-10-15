@@ -162,13 +162,19 @@ class Graph:
     def _get_connected_vertices(self, vertex: Vertex, avoid: list[Vertex]) -> list[Vertex]:
         """Return a list of vertices that are connected to the vertex, ignoring the last visited vertex."""
         # Look at all the connections in this row of the matrix, and if the weight != 0, then that vertex is connected
+        vi = self.vertices.index(vertex)
+
         return [
             self.vertices[i]
-            for i, w in enumerate(self.matrix[self.vertices.index(vertex)])
-            # If the weight != 0 and it's not the vertex we just came from, then it's connected
-            # We're excluding the previously visited vertex to avoid infinite loops
-            # We have to check for an empty list here, and if visited == [], then we just `w != 0 and True` == `w != 0`
-            if w != 0 and self.vertices[i] not in avoid
+            for i, w in enumerate(self.matrix[vi])
+            # For a vertex to be connected, it must have a non-zero weight
+
+            # If a vertex is in the avoid list, then we want to avoid it,
+            # UNLESS it's connected by an edge of a different weight in this direction
+
+            # This means that if two vertices are connected by directed edges in different
+            # directions in different weights, then we are allowed to traverse both edges
+            if w != 0 and (self.vertices[i] not in avoid or self.matrix[i][vi] != self.matrix[vi][i])
         ]
 
     def _is_connected(self, vertex: Vertex, visited: list[Vertex]) -> bool:
@@ -330,7 +336,7 @@ def test():
     g.add_edge(d, a, 41, True)
     g.add_edge(d, e, 100)
     g.add_edge(d, f, 2, True)
-    g.add_edge(d, z, 4)
+    g.add_edge(d, z, 69)
     g.add_edge(f, e, 19, True)
     g.add_edge(f, z, 4)
 
