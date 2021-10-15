@@ -44,6 +44,16 @@ class Vertex:
         """Return the string name of the vertex."""
         return self.name
 
+    def __eq__(self, other) -> bool:
+        """Check equality of vertices by name rather thad id()."""
+        if not isinstance(other, self.__class__):
+            return NotImplemented
+        return self.name == other.name
+
+    def __hash__(self) -> int:
+        """Hash the name of the vertex."""
+        return hash(self.name)
+
 
 def create_vertices(names: str) -> tuple[Vertex, ...]:
     """Construct multiple vertices from multiple names."""
