@@ -73,7 +73,7 @@ class Graph:
         add_vertices(self, *vertices) -> None:
             Add mutiple vertices, passed as *args.
 
-        add_edge(v: Vertex, u: Vertex, directed: bool = False, weight: int | float = 1) -> None:
+        add_edge(v: Vertex, u: Vertex, weight: int | float = 1, directed: bool = False) -> None:
             Add an edge between vertices v and u.
 
         remove_edge(v: Vertex, u: Vertex, directed: bool = False) -> None:
@@ -137,7 +137,7 @@ class Graph:
         for vertex in vertices:
             self.add_vertex(vertex)
 
-    def _set_edge(self, v: Vertex, u: Vertex, directed: bool, weight: int | float) -> None:
+    def _set_edge(self, v: Vertex, u: Vertex, weight: int | float, directed: bool) -> None:
         """Set the weight of the edge between vertices v and u."""
         for x in (v, u):
             if x not in self.vertices:
@@ -151,13 +151,13 @@ class Graph:
         if not directed:
             self.matrix[ui][vi] = weight
 
-    def add_edge(self, v: Vertex, u: Vertex, directed: bool = False, weight: int | float = 1) -> None:
+    def add_edge(self, v: Vertex, u: Vertex, weight: int | float = 1, directed: bool = False) -> None:
         """Add an edge between vertices v and u."""
-        self._set_edge(v, u, directed, weight)
+        self._set_edge(v, u, weight, directed)
 
     def remove_edge(self, v: Vertex, u: Vertex, directed: bool = False) -> None:
         """Remove the edge between vertices v and u."""
-        self._set_edge(v, u, directed, 0)
+        self._set_edge(v, u, 0, directed)
 
     def _get_connected_vertices(self, vertex: Vertex, avoid: list[Vertex]) -> list[Vertex]:
         """Return a list of vertices that are connected to the vertex, ignoring the last visited vertex."""
