@@ -317,15 +317,22 @@ def dijkstra(graph: Graph, start: Vertex, end: Vertex) -> list[Vertex]:
 def test():
     """Test library functions."""
     g = Graph()
-    a, b, c, d = create_vertices('A B C D')
+    a, b, c, d, e, f, z = create_vertices('A B C D E F Z')
 
-    g.add_vertices(a, b, c, d)
+    g.add_vertices(a, b, c, d, e, f, z)
 
-    g.add_edge(a, b)
-    g.add_edge(c, d, weight=2)
-
-    g.add_edge(b, c, weight=4)
-    g.add_edge(b, d, weight=5)
+    g.add_edge(a, b, 18, True)
+    g.add_edge(a, c, 1, True)
+    g.add_edge(b, d, 12)
+    g.add_edge(c, a, 4, True)
+    g.add_edge(c, d, 3)
+    g.add_edge(c, z, 72)
+    g.add_edge(d, a, 41, True)
+    g.add_edge(d, e, 100)
+    g.add_edge(d, f, 2, True)
+    g.add_edge(d, z, 4)
+    g.add_edge(f, e, 19, True)
+    g.add_edge(f, z, 4)
 
     print(g, g.has_cycles)
     print()
