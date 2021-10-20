@@ -7,6 +7,9 @@ Classes:
     Graph:
         A simple graph class to hold vertices and edges between them.
 
+    DijkstraVertex:
+        A dataclass to hold the information Dijkstra needs about vertices.
+
 Exceptions:
     VertexAlreadyAddedError
     VertexDoesntExistError
@@ -71,7 +74,7 @@ class Graph:
             Add a vertex to the graph.
 
         add_vertices(self, *vertices) -> None:
-            Add mutiple vertices, passed as *args.
+            Add multiple vertices, passed as *args.
 
         add_edge(v: Vertex, u: Vertex, weight: int | float = 1, directed: bool = False) -> None:
             Add an edge between vertices v and u.
@@ -133,7 +136,7 @@ class Graph:
             self.matrix.append([0 for _ in range(len(self.matrix[0]))])
 
     def add_vertices(self, *vertices) -> None:
-        """Add mutiple vertices, passed as *args."""
+        """Add multiple vertices, passed as *args."""
         for vertex in vertices:
             self.add_vertex(vertex)
 
