@@ -119,7 +119,8 @@ class Graph:
         """Return the string representation of the distance matrix."""
         return '\n'.join([
             '\t'.join([
-                str(cell) for cell in row
+                # If the cell weight is 0, we print it with a dash rather than a 0
+                str(cell) if cell != 0 else '-' for cell in row
             ]) for row in self.matrix
         ])
 
