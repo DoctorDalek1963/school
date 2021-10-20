@@ -162,7 +162,7 @@ class Graph:
         """Remove the edge between vertices v and u."""
         self._set_edge(v, u, 0, directed)
 
-    def _get_connected_vertices(self, vertex: Vertex, avoid: list[Vertex]) -> list[Vertex]:
+    def get_connected_vertices(self, vertex: Vertex, avoid: list[Vertex]) -> list[Vertex]:
         """Return a list of vertices that are connected to the vertex, ignoring the last visited vertex."""
         # Look at all the connections in this row of the matrix, and if the weight != 0, then that vertex is connected
         vi = self.vertices.index(vertex)
@@ -188,7 +188,7 @@ class Graph:
 
         connected = False
 
-        for v in self._get_connected_vertices(vertex, visited):
+        for v in self.get_connected_vertices(vertex, visited):
             if self._is_connected(v, visited + [vertex]):
                 connected = True
 
@@ -202,7 +202,7 @@ class Graph:
 
         cycle_found = False
 
-        for v in self._get_connected_vertices(vertex, [visited[-1]] if visited != [] else []):
+        for v in self.get_connected_vertices(vertex, [visited[-1]] if visited != [] else []):
             if self._has_cycles(v, visited + [vertex]):
                 cycle_found = True
 
@@ -304,23 +304,108 @@ def kruskal(graph: Graph) -> Graph:
 class DijkstraVertex:
     """A dataclass to hold the information Dijkstra needs about vertices."""
     vertex: Vertex
-    visited: bool = False
+    order: int | None = None
     working_distance: int | float = math.inf
     final_distance: int | float | None = None
 
     def __repr__(self) -> str:
         """Return a simple repr of the DijkstraVertex."""
         return f'{self.__class__.__module__}.{self.__class__.__name__}(vertex={repr(self.vertex)}, ' + \
-            f'visited={self.visited}, working_distance={self.working_distance}, final_distance={self.final_distance})'
+            f'order={self.order}, working_distance={self.working_distance}, final_distance={self.final_distance})'
+
+    @property
+    def visited(self) -> bool:
+        """Check if the DijkstraVertex has been visited."""
+        return self.final_distance is not None
 
 
 def dijkstra(graph: Graph, start: Vertex, end: Vertex) -> list[Vertex]:
     """Implement Dijkstra's algorithm on graph, starting at the start vertex and ending at the end vertex.
 
-    Returns a list of Vertex objects, representing the path taken through the graph.
+    Returns a list of Vertex objects, representing the path taken through the graph, as well as the total weight.
     """
-    # A list of DijkstraVertex objects, each containing the Vertex, a visited boolean, a working_distance and a final_distance
-    stack: list[DijkstraVertex] = [DijkstraVertex(start, True, 0, 0)] + [DijkstraVertex(vertex) for vertex in graph.vertices if vertex != start]
+    # We create a list of DijkstraVertex (abbreviated dv) objects, and init the
+    # start vertex with an order, working distance, and final distance
+    # We then have to exclude the start vertex from the rest of the list
+    dvs: list[DijkstraVertex] = [DijkstraVertex(start, 1, 0, 0)] + \
+        [DijkstraVertex(vertex) for vertex in graph.vertices if vertex is not start]
+
+    # While not all vertices have been order
+    while len([dv for dv in dvs if not dv.visited]) > 0:
+        # The current dv is the one with the highest order
+        current_dv: DijkstraVertex = max(dvs, key=lambda dv: dv.order if dv.order is not None else 0)
+
+        # These checks are just to make mypy shut up
+        if current_dv.final_distance is None:
+            raise ValueError('DijkstraVertex with non-None order must have non-None final_distance')
+
+        if current_dv.order is None:
+            raise ValueError('current_dv in dijkstra() has a None order value. Something has gone horribly wrong')
+
+        connected_vertices: list[Vertex] = graph.get_connected_vertices(
+            current_dv.vertex,
+            # We're avoiding the vertices that we've already visited
+            [dv.vertex for dv in dvs if dv.visited]
+        )
+        connected_dvs: list[DijkstraVertex] = []
+
+        # Get the dv versions of the connected vertices
+        for vertex in connected_vertices:
+            # There's a probably a better way to get the dv from the normal vertices this but this method works
+            dv = [dv for dv in dvs if dv.vertex is vertex][0]
+            if not dv.visited:
+                connected_dvs.append(dv)
+
+        # For each of the connected dvs, we update the weight if its less than the current working_distance
+        current_vertex_index = graph.vertices.index(current_dv.vertex)
+        for connected_dv in connected_dvs:
+            weight = current_dv.final_distance + \
+                graph.matrix[current_vertex_index][graph.vertices.index(connected_dv.vertex)]
+
+            if weight < connected_dv.working_distance:
+                connected_dv.working_distance = weight
+
+        # The new dv is the one with the minimum working_distance
+        new_dv = min(
+            # We only want vertices that aren't the current one, and that we've not visited
+            [dv for dv in dvs if dv is not current_dv and not dv.visited],
+            key=lambda dv: dv.working_distance
+        )
+        # Mark the new_dv as visited, by giving it a final_distance and order
+        new_dv.final_distance = new_dv.working_distance
+        new_dv.order = current_dv.order + 1
+
+    # We start looking at the end vertex and work backwards
+    working_dv: DijkstraVertex = [dv for dv in dvs if dv.vertex is end][0]
+    path: list[Vertex] = [working_dv.vertex]
+
+    while working_dv.vertex is not start:
+        if working_dv.final_distance is None:
+            raise ValueError('working_dv should always have a non-None final_distance. Something has gone horribly wrong')
+
+        # Find the dvs that can be added to the path (not currently in the path)
+        open_dvs = [dv for dv in dvs if dv.vertex not in path]
+
+        # We need to find every vertex that is connected to this working_dv.vertex
+        # Because the graph could be directed, we have to do it like this, rather than
+        # just finding the connections from working_dv.vertex
+        back_connected: list[Vertex] = []
+        for dv in open_dvs:
+            if working_dv.vertex in graph.get_connected_vertices(dv.vertex, []):
+                back_connected.append(dv.vertex)
+
+        # We only want to loop over the dvs that aren't already in the path
+        for dv in open_dvs:
+            if dv.vertex in back_connected:
+                weight = graph.matrix[graph.vertices.index(dv.vertex)][graph.vertices.index(working_dv.vertex)]
+
+                if working_dv.final_distance - weight == dv.final_distance:
+                    path.append(dv.vertex)
+                    working_dv = dv
+                    break
+
+    # We need to reverse this list before we return it, because we worked backwards
+    return path[::-1]
 
 
 def test():
@@ -343,10 +428,11 @@ def test():
     g.add_edge(f, e, 19, True)
     g.add_edge(f, z, 4)
 
-    print(g, g.has_cycles)
-    print()
-    k = kruskal(g)
-    print(k, k.has_cycles)
+    # print(g, g.has_cycles)
+    # print()
+    # k = kruskal(g)
+    # print(k, k.has_cycles)
+    print(dijkstra(g, a, e))
 
 
 if __name__ == "__main__":
