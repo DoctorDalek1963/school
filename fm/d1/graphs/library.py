@@ -20,6 +20,9 @@ Functions:
 
     kruskal(graph: Graph) -> Graph:
         Perform Kruskal's algorithm to find the minimum spanning tree of this graph.
+
+    dijkstra(graph: Graph, start: Vertex, end: Vertex) -> list[Vertex]:
+        Implement Dijkstra's algorithm on the graph, starting at the start vertex and ending at the end vertex.
 """
 
 import math
@@ -320,7 +323,7 @@ class DijkstraVertex:
 
 
 def dijkstra(graph: Graph, start: Vertex, end: Vertex) -> list[Vertex]:
-    """Implement Dijkstra's algorithm on graph, starting at the start vertex and ending at the end vertex.
+    """Implement Dijkstra's algorithm on the graph, starting at the start vertex and ending at the end vertex.
 
     Returns a list of Vertex objects, representing the path taken through the graph, as well as the total weight.
     """
@@ -330,7 +333,7 @@ def dijkstra(graph: Graph, start: Vertex, end: Vertex) -> list[Vertex]:
     dvs: list[DijkstraVertex] = [DijkstraVertex(start, 1, 0, 0)] + \
         [DijkstraVertex(vertex) for vertex in graph.vertices if vertex is not start]
 
-    # While not all vertices have been order
+    # This while loop adds the information that Dijkstra needs to every vertex: the order and final_distance
     while len([dv for dv in dvs if not dv.visited]) > 0:
         # The current dv is the one with the highest order
         current_dv: DijkstraVertex = max(dvs, key=lambda dv: dv.order if dv.order is not None else 0)
@@ -379,7 +382,9 @@ def dijkstra(graph: Graph, start: Vertex, end: Vertex) -> list[Vertex]:
     working_dv: DijkstraVertex = [dv for dv in dvs if dv.vertex is end][0]
     path: list[Vertex] = [working_dv.vertex]
 
+    # This loop traverses the graph backwards, to find the shortest path using the information previously generated
     while working_dv.vertex is not start:
+        # This check is just to satisfy mypy
         if working_dv.final_distance is None:
             raise ValueError('working_dv should always have a non-None final_distance. Something has gone horribly wrong')
 
