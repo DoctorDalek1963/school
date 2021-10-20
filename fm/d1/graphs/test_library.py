@@ -33,6 +33,28 @@ class TestLibrary(unittest.TestCase):
         self.assertEqual(capitals.name, 'CaPiTaLs')
         self.assertEqual(tab_test.name, 'tab\ttest')
 
+    def test_graph_add_vertex(self) -> None:
+        """Test the add_vertex() method of a Graph object."""
+        g = Graph()
+        a, b, c, d, e = create_vertices('A B C D E')
+        vertices = [a, b, c, d, e]
+
+        for v in vertices:
+            g.add_vertex(v)
+
+        for v in vertices:
+            self.assertIn(v, g.vertices)
+
+    def test_graph_add_vertices(self) -> None:
+        """Test the add_vertices() method of a Graph object."""
+        g = Graph()
+        a, b, c, d, e = create_vertices('A B C D E')
+
+        g.add_vertices(a, b, c, d, e)
+
+        for v in [a, b, c, d, e]:
+            self.assertIn(v, g.vertices)
+
 
 if __name__ == "__main__":
     unittest.main()
