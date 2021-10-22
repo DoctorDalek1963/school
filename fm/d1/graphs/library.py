@@ -436,34 +436,3 @@ def dijkstra(graph: Graph, start: Vertex, end: Vertex) -> list[Vertex]:
 
     # We need to reverse this list before we return it, because we worked backwards
     return path[::-1]
-
-
-def test():
-    """Test library functions."""
-    g = Graph()
-    a, b, c, d, e, f, z = create_vertices('A B C D E F Z')
-
-    g.add_vertices(a, b, c, d, e, f, z)
-
-    g.add_edge(a, b, 18, True)
-    g.add_edge(a, c, 1, True)
-    g.add_edge(b, d, 12)
-    g.add_edge(c, a, 4, True)
-    g.add_edge(c, d, 3)
-    g.add_edge(c, z, 72)
-    g.add_edge(d, a, 41, True)
-    g.add_edge(d, e, 100)
-    g.add_edge(d, f, 2, True)
-    g.add_edge(d, z, 69)
-    g.add_edge(f, e, 19, True)
-    g.add_edge(f, z, 4)
-
-    # print(g, g.has_cycles)
-    # print()
-    # k = kruskal(g)
-    # print(k, k.has_cycles)
-    print(dijkstra(g, a, e))
-
-
-if __name__ == "__main__":
-    test()
