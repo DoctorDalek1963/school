@@ -73,6 +73,7 @@ class Graph:
 
     They may have arbitrary weight and may or may not be directed.
     This implementation does not support multiple connections of the same direction between two vertices.
+    Calling str() on the graph will return a printable distance matrix.
 
     Methods:
         add_vertex(vertex: Vertex) -> None:
@@ -87,7 +88,16 @@ class Graph:
         remove_edge(v: Vertex, u: Vertex, directed: bool = False) -> None:
             Remove the edge between vertices v and u.
 
+        get_connected_vertices(vertex: Vertex, avoid: list[Vertex]) -> list[Vertex]:
+            Return a list of vertices that are connected to the vertex, ignoring the vertices in the avoid list.
+
     Properties:
+        vertices: list[Vertex]
+            The vertices in the graph, in the order they were added.
+
+        matrix: list[list[int | float]]
+            The distance matrix of the graph.
+
         is_connected: bool
             Check if the graph is fully connected.
 
@@ -175,7 +185,12 @@ class Graph:
         self._set_edge(v, u, 0, directed)
 
     def get_connected_vertices(self, vertex: Vertex, avoid: list[Vertex]) -> list[Vertex]:
-        """Return a list of vertices that are connected to the vertex, ignoring the last visited vertex."""
+        """Return a list of vertices that are connected to the vertex, ignoring the vertices in the avoid list.
+
+        A vertex in the avoid list will be avoided unless it's connected by a different weight in this direction.
+        This means that if two vertices are connected by different weights in their different directions,
+        then we can walk between them.
+        """
         # Look at all the connections in this row of the matrix, and if the weight != 0, then that vertex is connected
         vi = self.vertices.index(vertex)
 
