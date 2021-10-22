@@ -65,7 +65,7 @@ class Vertex:
 
 def create_vertices(names: str) -> tuple[Vertex, ...]:
     """Construct multiple vertices from multiple names."""
-    return tuple(Vertex(name) for name in names.split(' '))
+    return tuple(Vertex(name) for name in names.split(' ') if name != '')
 
 
 class Graph:

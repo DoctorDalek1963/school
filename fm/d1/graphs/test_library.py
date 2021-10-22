@@ -24,7 +24,7 @@ class TestGraphAndVertex(unittest.TestCase):
         for name, vertex in testing_io.items():
             self.assertEqual(name, vertex.name)
 
-    def test_vertices_creation(self) -> None:
+    def test_create_vertices(self) -> None:
         """Test the creation of Vertex objects with the create_vertices() function."""
         a, vertex, newline_test, capitals, tab_test = create_vertices('a vertex newline\ntest CaPiTaLs tab\ttest')
         self.assertEqual(a.name, 'a')
@@ -32,6 +32,12 @@ class TestGraphAndVertex(unittest.TestCase):
         self.assertEqual(newline_test.name, 'newline\ntest')
         self.assertEqual(capitals.name, 'CaPiTaLs')
         self.assertEqual(tab_test.name, 'tab\ttest')
+
+        a, b, c, d = create_vertices('A    B C      D')
+        self.assertEqual(a.name, 'A')
+        self.assertEqual(b.name, 'B')
+        self.assertEqual(c.name, 'C')
+        self.assertEqual(d.name, 'D')
 
     def test_graph_add_vertex(self) -> None:
         """Test the add_vertex() method of a Graph object."""
