@@ -296,8 +296,7 @@ def kruskal(graph: Graph) -> Graph:
     # Construct the final graph object to return
     tree = Graph()
 
-    for vertex in graph.vertices:
-        tree.add_vertex(vertex)
+    tree.add_vertices(*graph.vertices)
 
     for e in directed_edges:
         tree.add_edge(e[0], e[1], weight=e[2], directed=e[3])
