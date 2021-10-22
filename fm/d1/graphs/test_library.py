@@ -8,7 +8,7 @@ from library import *
 class TestGraphAndVertex(unittest.TestCase):
     """A class to hold methods for testing the Graph and Vertex classes."""
 
-    def test_vertex_creation(self) -> None:
+    def test_vertex_init(self) -> None:
         """Test the creation of Vertex objects with the Vertex constructor."""
         testing_io: dict[str, Vertex] = {
             'A': Vertex('A'),
@@ -190,7 +190,7 @@ class TestGraphAndVertex(unittest.TestCase):
         g.add_edge(a, c)
         self.assertFalse(g.is_semi_eulerian)
 
-    def test_getitem(self) -> None:
+    def test_graph_getitem(self) -> None:
         """Test the Graph.__getitem__() method."""
         g = Graph()
         a, b, c, d, e = create_vertices('A B C D E')
