@@ -184,6 +184,29 @@ class TestGraphAndVertex(unittest.TestCase):
         g.add_edge(a, c)
         self.assertFalse(g.is_semi_eulerian)
 
+    def test_getitem(self) -> None:
+        """Test the Graph.__getitem__() method."""
+        g = Graph()
+        a, b, c, d, e = create_vertices('A B C D E')
+        g.add_vertices(a, b, c, d, e)
+
+        g.add_edge(a, b, 12)
+        self.assertEqual(g[a], [0, 12, 0, 0, 0])
+        g.add_edge(a, c, 4, True)
+        self.assertEqual(g[a], [0, 12, 4, 0, 0])
+        g.add_edge(a, d, 39)
+        self.assertEqual(g[a], [0, 12, 4, 39, 0])
+        g.add_edge(a, e, 100, True)
+        self.assertEqual(g[a], [0, 12, 4, 39, 100])
+
+        g.add_edge(a, a, 3)
+        self.assertEqual(g[a], [3, 12, 4, 39, 100])
+
+        self.assertEqual(g[b], [12, 0, 0, 0, 0])
+        self.assertEqual(g[c], [0, 0, 0, 0, 0])
+        self.assertEqual(g[d], [39, 0, 0, 0, 0])
+        self.assertEqual(g[e], [0, 0, 0, 0, 0])
+
 
 if __name__ == "__main__":
     unittest.main()
