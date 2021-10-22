@@ -115,6 +115,9 @@ class Graph:
 
         is_semi_eulerian: bool
             Check if the graph is semi-Eulerian.
+
+        total_weight: int | float
+            Return the total weight of the graph.
     """
 
     def __init__(self):
@@ -282,6 +285,11 @@ class Graph:
     def is_semi_eulerian(self) -> bool:
         """Check if the graph is semi-Eulerian."""
         return self.number_of_odd_nodes == 2
+
+    @property
+    def total_weight(self) -> int | float:
+        """Return the total weight of the graph."""
+        return sum(weight for row in self.matrix for weight in row)
 
 
 def kruskal(graph: Graph) -> Graph:

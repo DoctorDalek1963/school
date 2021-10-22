@@ -41,9 +41,11 @@ def test(time: bool):
 
         print(f'{int((n / avr)*1000)} ms')
     else:
-        print(g)
+        print(g, g.total_weight, g.is_tree)
         print()
-        print(kruskal(g))
+        k = kruskal(g)
+        print(k, k.total_weight, k.is_tree)
+        print()
         print(dijkstra(g, a, e))
 
 

@@ -258,6 +258,25 @@ class TestGraphAndVertex(unittest.TestCase):
         self.assertEqual(g.get_connected_vertices(d, []), [a])
         self.assertEqual(g.get_connected_vertices(e, []), [])
 
+    def test_total_weight(self) -> None:
+        """Test the Graph.total_weight property."""
+        g = Graph()
+        a, b, c, d, e = create_vertices('A B C D E')
+        g.add_vertices(a, b, c, d, e)
+
+        self.assertEqual(g.total_weight, 0)
+
+        g.add_edge(a, b, 3)
+        self.assertEqual(g.total_weight, 6)
+        g.add_edge(a, c, 12)
+        self.assertEqual(g.total_weight, 30)
+        g.add_edge(d, e, 4, True)
+        self.assertEqual(g.total_weight, 34)
+        g.add_edge(b, e, 2.34)
+        self.assertEqual(round(g.total_weight, 2), 38.68)
+        g.add_edge(c, e, 902.1)
+        self.assertEqual(round(g.total_weight, 2), 1842.88)
+
 
 if __name__ == "__main__":
     unittest.main()
