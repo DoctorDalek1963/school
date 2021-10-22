@@ -87,6 +87,18 @@ class TestLibrary(unittest.TestCase):
             g.add_edge(c, e)
             g.add_edge(d, e)
 
+        g.add_vertex(a)
+
+        with self.assertRaises(VertexDoesntExistError):
+            g.add_edge(a, b)
+            g.add_edge(a, c)
+            g.add_edge(a, d)
+            g.add_edge(a, e)
+
+        g.add_vertex(b)
+        # Shouldn't raise an error
+        g.add_edge(a, b)
+
     def test_graph_matrix(self) -> None:
         """Test the matrix given by str(Graph)."""
         g = Graph()
