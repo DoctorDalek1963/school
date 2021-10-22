@@ -192,6 +192,24 @@ class TestGraphAndVertex(unittest.TestCase):
         g.add_edge(a, c)
         self.assertFalse(g.is_semi_eulerian)
 
+    def test_number_of_odd_nodes(self) -> None:
+        """Test the number_of_odd_nodes bool property of Graph."""
+        g = Graph()
+        a, b, c, d = create_vertices('A B C D')
+        g.add_vertices(a, b, c, d)
+
+        g.add_edge(a, b)
+        g.add_edge(b, c)
+        g.add_edge(c, d)
+
+        self.assertEqual(g.number_of_odd_nodes, 2)
+        g.add_edge(a, d)
+        self.assertEqual(g.number_of_odd_nodes, 0)
+        g.add_edge(b, d)
+        self.assertEqual(g.number_of_odd_nodes, 2)
+        g.add_edge(a, c)
+        self.assertEqual(g.number_of_odd_nodes, 4)
+
     def test_graph_getitem(self) -> None:
         """Test the Graph.__getitem__() method."""
         g = Graph()
