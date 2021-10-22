@@ -118,6 +118,38 @@ class TestLibrary(unittest.TestCase):
 
         self.assertEqual(str(g), expected_matrix)
 
+    def test_is_connected(self) -> None:
+        """Test the is_connected bool property of Graph."""
+        g = Graph()
+        a, b, c, d = create_vertices('A B C D')
+        g.add_vertices(a, b, c, d)
+
+        self.assertFalse(g.is_connected)
+        g.add_edge(a, b)
+        self.assertFalse(g.is_connected)
+        g.add_edge(c, d)
+        self.assertFalse(g.is_connected)
+
+        g.add_edge(b, c)
+        self.assertTrue(g.is_connected)
+
+    def test_has_cycles(self) -> None:
+        """Test the has_cycles bool property of Graph."""
+        g = Graph()
+        a, b, c, d = create_vertices('A B C D')
+        g.add_vertices(a, b, c, d)
+
+        self.assertFalse(g.has_cycles)
+        g.add_edge(a, b)
+        self.assertFalse(g.has_cycles)
+        g.add_edge(c, d)
+        self.assertFalse(g.has_cycles)
+        g.add_edge(b, c)
+        self.assertFalse(g.has_cycles)
+
+        g.add_edge(a, d)
+        self.assertTrue(g.has_cycles)
+
 
 if __name__ == "__main__":
     unittest.main()
