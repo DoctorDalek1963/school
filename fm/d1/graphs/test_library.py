@@ -150,6 +150,40 @@ class TestLibrary(unittest.TestCase):
         g.add_edge(a, d)
         self.assertTrue(g.has_cycles)
 
+    def test_is_eulerian(self) -> None:
+        """Test the is_eulerian bool property of Graph."""
+        g = Graph()
+        a, b, c, d = create_vertices('A B C D')
+        g.add_vertices(a, b, c, d)
+
+        g.add_edge(a, b)
+        g.add_edge(b, c)
+        g.add_edge(c, d)
+
+        self.assertFalse(g.is_eulerian)
+        g.add_edge(a, d)
+        self.assertTrue(g.is_eulerian)
+        g.add_edge(b, d)
+        self.assertFalse(g.is_eulerian)
+
+    def test_is_semi_eulerian(self) -> None:
+        """Test the is_semi_eulerian bool property of Graph."""
+        g = Graph()
+        a, b, c, d = create_vertices('A B C D')
+        g.add_vertices(a, b, c, d)
+
+        g.add_edge(a, b)
+        g.add_edge(b, c)
+        g.add_edge(c, d)
+
+        self.assertTrue(g.is_semi_eulerian)
+        g.add_edge(a, d)
+        self.assertFalse(g.is_semi_eulerian)
+        g.add_edge(b, d)
+        self.assertTrue(g.is_semi_eulerian)
+        g.add_edge(a, c)
+        self.assertFalse(g.is_semi_eulerian)
+
 
 if __name__ == "__main__":
     unittest.main()
