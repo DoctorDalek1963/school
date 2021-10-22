@@ -26,7 +26,6 @@ Functions:
 """
 
 import math
-from dataclasses import dataclass
 
 
 class VertexAlreadyAddedError(Exception):
@@ -37,10 +36,13 @@ class VertexDoesntExistError(Exception):
     """A simple exception class."""
 
 
-@dataclass
 class Vertex:
-    """A dataclass for a Vertex, holding only a name."""
-    name: str
+    """A Vertex class, holding only a name."""
+    __slots__ = ['name']
+
+    def __init__(self, name: str):
+        """Create a Vertex object with just a name."""
+        self.name = name
 
     def __repr__(self) -> str:
         """Return a simple repr of the vertex with its name."""
@@ -48,10 +50,10 @@ class Vertex:
 
     def __str__(self) -> str:
         """Return the string name of the vertex."""
-        return self.name
+        return f'Vertex "{self.name}"'
 
     def __eq__(self, other) -> bool:
-        """Check equality of vertices by name rather thad id()."""
+        """Check equality of vertices by name rather than id()."""
         if not isinstance(other, self.__class__):
             return NotImplemented
         return self.name == other.name
@@ -127,7 +129,7 @@ class Graph:
     def add_vertex(self, vertex: Vertex) -> None:
         """Add a vertex to the graph."""
         if vertex in self.vertices:
-            raise VertexAlreadyAddedError(f'Vertex "{vertex.name}" has already been added')
+            raise VertexAlreadyAddedError(str(vertex) + ' has already been added')
 
         self.vertices.append(vertex)
 
@@ -148,7 +150,7 @@ class Graph:
         """Set the weight of the edge between vertices v and u."""
         for x in (v, u):
             if x not in self.vertices:
-                raise VertexDoesntExistError(f'Vertex "{x.name}" has not been added to the graph')
+                raise VertexDoesntExistError(str(x) + ' has not been added to the graph')
 
         vi = self.vertices.index(v)
         ui = self.vertices.index(u)
@@ -304,13 +306,18 @@ def kruskal(graph: Graph) -> Graph:
     return tree
 
 
-@dataclass
 class DijkstraVertex:
-    """A dataclass to hold the information Dijkstra needs about vertices."""
-    vertex: Vertex
-    order: int | None = None
-    working_distance: int | float = math.inf
-    final_distance: int | float | None = None
+    """A class to hold the information Dijkstra needs about vertices."""
+    __slots__ = ['vertex', 'order', 'working_distance', 'final_distance']
+
+    def __init__(self, vertex: Vertex, order: int = 0,
+                 working_distance: int | float = math.inf,
+                 final_distance: int | float | None = None):
+        """Create a DijkstraVertex object with a vertex, order, working_distance, and final_distance."""
+        self.vertex = vertex
+        self.order = order
+        self.working_distance = working_distance
+        self.final_distance = final_distance
 
     def __repr__(self) -> str:
         """Return a simple repr of the DijkstraVertex."""
