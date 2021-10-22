@@ -233,6 +233,31 @@ class TestGraphAndVertex(unittest.TestCase):
         self.assertEqual(g[d], [39, 0, 0, 0, 0])
         self.assertEqual(g[e], [0, 0, 0, 0, 0])
 
+    def test_get_connected_vertices(self) -> None:
+        """Test the Graph.get_connected_vertices() method."""
+        g = Graph()
+        a, b, c, d, e = create_vertices('A B C D E')
+        g.add_vertices(a, b, c, d, e)
+
+        self.assertEqual(g.get_connected_vertices(a, []), [])
+
+        g.add_edge(a, b, 12)
+        self.assertEqual(g.get_connected_vertices(a, []), [b])
+        g.add_edge(a, c, 4, True)
+        self.assertEqual(g.get_connected_vertices(a, []), [b, c])
+        g.add_edge(a, d, 39)
+        self.assertEqual(g.get_connected_vertices(a, []), [b, c, d])
+        g.add_edge(a, e, 100, True)
+        self.assertEqual(g.get_connected_vertices(a, []), [b, c, d, e])
+
+        g.add_edge(a, a, 3)
+        self.assertEqual(g.get_connected_vertices(a, []), [a, b, c, d, e])
+
+        self.assertEqual(g.get_connected_vertices(b, []), [a])
+        self.assertEqual(g.get_connected_vertices(c, []), [])
+        self.assertEqual(g.get_connected_vertices(d, []), [a])
+        self.assertEqual(g.get_connected_vertices(e, []), [])
+
 
 if __name__ == "__main__":
     unittest.main()
