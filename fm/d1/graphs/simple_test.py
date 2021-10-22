@@ -13,7 +13,7 @@ def test(time: bool):
     g.add_vertices(a, b, c, d, e, f, z)
 
     g.add_edge(a, b, 18, True)
-    g.add_edge(a, c, 1, True)
+    g.add_edge(a, c, 1.1, True)
     g.add_edge(b, d, 12)
     g.add_edge(c, a, 4, True)
     g.add_edge(c, d, 3)
@@ -46,7 +46,8 @@ def test(time: bool):
         k = kruskal(g)
         print(k, k.total_weight, k.is_tree)
         print()
-        print(dijkstra(g, a, e))
+        di = dijkstra(g, a, e)
+        print(di, g.weight_of_path(di))
 
 
 if __name__ == "__main__":

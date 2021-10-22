@@ -91,6 +91,9 @@ class Graph:
         get_connected_vertices(vertex: Vertex, avoid: list[Vertex]) -> list[Vertex]:
             Return a list of vertices that are connected to the vertex, ignoring the vertices in the avoid list.
 
+        weight_of_path(path: list[Vertex]) -> int | float:
+            Return the weight of the given path. Raises VertexDoesntExistError if any vertex isn't in the graph.
+
     Properties:
         vertices: list[Vertex]
             The vertices in the graph, in the order they were added.
@@ -209,6 +212,26 @@ class Graph:
             # directions in different weights, then we are allowed to traverse both edges
             if w != 0 and (self.vertices[i] not in avoid or self.matrix[i][vi] != self.matrix[vi][i])
         ]
+
+    def weight_of_path(self, path: list[Vertex]) -> int | float:
+        """Return the weight of the given path. Raises VertexDoesntExistError if any vertex isn't in the graph."""
+        for vertex in path:
+            if vertex not in self.vertices:
+                raise VertexDoesntExistError(str(vertex) + ' is not in the graph.')
+
+        weight: int | float = 0
+        # We slice to avoid the end of the list. This lets us use i + 1
+        for i, vertex in enumerate(path[:-1]):
+            # index(path[i + 1]) gives us the index of the next vertex, so we can get the weight of that edge
+            edge = self[vertex][self.vertices.index(path[i + 1])]
+
+            # If the weight is 0, there is no edge here, so this path is impossible
+            if edge == 0:
+                raise ValueError(f"This path doesn't exist. There is no edge between {vertex} and {path[i + 1]}")
+
+            weight += edge
+
+        return weight
 
     def _is_connected(self, vertex: Vertex, visited: list[Vertex]) -> bool:
         """Find if every vertex in the graph is connected."""
@@ -437,7 +460,12 @@ def dijkstra(graph: Graph, start: Vertex, end: Vertex) -> list[Vertex]:
             if dv.vertex in back_connected:
                 weight = graph[dv.vertex][graph.vertices.index(working_dv.vertex)]
 
-                if working_dv.final_distance - weight == dv.final_distance:
+                # This check is just to satisfy mypy
+                if dv.final_distance is None:
+                    raise ValueError('dv should always have a non-None final_distance. Something has gone horribly wrong')
+
+                # We need to round here to get rid of floating point errors
+                if round(working_dv.final_distance - weight, 5) == round(dv.final_distance, 5):
                     path.append(dv.vertex)
                     working_dv = dv
                     break
