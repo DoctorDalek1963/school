@@ -106,7 +106,7 @@ class TestLibrary(unittest.TestCase):
 
         g.add_vertices(a, b, c, d, e)
 
-        expected_matrix = '-\t3\t-\t-\t4\n2\t-\t9\t-\t12\n-\t9\t-\t4\t-\n7\t-\t-\t-\t-\n-\t12\t-\t-\t-'
+        expected_matrix = '-\t3\t-\t-\t4\n2\t-\t9\t-\t12\n-\t9\t-\t4\t-\n7\t-\t-\t-\t-\n-\t12\t-\t-\t6'
         g.add_edge(a, b, 3, True)
         g.add_edge(a, e, 4, True)
         g.add_edge(b, a, 2, True)
@@ -114,6 +114,7 @@ class TestLibrary(unittest.TestCase):
         g.add_edge(b, e, 12, False)
         g.add_edge(c, d, 4, True)
         g.add_edge(d, a, 7, True)
+        g.add_edge(e, e, 6)
 
         self.assertEqual(str(g), expected_matrix)
 
