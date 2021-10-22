@@ -256,9 +256,7 @@ class Graph:
     @property
     def number_of_odd_nodes(self) -> int:
         """Return the number of odd nodes in the graph."""
-        return sum([
-            len(list(filter(lambda e: e != 0, row))) % 2 for row in self.matrix
-        ])
+        return sum(len([e for e in row if e != 0]) % 2 for row in self.matrix)
 
     @property
     def is_eulerian(self) -> bool:
