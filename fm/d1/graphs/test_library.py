@@ -5,8 +5,8 @@ import unittest
 from library import *
 
 
-class TestLibrary(unittest.TestCase):
-    """A class to hold methods for testing the graph classes and f."""
+class TestGraphAndVertex(unittest.TestCase):
+    """A class to hold methods for testing the Graph and Vertex classes."""
 
     def test_vertex_creation(self) -> None:
         """Test the creation of Vertex objects with the Vertex constructor."""
