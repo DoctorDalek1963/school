@@ -126,6 +126,12 @@ class Graph:
             ]) for row in self.matrix
         ])
 
+    def __getitem__(self, vertex: Vertex):
+        """Return the neighbours of the vertex."""
+        if not isinstance(vertex, Vertex):
+            raise ValueError(f'Can only get Vertex objects from {self.__class__.__name__}')
+        return self.matrix[self.vertices.index(vertex)]
+
     def add_vertex(self, vertex: Vertex) -> None:
         """Add a vertex to the graph."""
         if vertex in self.vertices:
@@ -175,7 +181,7 @@ class Graph:
 
         return [
             self.vertices[i]
-            for i, w in enumerate(self.matrix[vi])
+            for i, w in enumerate(self[vertex])
             # For a vertex to be connected, it must have a non-zero weight
 
             # If a vertex is in the avoid list, then we want to avoid it,
@@ -368,10 +374,9 @@ def dijkstra(graph: Graph, start: Vertex, end: Vertex) -> list[Vertex]:
                 connected_dvs.append(dv)
 
         # For each of the connected dvs, we update the weight if its less than the current working_distance
-        current_vertex_index = graph.vertices.index(current_dv.vertex)
         for connected_dv in connected_dvs:
             weight = current_dv.final_distance + \
-                graph.matrix[current_vertex_index][graph.vertices.index(connected_dv.vertex)]
+                graph[current_dv.vertex][graph.vertices.index(connected_dv.vertex)]
 
             if weight < connected_dv.working_distance:
                 connected_dv.working_distance = weight
@@ -410,7 +415,7 @@ def dijkstra(graph: Graph, start: Vertex, end: Vertex) -> list[Vertex]:
         # We only want to loop over the dvs that aren't already in the path
         for dv in open_dvs:
             if dv.vertex in back_connected:
-                weight = graph.matrix[graph.vertices.index(dv.vertex)][graph.vertices.index(working_dv.vertex)]
+                weight = graph[dv.vertex][graph.vertices.index(working_dv.vertex)]
 
                 if working_dv.final_distance - weight == dv.final_distance:
                     path.append(dv.vertex)
