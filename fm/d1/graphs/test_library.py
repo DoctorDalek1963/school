@@ -171,6 +171,8 @@ class TestGraphAndVertex(unittest.TestCase):
         self.assertTrue(g.is_eulerian)
         g.add_edge(b, d)
         self.assertFalse(g.is_eulerian)
+        g.add_edge(a, c)
+        self.assertFalse(g.is_eulerian)
 
     def test_is_semi_eulerian(self) -> None:
         """Test the is_semi_eulerian bool property of Graph."""
