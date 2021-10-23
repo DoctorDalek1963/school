@@ -139,22 +139,30 @@ class TestGraphAndVertex(unittest.TestCase):
         g.add_edge(b, c)
         self.assertTrue(g.is_connected)
 
-    def test_has_cycles(self) -> None:
+    def test_has_cycles_and_is_tree(self) -> None:
         """Test the has_cycles bool property of Graph."""
         g = Graph()
         a, b, c, d = create_vertices('A B C D')
         g.add_vertices(a, b, c, d)
 
         self.assertFalse(g.has_cycles)
+        self.assertTrue(g.is_tree)
+
         g.add_edge(a, b)
         self.assertFalse(g.has_cycles)
+        self.assertTrue(g.is_tree)
+
         g.add_edge(c, d)
         self.assertFalse(g.has_cycles)
+        self.assertTrue(g.is_tree)
+
         g.add_edge(b, c)
         self.assertFalse(g.has_cycles)
+        self.assertTrue(g.is_tree)
 
         g.add_edge(a, d)
         self.assertTrue(g.has_cycles)
+        self.assertFalse(g.is_tree)
 
     def test_is_eulerian(self) -> None:
         """Test the is_eulerian bool property of Graph."""
