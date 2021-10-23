@@ -286,5 +286,189 @@ class TestGraphAndVertex(unittest.TestCase):
         self.assertEqual(round(g.total_weight, 2), 1842.88)
 
 
+class TestAlgorithmsOnGraphs(unittest.TestCase):
+    """A class to hold methods for testing algorithms on graphs, like Kruskal and Dijkstra."""
+
+    def setUp(self):
+        """Create some graphs to test with."""
+        self.a, self.b, self.c, self.d, self.e, self.f, self.g, self.h, self.i, \
+            self.j, self.k, self.l, self.m, self.n, self.o, self.p, self.q, self.r, \
+            self.s, self.t, self.u, self.v, self.w, self.x, self.y, self.z \
+            = create_vertices('A B C D E F G H I J K L M N O P Q R S T U V W X Y Z')
+
+        self.all_vertices = [
+            self.a, self.b, self.c, self.d, self.e, self.f, self.g, self.h, self.i,
+            self.j, self.k, self.l, self.m, self.n, self.o, self.p, self.q, self.r,
+            self.s, self.t, self.u, self.v, self.w, self.x, self.y, self.z
+            ]
+
+        self.small_graph = Graph()
+        self.small_graph.add_vertices(self.a, self.b, self.c, self.d, self.e)
+
+        self.small_graph.add_edge(self.a, self.b, 3)
+        self.small_graph.add_edge(self.a, self.c, 19)
+        self.small_graph.add_edge(self.a, self.e, 12)
+        self.small_graph.add_edge(self.b, self.c, 5)
+        self.small_graph.add_edge(self.b, self.d, 9)
+        self.small_graph.add_edge(self.c, self.d, 2)
+        self.small_graph.add_edge(self.c, self.e, 11)
+
+        self.medium_graph = Graph()
+        self.medium_graph.add_vertices(self.a, self.b, self.c, self.d, self.e, self.f,
+                                       self.g, self.h, self.i, self.j, self.k, self.l)
+
+        self.medium_graph.add_edge(self.a, self.b, 3.9)
+        self.medium_graph.add_edge(self.a, self.l, 2, True)
+        self.medium_graph.add_edge(self.b, self.d, 7)
+        self.medium_graph.add_edge(self.b, self.g, 1.2)
+        self.medium_graph.add_edge(self.b, self.i, 12)
+        self.medium_graph.add_edge(self.b, self.k, 11)
+        self.medium_graph.add_edge(self.c, self.e, 9)
+        self.medium_graph.add_edge(self.c, self.g, 8, True)
+        self.medium_graph.add_edge(self.c, self.h, 14, True)
+        self.medium_graph.add_edge(self.d, self.e, 3)
+        self.medium_graph.add_edge(self.d, self.f, 3.1)
+        self.medium_graph.add_edge(self.e, self.h, 20)
+        self.medium_graph.add_edge(self.f, self.g, 6.3)
+        self.medium_graph.add_edge(self.g, self.c, 7.4, True)
+        self.medium_graph.add_edge(self.g, self.g, 3)
+        self.medium_graph.add_edge(self.h, self.i, 4)
+        self.medium_graph.add_edge(self.h, self.j, 5)
+        self.medium_graph.add_edge(self.h, self.k, 9)
+        self.medium_graph.add_edge(self.i, self.j, 8)
+        self.medium_graph.add_edge(self.j, self.k, 12.7)
+        self.medium_graph.add_edge(self.k, self.l, 11, True)
+        self.medium_graph.add_edge(self.l, self.k, 13, True)
+        self.medium_graph.add_edge(self.l, self.a, 3, True)
+
+        self.large_graph = Graph()
+        self.large_graph.add_vertices(*self.all_vertices)
+
+        # This large graph is based on Euclidean distance, with the vertices
+        # arranged in 6 rows of 4, with 2 in the middle at the bottom
+        self.large_graph.add_edge(self.a, self.e)
+        self.large_graph.add_edge(self.a, self.g, 2.24)
+        self.large_graph.add_edge(self.b, self.c)
+        self.large_graph.add_edge(self.b, self.e, 1.41)
+        self.large_graph.add_edge(self.b, self.f)
+        self.large_graph.add_edge(self.c, self.d)
+        self.large_graph.add_edge(self.c, self.f)
+        self.large_graph.add_edge(self.c, self.h, 1.41)
+        self.large_graph.add_edge(self.c, self.k, 2)
+        self.large_graph.add_edge(self.d, self.g, 1.41)
+        self.large_graph.add_edge(self.e, self.j, 1.41)
+        self.large_graph.add_edge(self.f, self.i, 1.41)
+        self.large_graph.add_edge(self.f, self.j)
+        self.large_graph.add_edge(self.f, self.k, 1.41)
+        self.large_graph.add_edge(self.g, self.h)
+        self.large_graph.add_edge(self.h, self.j, 2.24)
+        self.large_graph.add_edge(self.h, self.k, 1.41)
+        self.large_graph.add_edge(self.i, self.j)
+        self.large_graph.add_edge(self.i, self.m)
+        self.large_graph.add_edge(self.i, self.o, 2.24)
+        self.large_graph.add_edge(self.j, self.k)
+        self.large_graph.add_edge(self.j, self.m, 1.41)
+        self.large_graph.add_edge(self.j, self.n)
+        self.large_graph.add_edge(self.j, self.q, 2.24)
+        self.large_graph.add_edge(self.j, self.t, 2.82)
+        self.large_graph.add_edge(self.k, self.l)
+        self.large_graph.add_edge(self.k, self.r, 2.24)
+        self.large_graph.add_edge(self.k, self.s, 2)
+        self.large_graph.add_edge(self.l, self.o, 1.41)
+        self.large_graph.add_edge(self.l, self.s, 2.24)
+        self.large_graph.add_edge(self.n, self.o)
+        self.large_graph.add_edge(self.n, self.q, 1.41)
+        self.large_graph.add_edge(self.o, self.p)
+        self.large_graph.add_edge(self.o, self.s)
+        self.large_graph.add_edge(self.p, self.t)
+        self.large_graph.add_edge(self.q, self.r)
+        self.large_graph.add_edge(self.q, self.y, 2.24)
+        self.large_graph.add_edge(self.r, self.s)
+        self.large_graph.add_edge(self.r, self.u, 1.41)
+        self.large_graph.add_edge(self.r, self.x, 2.24)
+        self.large_graph.add_edge(self.s, self.w)
+        self.large_graph.add_edge(self.s, self.x, 1.41)
+        self.large_graph.add_edge(self.s, self.y, 2.24)
+        self.large_graph.add_edge(self.t, self.w, 1.41)
+        self.large_graph.add_edge(self.t, self.x)
+        self.large_graph.add_edge(self.u, self.v)
+        self.large_graph.add_edge(self.v, self.w)
+        self.large_graph.add_edge(self.v, self.y)
+        self.large_graph.add_edge(self.v, self.z, 1.41)
+        self.large_graph.add_edge(self.w, self.z)
+        self.large_graph.add_edge(self.x, self.z, 1.41)
+
+    def test_kruskal(self) -> None:
+        """Test the implementation of Kruskal's algorithm to find the minimum spanning tree."""
+        expected_small = Graph()
+        expected_small.add_vertices(*self.small_graph.vertices)
+
+        expected_small.add_edge(self.a, self.b, 3)
+        expected_small.add_edge(self.b, self.c, 5)
+        expected_small.add_edge(self.c, self.d, 2)
+        expected_small.add_edge(self.c, self.e, 11)
+
+        self.assertEqual(kruskal(self.small_graph), expected_small)
+
+        expected_medium = Graph()
+        expected_medium.add_vertices(*self.medium_graph.vertices)
+
+        expected_medium.add_edge(self.a, self.b, 3.9)
+        expected_medium.add_edge(self.a, self.l, 2, True)
+        expected_medium.add_edge(self.b, self.g, 1.2)
+        expected_medium.add_edge(self.b, self.k, 11)
+        expected_medium.add_edge(self.d, self.f, 3.1)
+        expected_medium.add_edge(self.d, self.e, 3)
+        expected_medium.add_edge(self.f, self.g, 6.3)
+        expected_medium.add_edge(self.g, self.c, 7.4, True)
+        expected_medium.add_edge(self.h, self.i, 4)
+        expected_medium.add_edge(self.h, self.j, 5)
+        expected_medium.add_edge(self.h, self.k, 9)
+        expected_medium.add_edge(self.k, self.l, 11, True)
+
+        self.assertEqual(kruskal(self.medium_graph), expected_medium)
+
+        expected_large = Graph()
+        expected_large.add_vertices(*self.large_graph.vertices)
+
+        expected_large.add_edge(a, e)
+        expected_large.add_edge(b, c)
+        expected_large.add_edge(b, f)
+        expected_large.add_edge(b, e, 1.41)
+        expected_large.add_edge(c, d)
+        expected_large.add_edge(c, h, 1.41)
+        expected_large.add_edge(h, g)
+        expected_large.add_edge(f, j)
+        expected_large.add_edge(j, i)
+        expected_large.add_edge(i, m)
+        expected_large.add_edge(j, k)
+        expected_large.add_edge(j, n)
+        expected_large.add_edge(k, l)
+        expected_large.add_edge(n, o)
+        expected_large.add_edge(o, p)
+        expected_large.add_edge(p, t)
+        expected_large.add_edge(t, x)
+        expected_large.add_edge(o, s)
+        expected_large.add_edge(s, r)
+        expected_large.add_edge(r, q)
+        expected_large.add_edge(s, w)
+        expected_large.add_edge(w, v)
+        expected_large.add_edge(v, u)
+        expected_large.add_edge(v, y)
+
+        self.assertEqual(kruskal(self.large_graph), expected_large)
+
+    def test_dijkstra(self) -> None:
+        """Test the implementation of Dijkstra's shortest path algorithm."""
+        expected_small = [self.a, self.b, self.c, self.d]
+        self.assertEqual(dijkstra(self.small_graph, self.a, self.d), expected_small)
+
+        expected_medium = [self.a, self.b, self.k]
+        self.assertEqual(dijkstra(self.medium_graph, self.a, self.k), expected_medium)
+
+        expected_large = [self.a, self.e, self.j, self.k, self.s, self.w, self.z]
+        self.assertEqual(dijkstra(self.large_graph, self.a, self.z), expected_large)
+
+
 if __name__ == "__main__":
     unittest.main()
