@@ -148,6 +148,16 @@ class Graph:
             raise ValueError(f'Can only get Vertex objects from {self.__class__.__name__}')
         return self.matrix[self.vertices.index(vertex)]
 
+    def __eq__(self, other) -> bool:
+        """Test for equality between Graph objects by testing for the same vertices and string matrices."""
+        if not isinstance(other, self.__class__):
+            return NotImplemented
+        return self.vertices == other.vertices and str(self) == str(other)
+
+    def __hash__(self) -> int:
+        """Hash the graph by vertex list and matrix."""
+        return hash((self.vertices, str(self)))
+
     def add_vertex(self, vertex: Vertex) -> None:
         """Add a vertex to the graph."""
         if vertex in self.vertices:
