@@ -2,7 +2,7 @@
 """A simple unittest for testing the graph library classes and functions."""
 
 import unittest
-from library import *
+import library
 
 
 class TestGraphAndVertex(unittest.TestCase):
@@ -10,30 +10,30 @@ class TestGraphAndVertex(unittest.TestCase):
 
     def test_vertex_init(self) -> None:
         """Test the creation of Vertex objects with the Vertex constructor."""
-        testing_io: dict[str, Vertex] = {
-            'A': Vertex('A'),
-            'vertex': Vertex('vertex'),
-            'space test': Vertex('space test'),
-            'unicode ∵ ∴': Vertex('unicode ∵ ∴'),
-            '': Vertex(''),
-            'qwertyuiopasdfghjklzxcvbnm': Vertex('qwertyuiopasdfghjklzxcvbnm'),
-            'newline\ntest': Vertex('newline\ntest'),
-            'tab\ttest': Vertex('tab\ttest'),
-            'CaPiTaLs': Vertex('CaPiTaLs')
+        testing_io: dict[str, library.Vertex] = {
+            'A': library.Vertex('A'),
+            'vertex': library.Vertex('vertex'),
+            'space test': library.Vertex('space test'),
+            'unicode ∵ ∴': library.Vertex('unicode ∵ ∴'),
+            '': library.Vertex(''),
+            'qwertyuiopasdfghjklzxcvbnm': library.Vertex('qwertyuiopasdfghjklzxcvbnm'),
+            'newline\ntest': library.Vertex('newline\ntest'),
+            'tab\ttest': library.Vertex('tab\ttest'),
+            'CaPiTaLs': library.Vertex('CaPiTaLs')
         }
         for name, vertex in testing_io.items():
             self.assertEqual(name, vertex.name)
 
     def test_create_vertices(self) -> None:
         """Test the creation of Vertex objects with the create_vertices() function."""
-        a, vertex, newline_test, capitals, tab_test = create_vertices('a vertex newline\ntest CaPiTaLs tab\ttest')
+        a, vertex, newline_test, capitals, tab_test = library.create_vertices('a vertex newline\ntest CaPiTaLs tab\ttest')
         self.assertEqual(a.name, 'a')
         self.assertEqual(vertex.name, 'vertex')
         self.assertEqual(newline_test.name, 'newline\ntest')
         self.assertEqual(capitals.name, 'CaPiTaLs')
         self.assertEqual(tab_test.name, 'tab\ttest')
 
-        a, b, c, d = create_vertices('A    B C      D')
+        a, b, c, d = library.create_vertices('A    B C      D')
         self.assertEqual(a.name, 'A')
         self.assertEqual(b.name, 'B')
         self.assertEqual(c.name, 'C')
@@ -41,8 +41,8 @@ class TestGraphAndVertex(unittest.TestCase):
 
     def test_graph_add_vertex(self) -> None:
         """Test the add_vertex() method of a Graph object."""
-        g = Graph()
-        a, b, c, d, e = create_vertices('A B C D E')
+        g = library.Graph()
+        a, b, c, d, e = library.create_vertices('A B C D E')
         vertices = [a, b, c, d, e]
 
         for v in vertices:
@@ -53,8 +53,8 @@ class TestGraphAndVertex(unittest.TestCase):
 
     def test_graph_add_vertices(self) -> None:
         """Test the add_vertices() method of a Graph object."""
-        g = Graph()
-        a, b, c, d, e = create_vertices('A B C D E')
+        g = library.Graph()
+        a, b, c, d, e = library.create_vertices('A B C D E')
 
         g.add_vertices(a, b, c, d, e)
 
@@ -63,12 +63,12 @@ class TestGraphAndVertex(unittest.TestCase):
 
     def test_vertex_already_added_error(self) -> None:
         """Test the raising of VertexAlreadyAddedError."""
-        g = Graph()
-        a, b, c, d, e = create_vertices('A B C D E')
+        g = library.Graph()
+        a, b, c, d, e = library.create_vertices('A B C D E')
 
         g.add_vertices(a, b, c, d, e)
 
-        with self.assertRaises(VertexAlreadyAddedError):
+        with self.assertRaises(library.VertexAlreadyAddedError):
             g.add_vertex(a)
             g.add_vertex(b)
             g.add_vertex(c)
@@ -78,10 +78,10 @@ class TestGraphAndVertex(unittest.TestCase):
 
     def test_vertex_doesnt_exist_error(self) -> None:
         """Test the raising of VertexDoesntExistError when adding an edge."""
-        g = Graph()
-        a, b, c, d, e = create_vertices('A B C D E')
+        g = library.Graph()
+        a, b, c, d, e = library.create_vertices('A B C D E')
 
-        with self.assertRaises(VertexDoesntExistError):
+        with self.assertRaises(library.VertexDoesntExistError):
             g.add_edge(a, b)
             g.add_edge(a, c)
             g.add_edge(a, d)
@@ -95,7 +95,7 @@ class TestGraphAndVertex(unittest.TestCase):
 
         g.add_vertex(a)
 
-        with self.assertRaises(VertexDoesntExistError):
+        with self.assertRaises(library.VertexDoesntExistError):
             g.add_edge(a, b)
             g.add_edge(a, c)
             g.add_edge(a, d)
@@ -107,8 +107,8 @@ class TestGraphAndVertex(unittest.TestCase):
 
     def test_graph_matrix(self) -> None:
         """Test the matrix given by str(Graph)."""
-        g = Graph()
-        a, b, c, d, e = create_vertices('A B C D E')
+        g = library.Graph()
+        a, b, c, d, e = library.create_vertices('A B C D E')
 
         g.add_vertices(a, b, c, d, e)
 
@@ -126,8 +126,8 @@ class TestGraphAndVertex(unittest.TestCase):
 
     def test_is_connected(self) -> None:
         """Test the is_connected bool property of Graph."""
-        g = Graph()
-        a, b, c, d = create_vertices('A B C D')
+        g = library.Graph()
+        a, b, c, d = library.create_vertices('A B C D')
         g.add_vertices(a, b, c, d)
 
         self.assertFalse(g.is_connected)
@@ -141,8 +141,8 @@ class TestGraphAndVertex(unittest.TestCase):
 
     def test_has_cycles_and_is_tree(self) -> None:
         """Test the has_cycles bool property of Graph."""
-        g = Graph()
-        a, b, c, d = create_vertices('A B C D')
+        g = library.Graph()
+        a, b, c, d = library.create_vertices('A B C D')
         g.add_vertices(a, b, c, d)
 
         self.assertFalse(g.has_cycles)
@@ -166,8 +166,8 @@ class TestGraphAndVertex(unittest.TestCase):
 
     def test_is_eulerian(self) -> None:
         """Test the is_eulerian bool property of Graph."""
-        g = Graph()
-        a, b, c, d = create_vertices('A B C D')
+        g = library.Graph()
+        a, b, c, d = library.create_vertices('A B C D')
         g.add_vertices(a, b, c, d)
 
         g.add_edge(a, b)
@@ -184,8 +184,8 @@ class TestGraphAndVertex(unittest.TestCase):
 
     def test_is_semi_eulerian(self) -> None:
         """Test the is_semi_eulerian bool property of Graph."""
-        g = Graph()
-        a, b, c, d = create_vertices('A B C D')
+        g = library.Graph()
+        a, b, c, d = library.create_vertices('A B C D')
         g.add_vertices(a, b, c, d)
 
         g.add_edge(a, b)
@@ -202,8 +202,8 @@ class TestGraphAndVertex(unittest.TestCase):
 
     def test_number_of_odd_nodes(self) -> None:
         """Test the number_of_odd_nodes bool property of Graph."""
-        g = Graph()
-        a, b, c, d = create_vertices('A B C D')
+        g = library.Graph()
+        a, b, c, d = library.create_vertices('A B C D')
         g.add_vertices(a, b, c, d)
 
         g.add_edge(a, b)
@@ -220,8 +220,8 @@ class TestGraphAndVertex(unittest.TestCase):
 
     def test_graph_getitem(self) -> None:
         """Test the Graph.__getitem__() method."""
-        g = Graph()
-        a, b, c, d, e = create_vertices('A B C D E')
+        g = library.Graph()
+        a, b, c, d, e = library.create_vertices('A B C D E')
         g.add_vertices(a, b, c, d, e)
 
         g.add_edge(a, b, 12)
@@ -243,8 +243,8 @@ class TestGraphAndVertex(unittest.TestCase):
 
     def test_get_connected_vertices(self) -> None:
         """Test the Graph.get_connected_vertices() method."""
-        g = Graph()
-        a, b, c, d, e = create_vertices('A B C D E')
+        g = library.Graph()
+        a, b, c, d, e = library.create_vertices('A B C D E')
         g.add_vertices(a, b, c, d, e)
 
         self.assertEqual(g.get_connected_vertices(a, []), [])
@@ -268,8 +268,8 @@ class TestGraphAndVertex(unittest.TestCase):
 
     def test_total_weight(self) -> None:
         """Test the Graph.total_weight property."""
-        g = Graph()
-        a, b, c, d, e = create_vertices('A B C D E')
+        g = library.Graph()
+        a, b, c, d, e = library.create_vertices('A B C D E')
         g.add_vertices(a, b, c, d, e)
 
         self.assertEqual(g.total_weight, 0)
@@ -294,15 +294,15 @@ class TestAlgorithmsOnGraphs(unittest.TestCase):
         self.a, self.b, self.c, self.d, self.e, self.f, self.g, self.h, self.i, \
             self.j, self.k, self.l, self.m, self.n, self.o, self.p, self.q, self.r, \
             self.s, self.t, self.u, self.v, self.w, self.x, self.y, self.z \
-            = create_vertices('A B C D E F G H I J K L M N O P Q R S T U V W X Y Z')
+            = library.create_vertices('A B C D E F G H I J K L M N O P Q R S T U V W X Y Z')
 
         self.all_vertices = [
             self.a, self.b, self.c, self.d, self.e, self.f, self.g, self.h, self.i,
             self.j, self.k, self.l, self.m, self.n, self.o, self.p, self.q, self.r,
             self.s, self.t, self.u, self.v, self.w, self.x, self.y, self.z
-            ]
+        ]
 
-        self.small_graph = Graph()
+        self.small_graph = library.Graph()
         self.small_graph.add_vertices(self.a, self.b, self.c, self.d, self.e)
 
         self.small_graph.add_edge(self.a, self.b, 3)
@@ -313,7 +313,7 @@ class TestAlgorithmsOnGraphs(unittest.TestCase):
         self.small_graph.add_edge(self.c, self.d, 2)
         self.small_graph.add_edge(self.c, self.e, 11)
 
-        self.medium_graph = Graph()
+        self.medium_graph = library.Graph()
         self.medium_graph.add_vertices(self.a, self.b, self.c, self.d, self.e, self.f,
                                        self.g, self.h, self.i, self.j, self.k, self.l)
 
@@ -341,7 +341,7 @@ class TestAlgorithmsOnGraphs(unittest.TestCase):
         self.medium_graph.add_edge(self.l, self.k, 13, True)
         self.medium_graph.add_edge(self.l, self.a, 3, True)
 
-        self.large_graph = Graph()
+        self.large_graph = library.Graph()
         self.large_graph.add_vertices(*self.all_vertices)
 
         # This large graph is based on Euclidean distance, with the vertices
@@ -400,7 +400,7 @@ class TestAlgorithmsOnGraphs(unittest.TestCase):
 
     def test_kruskal(self) -> None:
         """Test the implementation of Kruskal's algorithm to find the minimum spanning tree."""
-        expected_small = Graph()
+        expected_small = library.Graph()
         expected_small.add_vertices(*self.small_graph.vertices)
 
         expected_small.add_edge(self.a, self.b, 3)
@@ -408,9 +408,9 @@ class TestAlgorithmsOnGraphs(unittest.TestCase):
         expected_small.add_edge(self.c, self.d, 2)
         expected_small.add_edge(self.c, self.e, 11)
 
-        self.assertEqual(kruskal(self.small_graph), expected_small)
+        self.assertEqual(library.kruskal(self.small_graph), expected_small)
 
-        expected_medium = Graph()
+        expected_medium = library.Graph()
         expected_medium.add_vertices(*self.medium_graph.vertices)
 
         expected_medium.add_edge(self.a, self.b, 3.9)
@@ -426,9 +426,9 @@ class TestAlgorithmsOnGraphs(unittest.TestCase):
         expected_medium.add_edge(self.h, self.k, 9)
         expected_medium.add_edge(self.k, self.l, 11, True)
 
-        self.assertEqual(kruskal(self.medium_graph), expected_medium)
+        self.assertEqual(library.kruskal(self.medium_graph), expected_medium)
 
-        expected_large = Graph()
+        expected_large = library.Graph()
         expected_large.add_vertices(*self.large_graph.vertices)
 
         expected_large.add_edge(self.a, self.e)
@@ -457,18 +457,18 @@ class TestAlgorithmsOnGraphs(unittest.TestCase):
         expected_large.add_edge(self.v, self.y)
         expected_large.add_edge(self.w, self.z)
 
-        self.assertEqual(kruskal(self.large_graph), expected_large)
+        self.assertEqual(library.kruskal(self.large_graph), expected_large)
 
     def test_dijkstra(self) -> None:
         """Test the implementation of Dijkstra's shortest path algorithm."""
         expected_small = [self.a, self.b, self.c, self.d]
-        self.assertEqual(dijkstra(self.small_graph, self.a, self.d), expected_small)
+        self.assertEqual(library.dijkstra(self.small_graph, self.a, self.d), expected_small)
 
         expected_medium = [self.a, self.b, self.k]
-        self.assertEqual(dijkstra(self.medium_graph, self.a, self.k), expected_medium)
+        self.assertEqual(library.dijkstra(self.medium_graph, self.a, self.k), expected_medium)
 
         expected_large = [self.a, self.e, self.j, self.k, self.s, self.w, self.z]
-        self.assertEqual(dijkstra(self.large_graph, self.a, self.z), expected_large)
+        self.assertEqual(library.dijkstra(self.large_graph, self.a, self.z), expected_large)
 
 
 if __name__ == "__main__":
