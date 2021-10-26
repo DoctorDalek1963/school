@@ -36,6 +36,10 @@ class VertexDoesntExistError(Exception):
     """A simple exception class."""
 
 
+class EdgeDoesntExistError(Exception):
+    """A simple exception class."""
+
+
 class Vertex:
     """A Vertex class, holding only a name."""
     __slots__ = ['name']
@@ -237,7 +241,7 @@ class Graph:
 
             # If the weight is 0, there is no edge here, so this path is impossible
             if edge == 0:
-                raise ValueError(f"This path doesn't exist. There is no edge between {vertex} and {path[i + 1]}")
+                raise EdgeDoesntExistError(f"This path doesn't exist. There is no edge between {vertex} and {path[i + 1]}")
 
             weight += edge
 

@@ -285,6 +285,31 @@ class TestGraphAndVertex(unittest.TestCase):
         g.add_edge(c, e, 902.1)
         self.assertEqual(round(g.total_weight, 2), 1842.88)
 
+    def test_weight_of_path(self) -> None:
+        """Test the Graph.weight_of_path() method."""
+        g = library.Graph()
+        a, b, c, d, e = library.create_vertices('A B C D E')
+        g.add_vertices(a, b, c, d, e)
+
+        g.add_edge(a, b, 3)
+        g.add_edge(a, c, 19)
+        g.add_edge(a, e, 12)
+        g.add_edge(b, c, 5)
+        g.add_edge(b, d, 9)
+        g.add_edge(c, d, 2)
+        g.add_edge(c, e, 11)
+
+        self.assertEqual(g.weight_of_path([a, e]), 12)
+        self.assertEqual(g.weight_of_path([b, d, c]), 11)
+        self.assertEqual(g.weight_of_path([b, c, d]), 7)
+        self.assertEqual(g.weight_of_path([a, c, d, b]), 30)
+        self.assertEqual(g.weight_of_path([a, e, c, b, d]), 37)
+
+        with self.assertRaises(library.EdgeDoesntExistError):
+            g.weight_of_path([a, d])
+            g.weight_of_path([b, e])
+            g.weight_of_path([e, d])
+
 
 class TestAlgorithmsOnGraphs(unittest.TestCase):
     """A class to hold methods for testing algorithms on graphs, like Kruskal and Dijkstra."""
