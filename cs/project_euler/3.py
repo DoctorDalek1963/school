@@ -3,11 +3,12 @@
 
 from sys import argv
 
+
 def find_prime_factors(n: int) -> list[int]:
     """Return a list of all the prime factors of n."""
     factors = []
     divisor = 2
-    
+
     while n > 1:
         while n % divisor == 0:
             factors.append(divisor)
