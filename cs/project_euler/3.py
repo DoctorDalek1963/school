@@ -26,5 +26,5 @@ def find_prime_factors(n: int) -> list[int]:
 if __name__ == "__main__":
     try:
         print(max(find_prime_factors(int(argv[1]))))
-    except IndexError:
+    except (IndexError, ValueError):
         print('Script must be called with an integer')
