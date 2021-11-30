@@ -7,7 +7,7 @@ import re
 def validate_question_marks(string: str) -> bool:
     """Validate the input string to find if there exist exactly 3 question marks between every pair of numbers that adds to 10."""
     # We're using a capturing group in a lookahead to cheat and allow for overlapping matches
-    matches = re.findall(r'(?=(\d+\?*\d+))', string)
+    matches = re.findall(r'(?=(\d+\?*\d+))', re.sub('[^?0-9]', '', string))
 
     for match in matches:
         sum_of_numbers = sum(int(x) for x in re.split(r'\?+', match))
