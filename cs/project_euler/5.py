@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""A simple script to find the smallest number that can be easily divided by every number less than the argument."""
+"""A simple script to find the smallest number that can be evenly divided by every number less than the argument."""
 
 from functools import reduce
 from sys import argv
@@ -16,10 +16,9 @@ def find_prime_factors(n: int) -> list[int]:
             n //= divisor
 
         divisor += 1
-        if divisor * divisor > n:
-            if n > 1:
-                factors.append(n)
-                break
+        if divisor * divisor > n > 1:
+            factors.append(n)
+            break
 
     return factors
 
