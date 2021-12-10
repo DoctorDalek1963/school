@@ -10,8 +10,8 @@ def product(list_: list[int]) -> int:
     return reduce(mul, list_)
 
 
-def main() -> None:
-    """Find the greatest product of 13 digits in number."""
+def main(adjacent: int) -> None:
+    """Find the greatest product of however many digits in this specific number."""
     number = '''73167176531330624919225119674426574742355349194934
 96983520312774506326239578318016984801869478851843
 85861560789112949495459501737958331952853208805511
@@ -33,14 +33,14 @@ def main() -> None:
 05886116467109405077541002256983155200055935729725
 71636269561882670428252483600823257530420752963450'''.replace('\n', '')
 
-    non_zeroes = [x for x in number.split('0') if len(x) >= 13]
+    non_zeroes = [x for x in number.split('0') if len(x) >= adjacent]
     max_product = 0
 
     for string in non_zeroes:
         for i in range(len(string)):
-            slice_ = string[i:i + 13]
+            slice_ = string[i:i + adjacent]
 
-            if len(slice_) < 13:
+            if len(slice_) < adjacent:
                 continue
 
             max_product = max(max_product, product([int(x) for x in slice_]))
@@ -49,4 +49,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    main(13)
