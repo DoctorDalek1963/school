@@ -175,7 +175,7 @@ class Graph:
             for row in self.matrix:
                 row.append(0)
 
-            self.matrix.append([0 for _ in range(len(self.matrix[0]))])
+            self.matrix.append([0 for _ in self.matrix[0]])
 
     def add_vertices(self, *vertices) -> None:
         """Add multiple vertices, passed as *args."""
