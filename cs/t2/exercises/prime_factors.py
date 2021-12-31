@@ -40,6 +40,16 @@ def find_prime_factors(n: int) -> list[int]:
     return prime_factors + [n]
 
 
+def prettify_exponent(exponent: int) -> str:
+    """Return a pretty version of the exponent (with utf-8 characters)."""
+    powers = [
+        '\u2070', '\u00B9', '\u00B2', '\u00B3',
+        '\u2074', '\u2075', '\u2076', '\u2077',
+        '\u2078', '\u2079'
+    ]
+    return ''.join([powers[int(x)] for x in str(exponent)]) if exponent > 1 else ''
+
+
 def main() -> None:
     """Take input from the command line."""
     try:
@@ -53,10 +63,12 @@ def main() -> None:
             if t not in power_factors:
                 power_factors.append(t)
 
-        print(' * '.join([
-            str(base) + (('^' + str(exponent)) if exponent > 1 else '')
+        print()
+        print(sys.argv[1] + ' = ' + ' \u2A09 '.join([
+            str(base) + prettify_exponent(exponent)
             for base, exponent in power_factors
         ]))
+        print()
 
     except (IndexError, ValueError):
         print(path.split(sys.argv[0])[-1] + ' must be supplied with an integer argument')
