@@ -48,3 +48,12 @@
 ### Software
 - [Gravity simulation](https://github.com/DoctorDalek1963/Julia-Gravity)
 - [Linear transformations project (IN PROGRESS)](https://github.com/DoctorDalek1963/linear-transformations)
+
+---
+
+# Extracurricular
+
+- OAT
+- Debate Society
+- Maths Challenge Club
+- Hacking Club
