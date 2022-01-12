@@ -36,6 +36,9 @@
 ### Lectures
 - [Gresham quaternions and boolean algebra](https://www.youtube.com/watch?v=zdTnc2Yfzek)
 - [MIT abstract algebra (series: IN PROGRESS)](https://www.youtube.com/watch?v=VdLhQs_y_E8&list=PLelIK3uylPMGzHBuR3hLMHrYfMqWWsmx5)
+- [Four Dimensional Maths: Things to See and Hear in the Fourth Dimension - with Matt Parker](https://www.youtube.com/watch?v=1wAaI_6b9JE)
+- [What Happens When Maths Goes Wrong? - with Matt Parker](https://www.youtube.com/watch?v=6JwEYamjXpA)
+- RI 2019 Christmas Lectures [1](https://www.youtube.com/watch?v=_q4DrUHKC0Q) [2](https://www.youtube.com/watch?v=TtisQ9yZ2zo) [3](https://www.youtube.com/watch?v=u5mNa6KE0lA)
 
 ---
 
