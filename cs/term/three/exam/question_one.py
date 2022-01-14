@@ -16,6 +16,9 @@ c. Display the total income.
 d. Allow the user input a toy company and calculate the total sales for that toy company.
 """
 
+# NOTE: This script doesn't have a proper main() method. It's designed to be used in an interactive shell, and consists
+# of only classes and functions, but it still fulfills the requirements of the prompt in functionality
+
 import re
 from collections import defaultdict
 from typing import TypeVar

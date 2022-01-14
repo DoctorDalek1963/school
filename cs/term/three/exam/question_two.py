@@ -24,6 +24,7 @@ def check_three_consecutive_ints(values: list[int]) -> bool:
 def main() -> None:
     """Allow lists to be input."""
     values: list[int] = []
+    print('Note: Hit enter with no input to end the list')
     inp = input('Please enter a number: ')
 
     while True:
