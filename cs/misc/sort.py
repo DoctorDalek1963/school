@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""A module containing a Sorter class, which can sort lists using different algorithms."""
+"""A simple module containing a Sorter class to sort lists using different algorithms."""
 
 import random
 import sys
@@ -8,7 +8,7 @@ from typing import Callable
 
 
 def timed_sort(f: Callable) -> Callable:
-    """Time the passed function. Used as a wrapper."""
+    """Time the passed function. Used as a decorator."""
 
     def dummy(*args, **kwargs):
         start = time.time()
@@ -26,7 +26,7 @@ def timed_sort(f: Callable) -> Callable:
 
 
 class Sorter:
-    """A class that takes a list and can sort it with different algorithms."""
+    """This class takes a list and can sort it with different algorithms."""
 
     def __init__(self, original_list: list[int]) -> None:
         """Initialise the Sorter with the given list."""
@@ -52,12 +52,12 @@ class Sorter:
 
     @timed_sort
     def recursive_quick_sort(self) -> list[int]:
-        """Sort the list with recursive quick sort."""
+        """Sort the instance list with a recursive quick sort implementation."""
         return Sorter._static_recursive_quick_sort(self.original_list)
 
     @staticmethod
     def _static_recursive_quick_sort(static_list: list[int]) -> list[int]:
-        """Sort a given list with recursive quick sort."""
+        """Sort a given list with a recursive quick sort implementation."""
         if len(static_list) == 0:
             return []
 
@@ -92,7 +92,7 @@ class Sorter:
 
     @timed_sort
     def bogo_sort(self) -> list[int]:
-        """Randomise list. Is it sorted? If not, randomise again. Repeat."""
+        """Repeatedly randomise the list until it's sorted."""
         new_list = self.original_list
 
         while True:
@@ -102,12 +102,12 @@ class Sorter:
 
     @timed_sort
     def merge_sort(self) -> list[int]:
-        """Perform a merge sort on the list."""
+        """Perform a recursive merge sort on the instance list."""
         return Sorter._static_merge_sort(self.original_list)
 
     @staticmethod
     def _static_merge_sort(items: list[int]) -> list[int]:
-        """Perform a recursive static merge sort on the given list."""
+        """Perform a recursive merge sort on the given list."""
         if len(items) < 2:
             return items
 
@@ -137,7 +137,7 @@ class Sorter:
 
     @timed_sort
     def insertion_sort(self) -> list[int]:
-        """Perform an insertion sort on the list."""
+        """Perform an insertion sort on the instance list."""
         new_list = self.original_list
 
         for j in range(1, len(new_list)):
@@ -164,7 +164,7 @@ def check_sorted(list_to_check: list[int]) -> bool:
 
 
 def main() -> None:
-    """Do the main method."""
+    """Run the sorts and time them."""
     # If the script was given a number as an argument, use it, otherwise, use 1000
     if len(sys.argv) > 1 and sys.argv[1].isdigit():
         x = int(sys.argv[1])
