@@ -7,7 +7,7 @@ import time
 from typing import Callable
 
 
-def timed(f: Callable) -> Callable:
+def timed_sort(f: Callable) -> Callable:
     """Time the passed function. Used as a wrapper."""
 
     def dummy(*args, **kwargs):
@@ -33,7 +33,7 @@ class Sorter:
         """Return a copy of the original list."""
         return self.__original_list.copy()
 
-    @timed
+    @timed_sort
     def bubble_sort(self) -> list[int]:
         """Sort the list with bubble sort."""
         new_list = self.original_list
@@ -46,7 +46,7 @@ class Sorter:
 
         return new_list
 
-    @timed
+    @timed_sort
     def recursive_quick_sort(self) -> list[int]:
         """Sort the list with recursive quick sort."""
         return Sorter._static_recursive_quick_sort(self.original_list)
@@ -65,7 +65,7 @@ class Sorter:
 
         return sorted_first + [pivot] + sorted_last
 
-    @timed
+    @timed_sort
     def stalin_sort(self) -> list[int]:
         """Remove all elements that aren't in order."""
         new_list = self.original_list
@@ -86,7 +86,7 @@ class Sorter:
 
         return new_list
 
-    @timed
+    @timed_sort
     def bogo_sort(self) -> list[int]:
         """Randomise list. Is it sorted? If not, randomise again. Repeat."""
         new_list = self.original_list
@@ -96,7 +96,7 @@ class Sorter:
             if check_sorted(new_list):
                 return new_list
 
-    @timed
+    @timed_sort
     def merge_sort(self) -> list[int]:
         """Perform a merge sort on the list."""
         return Sorter._static_merge_sort(self.original_list)
@@ -131,7 +131,7 @@ class Sorter:
 
         return new_list
 
-    @timed
+    @timed_sort
     def insertion_sort(self) -> list[int]:
         """Perform an insertion sort on the list."""
         new_list = self.original_list
@@ -172,7 +172,7 @@ def main() -> None:
     random.shuffle(list_)
     sorter = Sorter(list_)
 
-    print()
+    print(f'To sort {len(list_)} items:')
 
     sorter.bubble_sort()
     sorter.stalin_sort()
