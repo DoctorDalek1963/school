@@ -15,7 +15,11 @@ def timed_sort(f: Callable) -> Callable:
         result = f(*args, **kwargs)
         end = time.time()
 
-        print(f'{f.__name__} took {1000 * (end - start):.4f} ms')
+        if check_sorted(result):
+            print(f'{f.__name__} took {1000 * (end - start):.4f} ms')
+        else:
+            print(f'{f.__name__} FAILED')
+
         return result
 
     return dummy
