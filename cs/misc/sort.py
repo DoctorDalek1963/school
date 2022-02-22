@@ -39,8 +39,20 @@ class Sorter:
         return self.__original_list.copy()
 
     @timed_sort
+    def builtin_sorted_function(self) -> list[int]:
+        """Use Python's builtin ``sorted`` function to sort the instance list."""
+        return sorted(self.original_list)
+
+    @timed_sort
+    def builtin_dot_sort(self) -> list[int]:
+        """Use Python's builtin .sort() method to sort the instance list."""
+        new_list = self.original_list
+        new_list.sort()
+        return new_list
+
+    @timed_sort
     def bubble_sort(self) -> list[int]:
-        """Sort the list with bubble sort."""
+        """Sort the instance list with bubble sort."""
         new_list = self.original_list
 
         iterations = len(new_list) - 1
@@ -180,6 +192,8 @@ def main() -> None:
     print(f'To sort {len(list_)} items:\n')
 
     algorithms: list[Callable] = [
+        sorter.builtin_sorted_function,
+        sorter.builtin_dot_sort,
         sorter.bubble_sort,
         sorter.stalin_sort,
         sorter.recursive_quick_sort,
