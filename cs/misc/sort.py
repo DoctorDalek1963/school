@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 """A simple module containing a Sorter class to sort lists using different algorithms."""
 
+import concurrent.futures as cf
 import random
 import sys
 import time
@@ -11,9 +12,9 @@ def timed_sort(f: Callable) -> Callable:
     """Time the passed function. Used as a decorator."""
 
     def dummy(*args, **kwargs):
-        start = time.time()
+        start = time.perf_counter()
         result = f(*args, **kwargs)
-        end = time.time()
+        end = time.perf_counter()
 
         if check_sorted(result):
             print(f'{f.__name__} took {1000 * (end - start):.4f} ms')
@@ -176,14 +177,20 @@ def main() -> None:
     random.shuffle(list_)
     sorter = Sorter(list_)
 
-    print(f'To sort {len(list_)} items:')
+    print(f'To sort {len(list_)} items:\n')
 
-    sorter.bubble_sort()
-    sorter.stalin_sort()
-    sorter.recursive_quick_sort()
-    # sorter.bogo_sort()
-    sorter.merge_sort()
-    sorter.insertion_sort()
+    algorithms: list[Callable] = [
+        sorter.bubble_sort,
+        sorter.stalin_sort,
+        sorter.recursive_quick_sort,
+        # sorter.bogo_sort,
+        sorter.merge_sort,
+        sorter.insertion_sort
+    ]
+
+    with cf.ThreadPoolExecutor(len(algorithms)) as tpe:
+        for algo in algorithms:
+            tpe.submit(algo)
 
 
 if __name__ == '__main__':
