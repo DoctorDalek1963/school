@@ -64,12 +64,12 @@ class Sorter:
         return new_list
 
     @timed_sort
-    def recursive_quick_sort(self) -> list[int]:
+    def recursive_quicksort(self) -> list[int]:
         """Sort the instance list with a recursive quick sort implementation."""
-        return Sorter._static_recursive_quick_sort(self.original_list)
+        return Sorter._static_recursive_quicksort(self.original_list)
 
     @staticmethod
-    def _static_recursive_quick_sort(static_list: list[int]) -> list[int]:
+    def _static_recursive_quicksort(static_list: list[int]) -> list[int]:
         """Sort a given list with a recursive quick sort implementation."""
         if len(static_list) == 0:
             return []
@@ -77,10 +77,53 @@ class Sorter:
         pivot = static_list[0]
         new_list = static_list[1:]
 
-        sorted_first = Sorter._static_recursive_quick_sort([x for x in new_list if x < pivot])
-        sorted_last = Sorter._static_recursive_quick_sort([x for x in new_list if x >= pivot])
+        sorted_first = Sorter._static_recursive_quicksort([x for x in new_list if x < pivot])
+        sorted_last = Sorter._static_recursive_quicksort([x for x in new_list if x >= pivot])
 
         return sorted_first + [pivot] + sorted_last
+
+    @timed_sort
+    def inplace_quicksort(self) -> list[int]:
+        """Perform an inplace quicksort on the instance list."""
+        array = self.original_list
+        Sorter._static_inplace_quicksort(array)
+        return array
+
+    @staticmethod
+    def _static_inplace_quicksort_partition(array: list[int], p_pivot: int, start: int, end: int) -> int:
+        """Perform a single inplace quicksort partition on the given list."""
+        array[start], array[p_pivot] = array[p_pivot], array[start]
+
+        pivot = array[start]
+        i = start + 1
+        j = start + 1
+
+        while j <= end:
+            if array[j] <= pivot:
+                array[j], array[i] = array[i], array[j]
+                i += 1
+
+            j += 1
+
+        array[start], array[i - 1] = array[i - 1], array[start]
+
+        return i - 1
+
+    @staticmethod
+    def _static_inplace_quicksort(array: list[int], start: int = 0, end: int = None) -> None:
+        """Perform an inplace quicksort of the given list.
+
+        This code was adapted from https://stackoverflow.com/a/17773584/12985838, and I don't fully understand it.
+        """
+        if end is None:
+            end = len(array) - 1
+
+        if end - start < 1:
+            return
+
+        i = Sorter._static_inplace_quicksort_partition(array, random.randint(start, end), start, end)
+        Sorter._static_inplace_quicksort(array, start, i - 1)
+        Sorter._static_inplace_quicksort(array, i + 1, end)
 
     @timed_sort
     def stalin_sort(self) -> list[int]:
@@ -142,7 +185,7 @@ class Sorter:
                 new_list.append(right[ri])
                 ri += 1
 
-        # One of theses slices will be empty, but the other will contain unmerged, sorted elements that we just append
+        # One of these slices will be empty, but the other will contain unmerged, sorted elements that we just append
         new_list += left[li:]
         new_list += right[ri:]
 
@@ -196,7 +239,8 @@ def main() -> None:
         sorter.builtin_dot_sort,
         sorter.bubble_sort,
         sorter.stalin_sort,
-        sorter.recursive_quick_sort,
+        sorter.recursive_quicksort,
+        sorter.inplace_quicksort,
         # sorter.bogo_sort,
         sorter.merge_sort,
         sorter.insertion_sort
