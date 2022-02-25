@@ -1,25 +1,29 @@
 #!/usr/bin/env python
 """A simple module containing a Sorter class to sort lists using different algorithms."""
 
+from __future__ import annotations
+
 import concurrent.futures as cf
 import random
 import sys
-import time
+from time import perf_counter
 from typing import Callable
 
 
-def timed_sort(f: Callable) -> Callable:
+def timed_sort(func: Callable[[Sorter], list[int]]) -> Callable[[Sorter], list[int]]:
     """Time the passed function. Used as a decorator."""
 
-    def dummy(*args, **kwargs):
-        start = time.perf_counter()
-        result = f(*args, **kwargs)
-        end = time.perf_counter()
+    def dummy(sorter: Sorter) -> list[int]:
+        start = perf_counter()
+        result = func(sorter)
+        end = perf_counter()
+
+        time = f'{1000 * (end - start):.4f}'
 
         if check_sorted(result):
-            print(f'{f.__name__} took {1000 * (end - start):.4f} ms')
+            print(f'{func.__name__} took {time} ms')
         else:
-            print(f'{f.__name__} FAILED')
+            print(f'{func.__name__} FAILED in {time} ms')
 
         return result
 
