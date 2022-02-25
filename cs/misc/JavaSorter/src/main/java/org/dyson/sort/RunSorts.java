@@ -20,12 +20,14 @@ class TimingThread extends Thread {
 		this.method = method;
 	}
 
+	@Contract(pure = true)
 	public void run() {
 		Sorter.timeSort(methodName, method);
 	}
 }
 
 public class RunSorts {
+	@Contract(pure = true)
 	public static void main(String @Nullable [] args) {
 		int n = (args != null && args.length > 0 && args[0].matches("\\d+")) ?
 				Integer.parseInt(args[0]) :
