@@ -3,6 +3,7 @@ package org.dyson.sort;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Arrays;
 import java.util.function.Supplier;
 
 public final class Sorter {
@@ -21,7 +22,7 @@ public final class Sorter {
 	/**
 	 * Use a simple bubble sort algorithm to sort the instance array.
 	 *
-	 * @return The sorted array
+	 * @return The sorted instance array
 	 */
 	@Contract(pure = true)
 	public int[] bubbleSort() {
@@ -42,7 +43,7 @@ public final class Sorter {
 	 * Use an "optimised" bubble sort algorithm to sort the array.
 	 * This algorithm uses a boolean to check if we've swapped any elements in each loop.
 	 *
-	 * @return The sorted array
+	 * @return The sorted instance array
 	 */
 	@Contract(pure = true)
 	public int[] optimisedBubbleSort() {
@@ -67,6 +68,41 @@ public final class Sorter {
 	}
 
 	/**
+	 * Use a recursive, FP-inspired quicksort algorithm to sort the instance array.
+	 *
+	 * @return The sorted instance array
+	 */
+	@Contract(pure = true)
+	public int @NotNull [] recursiveQuicksort() {
+		return staticRecursiveQuicksort(getInstanceArray());
+	}
+
+	/**
+	 * Sort the array using a recursive, FP-inspired quicksort algorithm.
+	 * To use the instance array, call {@link #recursiveQuicksort()}.
+	 *
+	 * @param array The array to sort
+	 * @return The sorted array
+	 */
+	@Contract(pure = true)
+	private static int @NotNull [] staticRecursiveQuicksort(int @NotNull [] array) {
+		if (array.length < 2) return array;
+
+		int pivot = array[0];
+		int[] slicedArray = Arrays.stream(array, 1, array.length).toArray();
+
+		int[] lower = Arrays.stream(slicedArray).filter(e -> e < pivot).toArray();
+		int[] higher = Arrays.stream(slicedArray).filter(e -> e >= pivot).toArray();
+
+		int[] result = new int[array.length];
+		System.arraycopy(staticRecursiveQuicksort(lower), 0, result, 0, lower.length);
+		result[lower.length] = pivot;
+		System.arraycopy(staticRecursiveQuicksort(higher), 0, result, lower.length + 1, higher.length);
+
+		return result;
+	}
+
+	/**
 	 * Time a sorting algorithm in the Sorter class.
 	 *
 	 * @param method The sorting method to time
@@ -83,7 +119,7 @@ public final class Sorter {
 		if (checkSorted(result))
 			System.out.println(methodName + " took " + time);
 		else
-			System.out.println(methodName + " FAILED in" + time);
+			System.out.println(methodName + " FAILED in " + time);
 	}
 
 	/**
