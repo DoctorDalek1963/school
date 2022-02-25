@@ -27,13 +27,9 @@ class TimingThread extends Thread {
 
 public class RunSorts {
 	public static void main(String @Nullable [] args) {
-		int n;
-		try {
-			assert args != null;
-			n = Integer.parseInt(args[0]);
-		} catch (ArrayIndexOutOfBoundsException | NumberFormatException | NullPointerException e) {
-			n = 1000;
-		}
+		int n = (args != null && args.length > 0 && args[0].matches("\\d+")) ?
+				Integer.parseInt(args[0]) :
+				1000;
 
 		List<Integer> nums = new ArrayList<>();
 		for (int i = 0; i < n; i++) nums.add(i);
