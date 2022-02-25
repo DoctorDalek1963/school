@@ -7,3 +7,9 @@ __pycache__/
 
 venv/
 ...
+
+gradlew
+gradlew.bat
+gradle/
+.gradle/
+build/
