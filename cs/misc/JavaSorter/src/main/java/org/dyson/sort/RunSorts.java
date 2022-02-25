@@ -1,14 +1,29 @@
 package org.dyson.sort;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.function.Supplier;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
 
 import static java.util.Collections.shuffle;
+
+class TimingThread extends Thread {
+	private final String methodName;
+	private final Supplier<int[]> method;
+
+	@Contract(pure = true)
+	TimingThread(String methodName, Supplier<int[]> method) {
+		this.methodName = methodName;
+		this.method = method;
+	}
+
+	public void run() {
+		Sorter.timeSort(methodName, method);
+	}
+}
 
 public class RunSorts {
 	public static void main(String @Nullable [] args) {
@@ -27,12 +42,13 @@ public class RunSorts {
 		Integer[] wrapperArray = nums.toArray(new Integer[0]);
 		Sorter sorter = new Sorter(ArrayUtils.toPrimitive(wrapperArray));
 
-		HashMap<String, Supplier<int[]>> methods = new HashMap<>();
-		methods.put("bubbleSort", sorter::bubbleSort);
-		methods.put("optimisedBubbleSort", sorter::optimisedBubbleSort);
+		TimingThread[] timingThreads = {
+				new TimingThread("bubbleSort", sorter::bubbleSort),
+				new TimingThread("optimisedBubbleSort", sorter::optimisedBubbleSort)
+		};
 
 		System.out.println("To sort " + n + " items:\n");
-		for (String methodName : methods.keySet())
-			Sorter.timeSort(methods.get(methodName), methodName);
+		for (TimingThread thread : timingThreads)
+			thread.start();
 	}
 }

@@ -73,7 +73,7 @@ public final class Sorter {
 	 * @param methodName The name of the method to time
 	 */
 	@Contract(pure = true)
-	public static void timeSort(@NotNull Supplier<int[]> method, String methodName) {
+	public static void timeSort(String methodName, @NotNull Supplier<int[]> method) {
 		long start = System.nanoTime();
 		int[] result = method.get();
 		long end = System.nanoTime();
