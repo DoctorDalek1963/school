@@ -37,6 +37,11 @@ class Sorter:
         """Initialise the Sorter with the given list."""
         self.__original_list = original_list
 
+    def __repr__(self) -> str:
+        """Return a nice repr of the Sorter object."""
+        return f'<{self.__class__.__module__}.{self.__class__.__name__} object ' \
+               f'with list of {len(self.__original_list)} elements>'
+
     @property
     def original_list(self) -> list[int]:
         """Return a copy of the original list."""
