@@ -44,6 +44,7 @@ public class RunSorts {
 				new TimingThread("bubbleSort", sorter::bubbleSort),
 				new TimingThread("optimisedBubbleSort", sorter::optimisedBubbleSort),
 				new TimingThread("recursiveQuicksort", sorter::recursiveQuicksort),
+				new TimingThread("mergeSort", sorter::mergeSort),
 		};
 
 		System.out.println("To sort " + n + " items:\n");

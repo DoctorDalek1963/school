@@ -102,6 +102,64 @@ public final class Sorter {
 	}
 
 	/**
+	 * Sort the instance array using a recursive merge sort algorithm.
+	 *
+	 * @return The sorted instance array
+	 */
+	@Contract(pure = true)
+	public int @NotNull [] mergeSort() {
+		return staticMergeSort(getInstanceArray());
+	}
+
+	/**
+	 * Sort the given array with a recursive merge sort algorithm.
+	 * To use the instance array, call {@link #mergeSort()}.
+	 *
+	 * @param array The array to sort
+	 * @return The sorted array
+	 */
+	@Contract(pure = true)
+	private static int @NotNull [] staticMergeSort(int @NotNull [] array) {
+		if (array.length < 2) return array;
+
+		int mid = array.length / 2;
+
+		int[] left = staticMergeSort(Arrays.stream(array, 0, mid).toArray());
+		int[] right = staticMergeSort(Arrays.stream(array, mid, array.length).toArray());
+
+		int li = 0;
+		int ri = 0;
+		int i = 0;
+
+		// Merge the left and right arrays into the original array memory
+		while (li < left.length && ri < right.length) {
+			if (left[li] < right[ri]) {
+				array[i] = left[li];
+				li++;
+			} else {
+				array[i] = right[ri];
+				ri++;
+			}
+			i++;
+		}
+
+		// Only one of the arrays will be non-empty, so one of these while loops won't even run
+		while (li < left.length) {
+			array[i] = left[li];
+			li++;
+			i++;
+		}
+
+		while (ri < right.length) {
+			array[i] = right[ri];
+			ri++;
+			i++;
+		}
+
+		return array;
+	}
+
+	/**
 	 * Time a sorting algorithm in the Sorter class.
 	 *
 	 * @param method The sorting method to time
