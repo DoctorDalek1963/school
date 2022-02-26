@@ -1,8 +1,10 @@
 package org.dyson.sort;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -167,6 +169,33 @@ public final class Sorter {
 		}
 
 		return array;
+	}
+
+	/**
+	 * Remove all elements of the instance array that aren't in order
+	 *
+	 * @return The sorted instance array
+	 */
+	@Contract(pure = true)
+	public int @NotNull [] stalinSort() {
+		ArrayList<Integer> arrayList = new ArrayList<>(Arrays.asList(ArrayUtils.toObject(getInstanceArray())));
+		int i = 0;
+		int highest = 0;
+
+		while (true) {
+			try {
+				if (arrayList.get(i) > highest){
+					highest = arrayList.get(i);
+					i++;
+				} else {
+					arrayList.remove(i);
+				}
+			} catch (IndexOutOfBoundsException e) {
+				break;
+			}
+		}
+
+		return ArrayUtils.toPrimitive(arrayList.toArray(new Integer[0]));
 	}
 
 	/**
