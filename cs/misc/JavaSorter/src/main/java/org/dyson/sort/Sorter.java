@@ -10,12 +10,12 @@ public final class Sorter {
 	private final int[] instanceArray;
 
 	@Contract(pure = true)
-	Sorter(int[] array) {
+	Sorter(int @NotNull [] array) {
 		this.instanceArray = array;
 	}
 
 	@Contract(pure = true)
-	public int[] getInstanceArray() {
+	public int @NotNull [] getInstanceArray() {
 		return instanceArray.clone();
 	}
 
@@ -25,7 +25,7 @@ public final class Sorter {
 	 * @return The sorted instance array
 	 */
 	@Contract(pure = true)
-	public int[] bubbleSort() {
+	public int @NotNull [] bubbleSort() {
 		int[] array = getInstanceArray();
 
 		for (int i = 0; i < array.length - 1; i++)
@@ -46,7 +46,7 @@ public final class Sorter {
 	 * @return The sorted instance array
 	 */
 	@Contract(pure = true)
-	public int[] optimisedBubbleSort() {
+	public int @NotNull [] optimisedBubbleSort() {
 		int[] array = getInstanceArray();
 		boolean swapped = false;
 
@@ -94,12 +94,11 @@ public final class Sorter {
 		int[] lower = Arrays.stream(slicedArray).filter(e -> e < pivot).toArray();
 		int[] higher = Arrays.stream(slicedArray).filter(e -> e >= pivot).toArray();
 
-		int[] result = new int[array.length];
-		System.arraycopy(staticRecursiveQuicksort(lower), 0, result, 0, lower.length);
-		result[lower.length] = pivot;
-		System.arraycopy(staticRecursiveQuicksort(higher), 0, result, lower.length + 1, higher.length);
+		System.arraycopy(staticRecursiveQuicksort(lower), 0, array, 0, lower.length);
+		array[lower.length] = pivot;
+		System.arraycopy(staticRecursiveQuicksort(higher), 0, array, lower.length + 1, higher.length);
 
-		return result;
+		return array;
 	}
 
 	/**
