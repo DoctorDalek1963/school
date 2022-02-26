@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -132,6 +133,74 @@ public class Sorter {
 	}
 
 	/**
+	 * Sort the instance array using an inplace quicksort algorithm.
+	 *
+	 * @return The sorted instance array
+	 */
+	@Contract(pure = true)
+	public int @NotNull [] inplaceQuicksort() {
+		return staticInplaceQuicksort(getInstanceArray(), 0, -1);
+	}
+
+	/**
+	 * Partition the given array for a quicksort. This is purely a utility method and should never be used on its own.
+	 *
+	 * @param array The array to partition
+	 * @param pPivot The pivot index
+	 * @param pStart The start index
+	 * @param pEnd The end index
+	 * @return The partition value
+	 */
+	private static int staticInplaceQuicksortPartition(int @NotNull [] array, int pPivot, int pStart, int pEnd) {
+		int vStart = array[pStart];
+		array[pStart] = array[pPivot];
+		array[pPivot] = vStart;
+
+		int pivot = array[pStart];
+		int i = pStart + 1;
+		int j = pStart + 1;
+
+		while (j <= pEnd) {
+			if (array[j] <= pivot) {
+				int vJ = array[j];
+				array[j] = array[i];
+				array[i] = vJ;
+				i++;
+			}
+
+			j++;
+		}
+
+		vStart = array[pStart];
+		array[pStart] = array[i - 1];
+		array[i - 1] = vStart;
+
+		return i - 1;
+	}
+
+	/**
+	 * Sort the given array using an inplace quicksort algorithm.
+	 *
+	 * This code was adapted from <a href="https://stackoverflow.com/a/17773584/12985838">this StackOverflow answer<a>,
+	 * and I don't fully understand it.
+	 *
+	 * @param array The array to sort
+	 * @param start The start index
+	 * @param end The end index
+	 * @return The sorted array
+	 */
+	@Contract("_, _, _ -> param1")
+	private static int @NotNull [] staticInplaceQuicksort(int @NotNull [] array, int start, int end) {
+		if (end < 0) end = array.length - 1;
+		if (end - start < 1) return array;
+
+		int i = staticInplaceQuicksortPartition(array, new Random().nextInt(start, end), start, end);
+		staticInplaceQuicksort(array, start, i - 1);
+		staticInplaceQuicksort(array, i + 1, end);
+		return array;
+	}
+
+	/**
 	 * Sort the instance array using a recursive merge sort algorithm.
 	 *
 	 * @return The sorted instance array
@@ -190,7 +259,7 @@ public class Sorter {
 	}
 
 	/**
-	 * Sort the instance array using an in-place insertion sort algorithm.
+	 * Sort the instance array using an inplace insertion sort algorithm.
 	 *
 	 * @return The sorted instance array
 	 */
