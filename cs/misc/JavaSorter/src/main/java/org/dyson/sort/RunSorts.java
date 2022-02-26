@@ -1,14 +1,9 @@
 package org.dyson.sort;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.function.Supplier;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
-
-import static java.util.Collections.shuffle;
 
 class TimingThread extends Thread {
 	private final String methodName;
@@ -33,12 +28,7 @@ public class RunSorts {
 				Integer.parseInt(args[0]) :
 				10000;
 
-		List<Integer> nums = new ArrayList<>();
-		for (int i = 0; i < n; i++) nums.add(i);
-		shuffle(nums);
-
-		Integer[] wrapperArray = nums.toArray(new Integer[0]);
-		Sorter sorter = new Sorter(ArrayUtils.toPrimitive(wrapperArray));
+		Sorter sorter = Sorter.shuffledArray(n);
 
 		TimingThread[] timingThreads = {
 				new TimingThread("arraysStreamSorted", sorter::arraysStreamSorted),

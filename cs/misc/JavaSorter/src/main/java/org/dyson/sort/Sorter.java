@@ -6,8 +6,11 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
+
+import static java.util.Collections.shuffle;
 
 public final class Sorter {
 	private final int[] instanceArray;
@@ -15,6 +18,21 @@ public final class Sorter {
 	@Contract(pure = true)
 	Sorter(int @NotNull [] array) {
 		this.instanceArray = array;
+	}
+
+	/**
+	 * Create an array of integers from 1 to {@code length}, shuffle them, and use this as the instance array.
+	 *
+	 * @param length The length of the array
+	 */
+	@Contract(pure = true)
+	public static @NotNull Sorter shuffledArray(int length) {
+		List<Integer> nums = new ArrayList<>();
+		for (int i = 0; i < length; i++) nums.add(i);
+		shuffle(nums);
+
+		Integer[] wrapperArray = nums.toArray(new Integer[0]);
+		return new Sorter(ArrayUtils.toPrimitive(wrapperArray));
 	}
 
 	@Contract(pure = true)
