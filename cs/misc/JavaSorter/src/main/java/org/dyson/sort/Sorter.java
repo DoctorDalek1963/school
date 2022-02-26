@@ -5,6 +5,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 public final class Sorter {
 	private final int[] instanceArray;
@@ -17,6 +18,15 @@ public final class Sorter {
 	@Contract(pure = true)
 	public int @NotNull [] getInstanceArray() {
 		return instanceArray.clone();
+	}
+
+	/**
+	 * Use {@link java.util.Arrays#stream(Object[])} to sort the instance array with {@link Stream#sorted()}.
+	 *
+	 * @return The sorted instance array
+	 */
+	public int @NotNull [] arraysStreamSorted() {
+		return Arrays.stream(getInstanceArray()).sorted().toArray();
 	}
 
 	/**

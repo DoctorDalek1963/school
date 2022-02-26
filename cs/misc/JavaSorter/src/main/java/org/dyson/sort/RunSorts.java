@@ -31,7 +31,7 @@ public class RunSorts {
 	public static void main(String @Nullable [] args) {
 		int n = (args != null && args.length > 0 && args[0].matches("\\d+")) ?
 				Integer.parseInt(args[0]) :
-				1000;
+				10000;
 
 		List<Integer> nums = new ArrayList<>();
 		for (int i = 0; i < n; i++) nums.add(i);
@@ -41,6 +41,7 @@ public class RunSorts {
 		Sorter sorter = new Sorter(ArrayUtils.toPrimitive(wrapperArray));
 
 		TimingThread[] timingThreads = {
+				new TimingThread("arraysStreamSorted", sorter::arraysStreamSorted),
 				new TimingThread("bubbleSort", sorter::bubbleSort),
 				new TimingThread("optimisedBubbleSort", sorter::optimisedBubbleSort),
 				new TimingThread("recursiveQuicksort", sorter::recursiveQuicksort),
