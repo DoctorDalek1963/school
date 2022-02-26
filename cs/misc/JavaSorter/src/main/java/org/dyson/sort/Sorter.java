@@ -12,7 +12,7 @@ import java.util.stream.Stream;
 
 import static java.util.Collections.shuffle;
 
-public final class Sorter {
+public class Sorter {
 	private final int[] instanceArray;
 
 	@Contract(pure = true)
