@@ -46,6 +46,7 @@ public class RunSorts {
 				new TimingThread("optimisedBubbleSort", sorter::optimisedBubbleSort),
 				new TimingThread("recursiveQuicksort", sorter::recursiveQuicksort),
 				new TimingThread("mergeSort", sorter::mergeSort),
+				new TimingThread("insertionSort", sorter::insertionSort),
 				new TimingThread("stalinSort", sorter::stalinSort),
 		};
 

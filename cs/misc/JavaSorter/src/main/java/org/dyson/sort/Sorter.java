@@ -172,6 +172,32 @@ public final class Sorter {
 	}
 
 	/**
+	 * Sort the instance array using an in-place insertion sort algorithm.
+	 *
+	 * @return The sorted instance array
+	 */
+	@Contract(pure = true)
+	public int @NotNull [] insertionSort() {
+		int[] array = getInstanceArray();
+		int i;
+		int nextItem;
+
+		for (int j = 1; j < array.length; j++) {
+			nextItem = array[j];
+			i = j - 1;
+
+			while (i >= 0 && array[i] > nextItem) {
+				array[i + 1] = array[i];
+				i--;
+			}
+
+			array[i + 1] = nextItem;
+		}
+
+		return array;
+	}
+
+	/**
 	 * Remove all elements of the instance array that aren't in order
 	 *
 	 * @return The sorted instance array
