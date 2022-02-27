@@ -53,7 +53,7 @@
 
 - The Man Who Knew Infinity
 - Good Will Hunting
-- I Is A Strange Loop (play by Marcus du Sautoy and Victoria Gould)
+- I is a Strange Loop (play by Marcus du Sautoy and Victoria Gould)
 - (TODO) A Beautiful Mind
 
 ---
