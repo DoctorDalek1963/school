@@ -46,6 +46,8 @@
 - [Four Dimensional Maths: Things to See and Hear in the Fourth Dimension - with Matt Parker](https://www.youtube.com/watch?v=1wAaI_6b9JE) (Accompanies book)
 - [What Happens When Maths Goes Wrong? - with Matt Parker](https://www.youtube.com/watch?v=6JwEYamjXpA) (Accompanies book)
 - RI 2019 Christmas Lectures [1](https://www.youtube.com/watch?v=_q4DrUHKC0Q) [2](https://www.youtube.com/watch?v=TtisQ9yZ2zo) [3](https://www.youtube.com/watch?v=u5mNa6KE0lA)
+- [The Extraordinary Theorems of John Nash - with Cédric Villani](https://www.youtube.com/watch?v=iHKa8F-RsEM)
+- [What We Cannot Know - with Marcus du Sautoy](https://www.youtube.com/watch?v=reeU09R4TIA&t=2s)
 
 ---
 
@@ -53,7 +55,7 @@
 
 - The Man Who Knew Infinity
 - Good Will Hunting
-- I is a Strange Loop (play by Marcus du Sautoy and Victoria Gould)
+- [I is a Strange Loop](https://www.youtube.com/watch?v=xEORIj1Ecug) (play by Marcus du Sautoy and Victoria Gould)
 - (TODO) A Beautiful Mind
 
 ---
@@ -63,6 +65,13 @@
 - (TODO : finish) Things to make and do in the four dimension - Matt Parker
 - (TODO : finish) Humble Pi - Matt Parker
 - (TODO) A Mathematician's Apology - G. H. Hardy
+
+---
+
+# Podcasts
+
+- A Brief History of Mathematics - Marcus du Sautoy on BBC Radio 4 via BBC Sounds
+- (ongoing) [The Numperphile Podcast](https://www.youtube.com/playlist?list=PLt5AfwLFPxWLNVixpe1w3fi6lE2OTq0ET)
 
 ---
 
