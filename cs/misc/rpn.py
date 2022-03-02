@@ -9,6 +9,10 @@ class StackError(Exception):
     """A simple stack error."""
 
 
+class OperatorError(Exception):
+    """A simple stack error."""
+
+
 class RPNCalculator:
     """A class to hold a stack and execute commands in RPN."""
 
@@ -23,8 +27,8 @@ class RPNCalculator:
     def execute(self, expression: str) -> list[int | float]:
         """Execute an arbitrary expression.
 
-        :raises ValueError: If the expression is invalid
-        :raises IndexError: If there are not enough values on the stack
+        :raises OperatorError: If the expression is invalid
+        :raises StackError: If there are not enough values on the stack
         """
         tokens = re.split(r'\s+', expression)
 
@@ -38,66 +42,66 @@ class RPNCalculator:
                 self.stack.append(num)
 
             except ValueError:
-                try:
-                    self._apply_operator(token)
-
-                except IndexError as e:
-                    raise StackError(f'Not enough elements on the stack for operator "{token}"') from e
+                self._apply_operator(token)
 
         return self.stack.copy()
 
     def _apply_operator(self, operator: str) -> None:
         """Apply an operator to the elements on the stack.
 
-        :raises ValueError: If the operator is invalid
-        :raises IndexError: If there are not enough values on the stack
+        :raises OperatorError: If the operator is invalid
+        :raises StackError: If there are not enough values on the stack
         """
-        if operator == '+':
-            self.stack.append(self.stack.pop() + self.stack.pop())
+        try:
+            if operator == '+':
+                self.stack.append(self.stack.pop() + self.stack.pop())
 
-        elif operator == '-':
-            a = self.stack.pop()
-            b = self.stack.pop()
-            self.stack.append(b - a)
+            elif operator == '-':
+                a = self.stack.pop()
+                b = self.stack.pop()
+                self.stack.append(b - a)
 
-        elif operator == '*':
-            self.stack.append(self.stack.pop() * self.stack.pop())
+            elif operator == '*':
+                self.stack.append(self.stack.pop() * self.stack.pop())
 
-        elif operator == '/':
-            a = self.stack.pop()
-            b = self.stack.pop()
-            self.stack.append(b / a)
+            elif operator == '/':
+                a = self.stack.pop()
+                b = self.stack.pop()
+                self.stack.append(b / a)
 
-        elif operator in ('^', '**'):
-            a = self.stack.pop()
-            b = self.stack.pop()
-            self.stack.append(b ** a)
+            elif operator in ('^', '**'):
+                a = self.stack.pop()
+                b = self.stack.pop()
+                self.stack.append(b ** a)
 
-        elif operator == 'drop':
-            self.stack.pop()
+            elif operator == 'drop':
+                self.stack.pop()
 
-        elif operator == 'swap':
-            a = self.stack.pop()
-            b = self.stack.pop()
-            self.stack.append(a)
-            self.stack.append(b)
+            elif operator == 'swap':
+                a = self.stack.pop()
+                b = self.stack.pop()
+                self.stack.append(a)
+                self.stack.append(b)
 
-        elif operator == 'dup':
-            a = self.stack.pop()
-            self.stack.append(a)
-            self.stack.append(a)
+            elif operator == 'dup':
+                a = self.stack.pop()
+                self.stack.append(a)
+                self.stack.append(a)
 
-        elif operator == 'floor':
-            self.stack.append(int(self.stack.pop()))
+            elif operator == 'floor':
+                self.stack.append(int(self.stack.pop()))
 
-        elif operator == 'ceil':
-            self.stack.append(int(self.stack.pop() + 1))
+            elif operator == 'ceil':
+                self.stack.append(int(self.stack.pop() + 1))
 
-        elif operator in ('int', 'round'):
-            self.stack.append(int(round(self.stack.pop(), 0)))
+            elif operator in ('int', 'round'):
+                self.stack.append(int(round(self.stack.pop(), 0)))
 
-        else:
-            raise ValueError(f'Unknown operator "{operator}"')
+            else:
+                raise OperatorError(f'Unknown operator "{operator}"')
+
+        except IndexError as e:
+            raise StackError(f'Not enough elements on the stack for operator "{operator}"') from e
 
 
 def calculate() -> None:
@@ -108,12 +112,16 @@ def calculate() -> None:
         try:
             inp = input('> ')
             calc.execute(inp)
-            print(calc.stack)
-            print()
+
+        except (OperatorError, StackError) as e:
+            print(e)
 
         except (EOFError, KeyboardInterrupt):
             print()
             return
+
+        print(calc.stack)
+        print()
 
 
 if __name__ == '__main__':
