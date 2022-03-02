@@ -267,13 +267,9 @@ class Graph:
         if vertex in visited[:-1]:
             return True
 
-        cycle_found = False
-
         for v in self.get_connected_vertices(vertex, [visited[-1]] if visited != [] else []):
             if self._has_cycles(v, visited + [vertex]):
-                cycle_found = True
-
-        return cycle_found
+                return True
 
     @property
     def is_connected(self) -> bool:
