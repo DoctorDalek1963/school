@@ -88,6 +88,13 @@ class RPNCalculator:
                 self.stack.append(a)
                 self.stack.append(a)
 
+            elif operator == 'over':
+                a = self.stack.pop()
+                b = self.stack.pop()
+                self.stack.append(b)
+                self.stack.append(a)
+                self.stack.append(b)
+
             elif operator == 'floor':
                 self.stack.append(int(self.stack.pop()))
 
@@ -96,6 +103,9 @@ class RPNCalculator:
 
             elif operator in ('int', 'round'):
                 self.stack.append(int(round(self.stack.pop(), 0)))
+
+            elif operator == 'clear':
+                self.stack = []
 
             else:
                 raise OperatorError(f'Unknown operator "{operator}"')
