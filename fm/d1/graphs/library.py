@@ -324,6 +324,28 @@ class Graph:
         """Return the total weight of the graph."""
         return sum(weight for row in self.matrix for weight in row)
 
+    def get_graphviz(self, *, directed: bool = True, label_weights: bool = False) -> str:
+        """Return the GNU graphivz version of the graph."""
+        string = 'digraph {\n' if directed else 'graph {\n'
+
+        for vertex in self.vertices:
+            for i, distance in enumerate(self[vertex]):
+                if distance == 0:
+                    continue
+
+                neighbour = self.vertices[i]
+                if not directed and f'{neighbour.name} -- {vertex.name}' in string:
+                    continue
+
+                string += f'  {vertex.name} {"->" if directed else "--"} {neighbour.name} [weight={distance}'
+
+                if label_weights:
+                    string += f', label="{distance}"'
+
+                string += '];\n'
+
+        return string + '}'
+
 
 def kruskal(graph: Graph) -> Graph:
     """Perform Kruskal's algorithm to find the minimum spanning tree of this graph."""
