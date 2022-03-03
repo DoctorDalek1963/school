@@ -3,6 +3,11 @@
 """A simple module for a little RPN calculator."""
 
 import re
+from math import ceil, floor
+from typing import Callable, TypeAlias
+
+
+Number: TypeAlias = int | float
 
 
 class StackError(Exception):
@@ -16,7 +21,24 @@ class OperatorError(Exception):
 class RPNCalculator:
     """A class to hold a stack and execute commands in RPN."""
 
-    def __init__(self, stack: list[int | float] = None):
+    operators: dict[str, tuple[int, Callable[..., list[Number]]]] = {
+        '+': (2, lambda a, b: [b + a]),
+        '-': (2, lambda a, b: [b - a]),
+        '*': (2, lambda a, b: [b * a]),
+        '/': (2, lambda a, b: [b / a]),
+        '**': (2, lambda a, b: [b ** a]),
+        '^': (2, lambda a, b: [b ** a]),
+        'ceil': (1, lambda a: [ceil(a)]),
+        'floor': (1, lambda a: [floor(a)]),
+        'int': (1, lambda a: [int(round(a, 0))]),
+        'round': (1, lambda a: [int(round(a, 0))]),
+        'drop': (1, lambda _: []),
+        'swap': (2, lambda a, b: [a, b]),
+        'dup': (1, lambda a: [a, a]),
+        'over': (2, lambda a, b: [b, a, b]),
+    }
+
+    def __init__(self, stack: list[Number] = None):
         """Initialise an RPNCalculator with a given stack ([] if None)."""
         self.stack = stack if stack is not None else []
 
@@ -24,7 +46,7 @@ class RPNCalculator:
         """Return a nice repr of the calculator."""
         return f'{self.__class__.__module__}.{self.__class__.__name__}(stack={self.stack})'
 
-    def execute(self, expression: str) -> list[int | float]:
+    def execute(self, expression: str) -> list[Number]:
         """Execute an arbitrary expression.
 
         :raises OperatorError: If the expression is invalid
@@ -52,66 +74,25 @@ class RPNCalculator:
         :raises OperatorError: If the operator is invalid
         :raises StackError: If there are not enough values on the stack
         """
-        try:
-            if operator == '+':
-                self.stack.append(self.stack.pop() + self.stack.pop())
+        if operator == 'clear':
+            self.stack = []
+            return
 
-            elif operator == '-':
-                a = self.stack.pop()
-                b = self.stack.pop()
-                self.stack.append(b - a)
+        if operator not in RPNCalculator.operators:
+            raise OperatorError(f'Operator "{operator}" not recognised')
 
-            elif operator == '*':
-                self.stack.append(self.stack.pop() * self.stack.pop())
+        arg_count, func = RPNCalculator.operators[operator]
 
-            elif operator == '/':
-                a = self.stack.pop()
-                b = self.stack.pop()
-                self.stack.append(b / a)
+        if len(self.stack) < arg_count:
+            raise StackError(f'Not enough elements on the stack for operator "{operator}"')
 
-            elif operator in ('^', '**'):
-                a = self.stack.pop()
-                b = self.stack.pop()
-                self.stack.append(b ** a)
+        args = []
 
-            elif operator == 'drop':
-                self.stack.pop()
+        for _ in range(arg_count):
+            args.append(self.stack.pop())
 
-            elif operator == 'swap':
-                a = self.stack.pop()
-                b = self.stack.pop()
-                self.stack.append(a)
-                self.stack.append(b)
-
-            elif operator == 'dup':
-                a = self.stack.pop()
-                self.stack.append(a)
-                self.stack.append(a)
-
-            elif operator == 'over':
-                a = self.stack.pop()
-                b = self.stack.pop()
-                self.stack.append(b)
-                self.stack.append(a)
-                self.stack.append(b)
-
-            elif operator == 'floor':
-                self.stack.append(int(self.stack.pop()))
-
-            elif operator == 'ceil':
-                self.stack.append(int(self.stack.pop() + 1))
-
-            elif operator in ('int', 'round'):
-                self.stack.append(int(round(self.stack.pop(), 0)))
-
-            elif operator == 'clear':
-                self.stack = []
-
-            else:
-                raise OperatorError(f'Unknown operator "{operator}"')
-
-        except IndexError as e:
-            raise StackError(f'Not enough elements on the stack for operator "{operator}"') from e
+        for value in func(*args):
+            self.stack.append(value)
 
 
 def calculate() -> None:
