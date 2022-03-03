@@ -3,7 +3,7 @@
 """A simple module for a little RPN calculator."""
 
 import re
-from math import ceil, floor
+from math import ceil, floor, sqrt
 from typing import Callable, TypeAlias
 
 
@@ -26,16 +26,27 @@ class RPNCalculator:
         '-': (2, lambda a, b: [b - a]),
         '*': (2, lambda a, b: [b * a]),
         '/': (2, lambda a, b: [b / a]),
+        '//': (2, lambda a, b: [int(b // a)]),
         '**': (2, lambda a, b: [b ** a]),
         '^': (2, lambda a, b: [b ** a]),
+        'sqrt': (1, lambda a: [sqrt(a)]),
+        '<<': (2, lambda a, b: [b << a]),
+        '>>': (2, lambda a, b: [b >> a]),
         'ceil': (1, lambda a: [ceil(a)]),
         'floor': (1, lambda a: [floor(a)]),
         'int': (1, lambda a: [int(round(a, 0))]),
         'round': (1, lambda a: [int(round(a, 0))]),
+        'inc': (1, lambda a: [a + 1]),
+        '++': (1, lambda a: [a + 1]),
+        'dec': (1, lambda a: [a - 1]),
+        '--': (1, lambda a: [a - 1]),
+        'max': (2, lambda a, b: [max(a, b)]),
+        'min': (2, lambda a, b: [min(a, b)]),
         'drop': (1, lambda _: []),
         'swap': (2, lambda a, b: [a, b]),
         'dup': (1, lambda a: [a, a]),
         'over': (2, lambda a, b: [b, a, b]),
+        'nip': (2, lambda a, _: [a]),
     }
 
     def __init__(self, stack: list[Number] = None):
