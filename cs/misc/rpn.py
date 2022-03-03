@@ -42,6 +42,7 @@ class RPNCalculator:
         '--': (1, lambda a: [a - 1]),
         'max': (2, lambda a, b: [max(a, b)]),
         'min': (2, lambda a, b: [min(a, b)]),
+        'neg': (1, lambda a: [-a]),
         'drop': (1, lambda _: []),
         'swap': (2, lambda a, b: [a, b]),
         'dup': (1, lambda a: [a, a]),
