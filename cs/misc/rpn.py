@@ -35,7 +35,7 @@ class RPNCalculator:
         'ceil': (1, lambda a: [ceil(a)]),
         'floor': (1, lambda a: [floor(a)]),
         'int': (1, lambda a: [int(round(a, 0))]),
-        'round': (1, lambda a: [int(round(a, 0))]),
+        'round': (2, lambda a, b: [round(b, a)]),
         'inc': (1, lambda a: [a + 1]),
         '++': (1, lambda a: [a + 1]),
         'dec': (1, lambda a: [a - 1]),
