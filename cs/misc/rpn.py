@@ -101,7 +101,14 @@ def calculate() -> None:
 
     while True:
         try:
-            inp = input('> ')
+            inp = input('> ').lower()
+
+            if inp in ('help', '?'):
+                print('Available operators:')
+                print(' '.join(RPNCalculator.operators.keys()), 'clear')
+                print()
+                continue
+
             calc.execute(inp)
 
         except (OperatorError, StackError) as e:
