@@ -45,6 +45,9 @@ class RPNCalculator:
         'dup': (1, lambda a: [a, a]),
         'over': (2, lambda a, b: [b, a, b]),
         'nip': (2, lambda a, _: [a]),
+        'tuck': (2, lambda a, b: [a, b, a]),
+        'rot': (3, lambda c, b, a: [b, c, a]),
+        '-rot': (3, lambda c, b, a: [c, a, b]),
     }
 
     def __init__(self, stack: list[Number] = None):
