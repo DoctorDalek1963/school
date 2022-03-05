@@ -10,11 +10,15 @@ from typing import Callable, TypeAlias
 Number: TypeAlias = int | float
 
 
-class StackError(Exception):
-    """A simple stack error."""
-
-
 class OperatorError(Exception):
+    """A simple operator error."""
+
+
+class ParseError(Exception):
+    """A simple parse error."""
+
+
+class StackError(Exception):
     """A simple stack error."""
 
 
@@ -51,12 +55,47 @@ class RPNCalculator:
     }
 
     def __init__(self, stack: list[Number] = None):
-        """Initialise an RPNCalculator with a given stack ([] if None)."""
+        """Initialize an RPNCalculator with a given stack ([] if None)."""
         self.stack = stack if stack is not None else []
 
     def __repr__(self) -> str:
         """Return a nice repr of the calculator."""
         return f'{self.__class__.__module__}.{self.__class__.__name__}(stack={self.stack})'
+
+    @staticmethod
+    def tokenize(expression: str) -> list[str]:
+        """Tokenize the given expression into executable chunks.
+
+        This method exists to allow syntax like "2.{multiple words}" to be parsed correctly as one token.
+        """
+        tokens: list[str] = []
+        string = ''
+        brace_depth = 0
+
+        while True:
+            char = expression[0]
+            expression = expression[1:]
+
+            if char.isspace() and brace_depth == 0:
+                tokens.append(string)
+                string = ''
+
+            else:
+                string += char
+
+                if char == '{':
+                    brace_depth += 1
+                elif char == '}':
+                    brace_depth -= 1
+
+            if expression == '':
+                tokens.append(string)
+                break
+
+        if brace_depth != 0:
+            raise ParseError('Unmatched braces in expression')
+
+        return tokens
 
     def execute(self, expression: str) -> list[Number]:
         """Execute an arbitrary expression.
@@ -64,7 +103,7 @@ class RPNCalculator:
         :raises OperatorError: If the expression is invalid
         :raises StackError: If there are not enough values on the stack
         """
-        tokens = re.split(r'\s+', expression)
+        tokens = RPNCalculator.tokenize(expression)
 
         for token in [x for x in tokens if x]:
             try:
@@ -88,6 +127,18 @@ class RPNCalculator:
         """
         if operator == 'clear':
             self.stack = []
+            return
+
+        if (match := re.match(r'(\d+)\.{(.+)}', operator)) is not None:
+            for _ in range(int(match.group(1))):
+                self.execute(match.group(2))
+
+            return
+
+        if (match := re.match(r'(\d+)\.([^\s]+)', operator)) is not None:
+            for _ in range(int(match.group(1))):
+                self._apply_operator(match.group(2))
+
             return
 
         if operator not in RPNCalculator.operators:
@@ -123,7 +174,7 @@ def calculate() -> None:
 
             calc.execute(inp)
 
-        except (OperatorError, StackError) as e:
+        except (OperatorError, ParseError, StackError) as e:
             print(e)
 
         except (EOFError, KeyboardInterrupt):
