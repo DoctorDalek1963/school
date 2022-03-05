@@ -93,7 +93,7 @@ class RPNCalculator:
         arg_count, func = RPNCalculator.operators[operator]
 
         if len(self.stack) < arg_count:
-            raise StackError(f'Not enough elements on the stack for operator "{operator}"')
+            raise StackError(f'Not enough elements on the stack for operator "{operator}" (takes {arg_count})')
 
         args = []
 
