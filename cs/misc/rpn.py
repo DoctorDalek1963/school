@@ -67,6 +67,8 @@ class RPNCalculator:
         """Tokenize the given expression into executable chunks.
 
         This method exists to allow syntax like "2.{multiple words}" to be parsed correctly as one token.
+
+        :raises ParseError: If there are unmatched braces in the expression
         """
         tokens: list[str] = []
         string = ''
@@ -100,7 +102,7 @@ class RPNCalculator:
     def execute(self, expression: str) -> list[Number]:
         """Execute an arbitrary expression.
 
-        :raises OperatorError: If the expression is invalid
+        :raises OperatorError: If the operator is invalid or fails (sqrt of a negative number, for example)
         :raises StackError: If there are not enough values on the stack
         """
         tokens = RPNCalculator.tokenize(expression)
@@ -122,7 +124,7 @@ class RPNCalculator:
     def _apply_operator(self, operator: str) -> None:
         """Apply an operator to the elements on the stack.
 
-        :raises OperatorError: If the operator is invalid
+        :raises OperatorError: If the operator is invalid or fails (sqrt of a negative number, for example)
         :raises StackError: If there are not enough values on the stack
         """
         if operator == 'clear':
@@ -154,8 +156,16 @@ class RPNCalculator:
         for _ in range(arg_count):
             args.append(self.stack.pop())
 
-        for value in func(*args):
-            self.stack.append(value)
+        try:
+            for value in func(*args):
+                self.stack.append(value)
+
+        except ValueError as e:
+            # Restore stack state
+            for arg in args:
+                self.stack.append(arg)
+
+            raise OperatorError(f'Operator "{operator}" failed with operands {args}') from e
 
 
 def calculate() -> None:
