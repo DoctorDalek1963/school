@@ -3,6 +3,7 @@
 """A simple module for a little RPN calculator."""
 
 import re
+from inspect import signature
 from math import ceil, floor, sqrt
 from typing import Callable, TypeAlias
 
@@ -25,33 +26,33 @@ class StackError(Exception):
 class RPNCalculator:
     """A class to hold a stack and execute commands in RPN."""
 
-    operators: dict[str, tuple[int, Callable[..., list[Number]]]] = {
-        '+': (2, lambda a, b: [b + a]),
-        '-': (2, lambda a, b: [b - a]),
-        '*': (2, lambda a, b: [b * a]),
-        '/': (2, lambda a, b: [b / a]),
-        '//': (2, lambda a, b: [int(b // a)]),
-        '**': (2, lambda a, b: [b ** a]),
-        'sqrt': (1, lambda a: [sqrt(a)]),
-        '<<': (2, lambda a, b: [b << a]),
-        '>>': (2, lambda a, b: [b >> a]),
-        'ceil': (1, lambda a: [ceil(a)]),
-        'floor': (1, lambda a: [floor(a)]),
-        'int': (1, lambda a: [int(round(a, 0))]),
-        'round': (2, lambda a, b: [round(b, a)]),
-        'inc': (1, lambda a: [a + 1]),
-        'dec': (1, lambda a: [a - 1]),
-        'max': (2, lambda a, b: [max(a, b)]),
-        'min': (2, lambda a, b: [min(a, b)]),
-        'neg': (1, lambda a: [-a]),
-        'drop': (1, lambda _: []),
-        'swap': (2, lambda a, b: [a, b]),
-        'dup': (1, lambda a: [a, a]),
-        'over': (2, lambda a, b: [b, a, b]),
-        'nip': (2, lambda a, _: [a]),
-        'tuck': (2, lambda a, b: [a, b, a]),
-        'rot': (3, lambda c, b, a: [b, c, a]),
-        '-rot': (3, lambda c, b, a: [c, a, b]),
+    operators: dict[str, Callable[..., list[Number]]] = {
+        '+': lambda a, b: [b + a],
+        '-': lambda a, b: [b - a],
+        '*': lambda a, b: [b * a],
+        '/': lambda a, b: [b / a],
+        '//': lambda a, b: [int(b // a)],
+        '**': lambda a, b: [b ** a],
+        'sqrt': lambda a: [sqrt(a)],
+        '<<': lambda a, b: [b << a],
+        '>>': lambda a, b: [b >> a],
+        'ceil': lambda a: [ceil(a)],
+        'floor': lambda a: [floor(a)],
+        'int': lambda a: [int(round(a, 0))],
+        'round': lambda a, b: [round(b, a)],
+        'inc': lambda a: [a + 1],
+        'dec': lambda a: [a - 1],
+        'max': lambda a, b: [max(a, b)],
+        'min': lambda a, b: [min(a, b)],
+        'neg': lambda a: [-a],
+        'drop': lambda _: [],
+        'swap': lambda a, b: [a, b],
+        'dup': lambda a: [a, a],
+        'over': lambda a, b: [b, a, b],
+        'nip': lambda a, _: [a],
+        'tuck': lambda a, b: [a, b, a],
+        'rot': lambda c, b, a: [b, c, a],
+        '-rot': lambda c, b, a: [c, a, b],
     }
 
     def __init__(self, stack: list[Number] = None):
@@ -146,7 +147,8 @@ class RPNCalculator:
         if operator not in RPNCalculator.operators:
             raise OperatorError(f'Operator "{operator}" not recognised')
 
-        arg_count, func = RPNCalculator.operators[operator]
+        func = RPNCalculator.operators[operator]
+        arg_count = len(signature(func).parameters)
 
         if len(self.stack) < arg_count:
             raise StackError(f'Not enough elements on the stack for operator "{operator}" (takes {arg_count})')
