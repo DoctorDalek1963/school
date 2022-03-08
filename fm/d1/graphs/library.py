@@ -2,6 +2,8 @@
 
 import math
 
+import graphviz
+
 
 class VertexAlreadyAddedError(Exception):
     """A simple exception class."""
@@ -273,6 +275,13 @@ class Graph:
                 string += '];\n'
 
         return string + '}'
+
+    def view(self, *args, **kwargs) -> None:
+        """View the graph with graphviz."""
+        with open('/tmp/graph.gv', 'w', encoding='utf-8') as f:
+            f.write(self.get_graphviz(*args, **kwargs))
+
+        graphviz.view('/tmp/graph.gv')
 
 
 def kruskal(graph: Graph) -> Graph:
