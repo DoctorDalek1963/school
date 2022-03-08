@@ -1,29 +1,4 @@
-"""A library for graph and network classes and functions.
-
-Classes:
-    Vertex:
-        A simple Vertex class holding only a name.
-
-    Graph:
-        A simple graph class to hold vertices and edges between them.
-
-    DijkstraVertex:
-        A dataclass to hold the information Dijkstra needs about vertices.
-
-Exceptions:
-    VertexAlreadyAddedError
-    VertexDoesntExistError
-
-Functions:
-    create_vertices(names: str) -> tuple[Vertex, ...]:
-        Construct multiple vertices from multiple names.
-
-    kruskal(graph: Graph) -> Graph:
-        Perform Kruskal's algorithm to find the minimum spanning tree of this graph.
-
-    dijkstra(graph: Graph, start: Vertex, end: Vertex) -> list[Vertex]:
-        Implement Dijkstra's algorithm on the graph, starting at the start vertex and ending at the end vertex.
-"""
+"""A library for graph and network classes and functions."""
 
 import math
 
@@ -78,53 +53,6 @@ class Graph:
     They may have arbitrary weight and may or may not be directed.
     This implementation does not support multiple connections of the same direction between two vertices.
     Calling str() on the graph will return a printable distance matrix.
-
-    Methods:
-        add_vertex(vertex: Vertex) -> None:
-            Add a vertex to the graph.
-
-        add_vertices(self, *vertices) -> None:
-            Add multiple vertices, passed as *args.
-
-        add_edge(v: Vertex, u: Vertex, weight: int | float = 1, directed: bool = False) -> None:
-            Add an edge between vertices v and u.
-
-        remove_edge(v: Vertex, u: Vertex, directed: bool = False) -> None:
-            Remove the edge between vertices v and u.
-
-        get_connected_vertices(vertex: Vertex, avoid: list[Vertex]) -> list[Vertex]:
-            Return a list of vertices that are connected to the vertex, ignoring the vertices in the avoid list.
-
-        weight_of_path(path: list[Vertex]) -> int | float:
-            Return the weight of the given path. Raises VertexDoesntExistError if any vertex isn't in the graph.
-
-    Properties:
-        vertices: list[Vertex]
-            The vertices in the graph, in the order they were added.
-
-        matrix: list[list[int | float]]
-            The distance matrix of the graph.
-
-        is_connected: bool
-            Check if the graph is fully connected.
-
-        has_cycles: bool
-            Check if the graph has cycles.
-
-        is_tree: bool
-            Check if the graph is a tree.
-
-        number_of_odd_nodes: int
-            Return the number of odd nodes in the graph.
-
-        is_eulerian: bool
-            Check if the graph is Eulerian.
-
-        is_semi_eulerian: bool
-            Check if the graph is semi-Eulerian.
-
-        total_weight: int | float
-            Return the total weight of the graph.
     """
 
     def __init__(self):
@@ -177,7 +105,7 @@ class Graph:
 
             self.matrix.append([0 for _ in self.matrix[0]])
 
-    def add_vertices(self, *vertices) -> None:
+    def add_vertices(self, *vertices: Vertex) -> None:
         """Add multiple vertices, passed as *args."""
         for vertex in vertices:
             self.add_vertex(vertex)
