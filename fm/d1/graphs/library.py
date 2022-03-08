@@ -57,15 +57,23 @@ class Graph:
     Calling str() on the graph will return a printable distance matrix.
     """
 
-    def __init__(self):
-        """Init the graph object with no vertices or edges."""
+    def __init__(self, *vertices: Vertex):
+        """Init the graph object, using an optional list of initial vertices.
+
+        :raises ValueError: If the list of vertices is not all Vertex object
+        """
         self.vertices: list[Vertex] = []
         self.matrix: list[list[int | float]] = [[]]
 
+        if len(vertices) > 1:
+            if not all(isinstance(x, Vertex) for x in vertices):
+                raise ValueError('All vertices in list must be Vertex objects')
+
+            self.add_vertices(*vertices)
+
     def __repr__(self) -> str:
-        """Return a simple repr of the graph with the number of vertices."""
-        return f'<{self.__class__.__module__}.{self.__class__.__name__} object with ' \
-            f'{len(self.vertices)} vertices [' + ', '.join(["'" + str(v) + "'" for v in self.vertices]) + ']>'
+        """Return a simple repr of the graph with the list of vertices."""
+        return f'{self.__class__.__module__}.{self.__class__.__name__}({", ".join(repr(x) for x in self.vertices)})'
 
     def __str__(self) -> str:
         """Return the string representation of the distance matrix."""
