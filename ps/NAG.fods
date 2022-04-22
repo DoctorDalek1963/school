@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <office:document xmlns:presentation="urn:oasis:names:tc:opendocument:xmlns:presentation:1.0" xmlns:css3t="http://www.w3.org/TR/css3-text/" xmlns:grddl="http://www.w3.org/2003/g/data-view#" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:chart="urn:oasis:names:tc:opendocument:xmlns:chart:1.0" xmlns:svg="urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0" xmlns:draw="urn:oasis:names:tc:opendocument:xmlns:drawing:1.0" xmlns:rpt="http://openoffice.org/2005/report" xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0" xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0" xmlns:meta="urn:oasis:names:tc:opendocument:xmlns:meta:1.0" xmlns:config="urn:oasis:names:tc:opendocument:xmlns:config:1.0" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0" xmlns:of="urn:oasis:names:tc:opendocument:xmlns:of:1.2" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:ooo="http://openoffice.org/2004/office" xmlns:dr3d="urn:oasis:names:tc:opendocument:xmlns:dr3d:1.0" xmlns:formx="urn:openoffice:names:experimental:ooxml-odf-interop:xmlns:form:1.0" xmlns:calcext="urn:org:documentfoundation:names:experimental:calc:xmlns:calcext:1.0" xmlns:drawooo="http://openoffice.org/2010/draw" xmlns:field="urn:openoffice:names:experimental:ooo-ms-interop:xmlns:field:1.0" xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:table="urn:oasis:names:tc:opendocument:xmlns:table:1.0" xmlns:number="urn:oasis:names:tc:opendocument:xmlns:datastyle:1.0" xmlns:ooow="http://openoffice.org/2004/writer" xmlns:oooc="http://openoffice.org/2004/calc" xmlns:tableooo="http://openoffice.org/2009/table" xmlns:loext="urn:org:documentfoundation:names:experimental:office:xmlns:loext:1.0" xmlns:math="http://www.w3.org/1998/Math/MathML" xmlns:form="urn:oasis:names:tc:opendocument:xmlns:form:1.0" xmlns:script="urn:oasis:names:tc:opendocument:xmlns:script:1.0" xmlns:dom="http://www.w3.org/2001/xml-events" xmlns:xforms="http://www.w3.org/2002/xforms" office:version="1.2" office:mimetype="application/vnd.oasis.opendocument.spreadsheet">
- <office:meta><meta:initial-creator>ARMSTRONG N</meta:initial-creator><meta:creation-date>2021-11-08T13:38:42</meta:creation-date><dc:date>2022-03-28T22:04:55.744235962</dc:date><meta:generator>LibreOffice/6.4.7.2$Linux_X86_64 LibreOffice_project/40$Build-2</meta:generator><meta:editing-duration>P1DT1H57M14S</meta:editing-duration><meta:editing-cycles>27</meta:editing-cycles><meta:document-statistic meta:table-count="1" meta:cell-count="91" meta:object-count="0"/><meta:user-defined meta:name="AppVersion">16.0300</meta:user-defined><meta:user-defined meta:name="Company">The Duston School</meta:user-defined><meta:user-defined meta:name="DocSecurity" meta:value-type="float">0</meta:user-defined><meta:user-defined meta:name="HyperlinksChanged" meta:value-type="boolean">false</meta:user-defined><meta:user-defined meta:name="LinksUpToDate" meta:value-type="boolean">false</meta:user-defined><meta:user-defined meta:name="ScaleCrop" meta:value-type="boolean">false</meta:user-defined><meta:user-defined meta:name="ShareDoc" meta:value-type="boolean">false</meta:user-defined></office:meta>
+ <office:meta><meta:initial-creator>ARMSTRONG N</meta:initial-creator><meta:creation-date>2021-11-08T13:38:42</meta:creation-date><dc:date>2022-04-22T13:32:56.197107165</dc:date><meta:generator>LibreOffice/6.4.7.2$Linux_X86_64 LibreOffice_project/40$Build-2</meta:generator><meta:editing-duration>P1DT2H17M54S</meta:editing-duration><meta:editing-cycles>35</meta:editing-cycles><meta:document-statistic meta:table-count="1" meta:cell-count="100" meta:object-count="0"/><meta:user-defined meta:name="AppVersion">16.0300</meta:user-defined><meta:user-defined meta:name="Company">The Duston School</meta:user-defined><meta:user-defined meta:name="DocSecurity" meta:value-type="float">0</meta:user-defined><meta:user-defined meta:name="HyperlinksChanged" meta:value-type="boolean">false</meta:user-defined><meta:user-defined meta:name="LinksUpToDate" meta:value-type="boolean">false</meta:user-defined><meta:user-defined meta:name="ScaleCrop" meta:value-type="boolean">false</meta:user-defined><meta:user-defined meta:name="ShareDoc" meta:value-type="boolean">false</meta:user-defined></office:meta>
  <office:settings>
   <config:config-item-set config:name="ooo:view-settings">
    <config:config-item config:name="VisibleAreaTop" config:type="int">0</config:config-item>
    <config:config-item config:name="VisibleAreaLeft" config:type="int">0</config:config-item>
-   <config:config-item config:name="VisibleAreaWidth" config:type="int">45275</config:config-item>
-   <config:config-item config:name="VisibleAreaHeight" config:type="int">95863</config:config-item>
+   <config:config-item config:name="VisibleAreaWidth" config:type="int">47286</config:config-item>
+   <config:config-item config:name="VisibleAreaHeight" config:type="int">98167</config:config-item>
    <config:config-item-map-indexed config:name="Views">
     <config:config-item-map-entry>
      <config:config-item config:name="ViewId" config:type="string">view1</config:config-item>
      <config:config-item-map-named config:name="Tables">
       <config:config-item-map-entry config:name="Sheet1">
        <config:config-item config:name="CursorPositionX" config:type="int">2</config:config-item>
-       <config:config-item config:name="CursorPositionY" config:type="int">44</config:config-item>
+       <config:config-item config:name="CursorPositionY" config:type="int">39</config:config-item>
        <config:config-item config:name="HorizontalSplitMode" config:type="short">0</config:config-item>
        <config:config-item config:name="VerticalSplitMode" config:type="short">0</config:config-item>
        <config:config-item config:name="HorizontalSplitPosition" config:type="int">0</config:config-item>
@@ -23,7 +23,7 @@
        <config:config-item config:name="PositionLeft" config:type="int">0</config:config-item>
        <config:config-item config:name="PositionRight" config:type="int">0</config:config-item>
        <config:config-item config:name="PositionTop" config:type="int">0</config:config-item>
-       <config:config-item config:name="PositionBottom" config:type="int">24</config:config-item>
+       <config:config-item config:name="PositionBottom" config:type="int">0</config:config-item>
        <config:config-item config:name="ZoomType" config:type="short">0</config:config-item>
        <config:config-item config:name="ZoomValue" config:type="int">90</config:config-item>
        <config:config-item config:name="PageViewZoomValue" config:type="int">60</config:config-item>
@@ -32,7 +32,7 @@
       </config:config-item-map-entry>
      </config:config-item-map-named>
      <config:config-item config:name="ActiveTable" config:type="string">Sheet1</config:config-item>
-     <config:config-item config:name="HorizontalScrollbarWidth" config:type="int">1901</config:config-item>
+     <config:config-item config:name="HorizontalScrollbarWidth" config:type="int">1862</config:config-item>
      <config:config-item config:name="ZoomType" config:type="short">0</config:config-item>
      <config:config-item config:name="ZoomValue" config:type="int">90</config:config-item>
      <config:config-item config:name="PageViewZoomValue" config:type="int">60</config:config-item>
@@ -69,7 +69,7 @@
    <config:config-item config:name="HasColumnRowHeaders" config:type="boolean">true</config:config-item>
    <config:config-item config:name="ShowNotes" config:type="boolean">true</config:config-item>
    <config:config-item config:name="HasSheetTabs" config:type="boolean">true</config:config-item>
-   <config:config-item config:name="PrinterSetup" config:type="base64Binary">rgH+/01HMzIwMC1zZXJpZXMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQ1VQUzpNRzMyMDAtc2VyaWVzAAAAAAAAAAAAAAAAAAAWAAMAzwAAAAAAAAAEAAhSAAAEdAAASm9iRGF0YSAxCnByaW50ZXI9TUczMjAwLXNlcmllcwpvcmllbnRhdGlvbj1Qb3J0cmFpdApjb3BpZXM9MQpjb2xsYXRlPWZhbHNlCm1hcmdpbmRhanVzdG1lbnQ9MCwwLDAsMApjb2xvcmRlcHRoPTI0CnBzbGV2ZWw9MApwZGZkZXZpY2U9MQpjb2xvcmRldmljZT0wClBQRENvbnRleERhdGEKUGFnZVNpemU6QTQASW5wdXRTbG90OmZyb250MgBEdXBsZXg6Tm9uZQAAEgBDT01QQVRfRFVQTEVYX01PREUPAER1cGxleE1vZGU6Ok9mZg==</config:config-item>
+   <config:config-item config:name="PrinterSetup" config:type="base64Binary">lQH+/01HMzIwMC1zZXJpZXMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQ1VQUzpNRzMyMDAtc2VyaWVzAAAAAAAAAAAAAAAAAAAWAAMAsgAAAAAAAAAEAAhSAAAEdAAASm9iRGF0YSAxCnByaW50ZXI9TUczMjAwLXNlcmllcwpvcmllbnRhdGlvbj1Qb3J0cmFpdApjb3BpZXM9MQpjb2xsYXRlPWZhbHNlCm1hcmdpbmRhanVzdG1lbnQ9MCwwLDAsMApjb2xvcmRlcHRoPTI0CnBzbGV2ZWw9MApwZGZkZXZpY2U9MQpjb2xvcmRldmljZT0wClBQRENvbnRleERhdGEKUGFnZVNpemU6QTQAABIAQ09NUEFUX0RVUExFWF9NT0RFEwBEdXBsZXhNb2RlOjpVbmtub3du</config:config-item>
    <config:config-item config:name="RasterResolutionX" config:type="int">1000</config:config-item>
    <config:config-item config:name="SyntaxStringRef" config:type="short">2</config:config-item>
    <config:config-item config:name="RasterIsVisible" config:type="boolean">false</config:config-item>
@@ -402,25 +402,28 @@
    <style:table-column-properties fo:break-before="auto" style:column-width="7.565cm"/>
   </style:style>
   <style:style style:name="co3" style:family="table-column">
-   <style:table-column-properties fo:break-before="auto" style:column-width="7.722cm"/>
+   <style:table-column-properties fo:break-before="auto" style:column-width="8.946cm"/>
   </style:style>
   <style:style style:name="co4" style:family="table-column">
-   <style:table-column-properties fo:break-before="auto" style:column-width="2.108cm"/>
+   <style:table-column-properties fo:break-before="auto" style:column-width="8.352cm"/>
   </style:style>
   <style:style style:name="co5" style:family="table-column">
+   <style:table-column-properties fo:break-before="auto" style:column-width="2.108cm"/>
+  </style:style>
+  <style:style style:name="co6" style:family="table-column">
    <style:table-column-properties fo:break-before="auto" style:column-width="2.258cm"/>
   </style:style>
   <style:style style:name="ro1" style:family="table-row">
    <style:table-row-properties style:row-height="0.487cm" fo:break-before="auto" style:use-optimal-row-height="true"/>
   </style:style>
   <style:style style:name="ro2" style:family="table-row">
-   <style:table-row-properties style:row-height="2.027cm" fo:break-before="auto" style:use-optimal-row-height="true"/>
+   <style:table-row-properties style:row-height="0.526cm" fo:break-before="auto" style:use-optimal-row-height="true"/>
   </style:style>
   <style:style style:name="ro3" style:family="table-row">
-   <style:table-row-properties style:row-height="1.632cm" fo:break-before="auto" style:use-optimal-row-height="true"/>
+   <style:table-row-properties style:row-height="2.895cm" fo:break-before="auto" style:use-optimal-row-height="true"/>
   </style:style>
   <style:style style:name="ro4" style:family="table-row">
-   <style:table-row-properties style:row-height="2.046cm" fo:break-before="auto" style:use-optimal-row-height="true"/>
+   <style:table-row-properties style:row-height="2.422cm" fo:break-before="auto" style:use-optimal-row-height="true"/>
   </style:style>
   <style:style style:name="ro5" style:family="table-row">
    <style:table-row-properties style:row-height="3.528cm" fo:break-before="auto" style:use-optimal-row-height="false"/>
@@ -434,6 +437,13 @@
   <number:number-style style:name="N2">
    <number:number number:decimal-places="2" loext:min-decimal-places="2" number:min-integer-digits="1"/>
   </number:number-style>
+  <number:date-style style:name="N37" number:automatic-order="true">
+   <number:day number:style="long"/>
+   <number:text>/</number:text>
+   <number:month number:style="long"/>
+   <number:text>/</number:text>
+   <number:year/>
+  </number:date-style>
   <style:style style:name="ce1" style:family="table-cell" style:parent-style-name="Default">
    <style:table-cell-properties fo:border-bottom="0.74pt solid #000000" fo:border-left="0.74pt solid #000000" fo:border-right="none" style:rotation-align="none" fo:border-top="0.74pt solid #000000"/>
    <style:text-properties fo:color="#000000" style:text-outline="false" style:text-line-through-style="none" style:text-line-through-type="none" style:font-name="Calibri" fo:font-size="11pt" fo:font-style="normal" fo:text-shadow="none" style:text-underline-style="none" fo:font-weight="bold" style:font-size-asian="11pt" style:font-style-asian="normal" style:font-weight-asian="bold" style:font-name-complex="Calibri" style:font-size-complex="11pt" style:font-style-complex="normal" style:font-weight-complex="bold"/>
@@ -490,12 +500,9 @@
    <style:paragraph-properties fo:text-align="center" fo:margin-left="0cm"/>
    <style:text-properties fo:color="#000000" style:text-outline="false" style:text-line-through-style="none" style:text-line-through-type="none" style:font-name="Calibri" fo:font-size="11pt" fo:font-style="normal" fo:text-shadow="none" style:text-underline-style="none" fo:font-weight="normal" style:font-size-asian="11pt" style:font-style-asian="normal" style:font-weight-asian="normal" style:font-name-complex="Calibri" style:font-size-complex="11pt" style:font-style-complex="normal" style:font-weight-complex="normal"/>
   </style:style>
-  <style:style style:name="ce15" style:family="table-cell" style:parent-style-name="Default">
-   <style:table-cell-properties style:diagonal-bl-tr="none" style:diagonal-tl-br="none" style:text-align-source="fix" style:repeat-content="false" fo:border="0.74pt solid #000000" style:rotation-align="none"/>
-   <style:paragraph-properties fo:text-align="center" fo:margin-left="0cm"/>
-   <style:text-properties fo:color="#000000" style:text-outline="false" style:text-line-through-style="none" style:text-line-through-type="none" style:font-name="Calibri" fo:font-size="11pt" fo:font-style="normal" fo:text-shadow="none" style:text-underline-style="none" fo:font-weight="normal" style:font-size-asian="11pt" style:font-style-asian="normal" style:font-weight-asian="normal" style:font-name-complex="Calibri" style:font-size-complex="11pt" style:font-style-complex="normal" style:font-weight-complex="normal"/>
-   <style:map style:condition="cell-content()=&quot;No&quot;" style:apply-style-name="Bad" style:base-cell-address="Sheet1.B23"/>
-   <style:map style:condition="cell-content()!=&quot;No&quot;" style:apply-style-name="Good" style:base-cell-address="Sheet1.B23"/>
+  <style:style style:name="ce38" style:family="table-cell" style:parent-style-name="Default">
+   <style:table-cell-properties style:text-align-source="fix" style:repeat-content="false" fo:border="0.74pt solid #000000" style:vertical-align="middle"/>
+   <style:paragraph-properties fo:text-align="center"/>
   </style:style>
   <style:style style:name="ce39" style:family="table-cell" style:parent-style-name="Default">
    <style:table-cell-properties fo:background-color="#99ffcc" style:diagonal-bl-tr="none" style:diagonal-tl-br="none" style:text-align-source="fix" style:repeat-content="false" fo:wrap-option="no-wrap" fo:border="0.74pt solid #000000" style:direction="ltr" style:rotation-angle="0" style:rotation-align="none" style:shrink-to-fit="false" style:vertical-align="bottom" loext:vertical-justify="auto"/>
@@ -530,6 +537,10 @@
   <style:style style:name="ce23" style:family="table-cell" style:parent-style-name="Default">
    <style:table-cell-properties fo:border-bottom="none" style:diagonal-bl-tr="none" style:diagonal-tl-br="none" fo:background-color="transparent" fo:border-left="0.74pt solid #000000" fo:border-right="none" style:rotation-align="none" fo:border-top="none"/>
    <style:text-properties fo:color="#000000" style:text-outline="false" style:text-line-through-style="none" style:text-line-through-type="none" style:font-name="Calibri" fo:font-size="11pt" fo:font-style="normal" fo:text-shadow="none" style:text-underline-style="none" fo:font-weight="bold" style:font-size-asian="11pt" style:font-style-asian="normal" style:font-weight-asian="bold" style:font-name-complex="Calibri" style:font-size-complex="11pt" style:font-style-complex="normal" style:font-weight-complex="bold"/>
+  </style:style>
+  <style:style style:name="ce48" style:family="table-cell" style:parent-style-name="Default" style:data-style-name="N37">
+   <style:table-cell-properties fo:border-bottom="none" style:diagonal-bl-tr="none" style:diagonal-tl-br="none" style:text-align-source="value-type" style:repeat-content="false" fo:background-color="transparent" fo:wrap-option="wrap" fo:border-left="0.74pt solid #000000" style:direction="ltr" fo:border-right="none" style:rotation-angle="0" style:rotation-align="none" style:shrink-to-fit="false" fo:border-top="none" style:vertical-align="bottom" loext:vertical-justify="auto"/>
+   <style:paragraph-properties css3t:text-justify="auto" fo:margin-left="0cm" style:writing-mode="page"/>
   </style:style>
   <style:style style:name="ce24" style:family="table-cell" style:parent-style-name="Default">
    <style:table-cell-properties fo:border-bottom="none" style:diagonal-bl-tr="none" style:diagonal-tl-br="none" style:text-align-source="value-type" style:repeat-content="false" fo:background-color="transparent" fo:wrap-option="wrap" fo:border-left="0.74pt solid #000000" style:direction="ltr" fo:border-right="none" style:rotation-angle="0" style:rotation-align="none" style:shrink-to-fit="false" fo:border-top="none" style:vertical-align="bottom" loext:vertical-justify="auto"/>
@@ -592,7 +603,7 @@
      <text:p><text:sheet-name>???</text:sheet-name><text:s/>(<text:title>???</text:title>)</text:p>
     </style:region-left>
     <style:region-right>
-     <text:p><text:date style:data-style-name="N2" text:date-value="2022-03-28">00/00/0000</text:date>, <text:time style:data-style-name="N2" text:time-value="20:57:07.146252672">00:00:00</text:time></text:p>
+     <text:p><text:date style:data-style-name="N2" text:date-value="2022-04-22">00/00/0000</text:date>, <text:time style:data-style-name="N2" text:time-value="12:51:16.671666411">00:00:00</text:time></text:p>
     </style:region-right>
    </style:header>
    <style:header-left style:display="false"/>
@@ -632,8 +643,10 @@
     <table:table-column table:style-name="co1" table:default-cell-style-name="Default"/>
     <table:table-column table:style-name="co2" table:default-cell-style-name="Default"/>
     <table:table-column table:style-name="co3" table:default-cell-style-name="Default"/>
-    <table:table-column table:style-name="co2" table:number-columns-repeated="3" table:default-cell-style-name="Default"/>
-    <table:table-column table:style-name="co4" table:number-columns-repeated="58" table:default-cell-style-name="Default"/>
+    <table:table-column table:style-name="co2" table:default-cell-style-name="Default"/>
+    <table:table-column table:style-name="co4" table:default-cell-style-name="Default"/>
+    <table:table-column table:style-name="co2" table:default-cell-style-name="Default"/>
+    <table:table-column table:style-name="co5" table:number-columns-repeated="58" table:default-cell-style-name="Default"/>
     <table:table-row table:style-name="ro1">
      <table:table-cell table:style-name="ce1" office:value-type="string" calcext:value-type="string">
       <text:p>Student name:</text:p>
@@ -829,7 +842,7 @@
      <table:table-cell table:style-name="ce12"/>
      <table:table-cell table:number-columns-repeated="58"/>
     </table:table-row>
-    <table:table-row table:style-name="ro1">
+    <table:table-row table:style-name="ro2">
      <table:table-cell table:style-name="ce2" office:value-type="string" calcext:value-type="string">
       <text:p>UCAS Course Code</text:p>
      </table:table-cell>
@@ -881,32 +894,32 @@
      <table:table-cell table:style-name="ce2" office:value-type="string" calcext:value-type="string">
       <text:p>Admissions test?</text:p>
      </table:table-cell>
-     <table:table-cell table:style-name="ce15" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:style-name="ce38" office:value-type="string" calcext:value-type="string">
       <text:p>STEP (June)</text:p>
      </table:table-cell>
-     <table:table-cell table:style-name="ce15" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:style-name="ce38" office:value-type="string" calcext:value-type="string">
       <text:p>MAT (November) (possibly STEP (June) as well)</text:p>
      </table:table-cell>
-     <table:table-cell table:style-name="ce15" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:style-name="ce38" office:value-type="string" calcext:value-type="string">
       <text:p>No</text:p>
      </table:table-cell>
-     <table:table-cell table:style-name="ce15" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:style-name="ce38" office:value-type="string" calcext:value-type="string">
       <text:p>STEP (June) and optionally MAT (November)</text:p>
      </table:table-cell>
-     <table:table-cell table:style-name="ce15"/>
+     <table:table-cell table:style-name="ce38"/>
      <table:table-cell table:number-columns-repeated="58"/>
     </table:table-row>
     <table:table-row table:style-name="ro1">
      <table:table-cell table:style-name="ce2" office:value-type="string" calcext:value-type="string">
       <text:p>Interview?</text:p>
      </table:table-cell>
-     <table:table-cell table:style-name="ce15" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:style-name="ce38" office:value-type="string" calcext:value-type="string">
       <text:p>Yes</text:p>
      </table:table-cell>
-     <table:table-cell table:number-columns-repeated="3" table:style-name="ce15" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:number-columns-repeated="3" table:style-name="ce38" office:value-type="string" calcext:value-type="string">
       <text:p>No</text:p>
      </table:table-cell>
-     <table:table-cell table:style-name="ce15"/>
+     <table:table-cell table:style-name="ce38"/>
      <table:table-cell table:number-columns-repeated="58"/>
     </table:table-row>
     <table:table-row table:style-name="ro1">
@@ -1024,7 +1037,7 @@
      <table:table-cell table:style-name="ce25"/>
      <table:table-cell table:number-columns-repeated="59"/>
     </table:table-row>
-    <table:table-row table:style-name="ro2">
+    <table:table-row table:style-name="ro3">
      <table:table-cell table:style-name="ce32" table:content-validation-name="val2" office:value-type="string" calcext:value-type="string">
       <text:p>I watched the series “Essence of Linear Algebra” by 3blue1brown on YouTube and used it to teach myself linear algebra before doing it in school.</text:p>
      </table:table-cell>
@@ -1034,11 +1047,11 @@
      <table:table-cell table:style-name="ce45" table:content-validation-name="val2" office:value-type="string" calcext:value-type="string">
       <text:p>This framing made me reconsider standard multiplication and likely inspired my current interest in group theory.</text:p>
      </table:table-cell>
-     <table:table-cell table:style-name="ce24" table:content-validation-name="val2"/>
+     <table:table-cell table:style-name="ce48" table:content-validation-name="val2"/>
      <table:table-cell table:style-name="ce26" table:content-validation-name="val2"/>
      <table:table-cell table:number-columns-repeated="59"/>
     </table:table-row>
-    <table:table-row table:style-name="ro3">
+    <table:table-row table:style-name="ro4">
      <table:table-cell table:style-name="ce32" table:content-validation-name="val2" office:value-type="string" calcext:value-type="string">
       <text:p><text:s/>I wrote a paper on series that sum to pure powers of n after reading an interesting question in an A Level textbook.</text:p>
      </table:table-cell>
@@ -1052,7 +1065,7 @@
      <table:table-cell table:style-name="ce26" table:content-validation-name="val2"/>
      <table:table-cell table:number-columns-repeated="59"/>
     </table:table-row>
-    <table:table-row table:style-name="ro2">
+    <table:table-row table:style-name="ro3">
      <table:table-cell table:style-name="ce32" table:content-validation-name="val2" office:value-type="string" calcext:value-type="string">
       <text:p>I created a Python package (currently unfinished) to model various probability distributions and calculate the probabilities of ranges of outcomes.</text:p>
      </table:table-cell>
@@ -1066,7 +1079,7 @@
      <table:table-cell table:style-name="ce26" table:content-validation-name="val2"/>
      <table:table-cell table:number-columns-repeated="59"/>
     </table:table-row>
-    <table:table-row table:style-name="ro3">
+    <table:table-row table:style-name="ro4">
      <table:table-cell table:style-name="ce32" table:content-validation-name="val2" office:value-type="string" calcext:value-type="string">
       <text:p>I took the Further mA*ths course with Imperial (currently unfinished), and it helped me to understand the FM content better.</text:p>
      </table:table-cell>
@@ -1080,7 +1093,7 @@
      <table:table-cell table:style-name="ce26" table:content-validation-name="val2"/>
      <table:table-cell table:number-columns-repeated="59"/>
     </table:table-row>
-    <table:table-row table:style-name="ro4">
+    <table:table-row table:style-name="ro3">
      <table:table-cell table:style-name="ce32" table:content-validation-name="val2" office:value-type="string" calcext:value-type="string">
       <text:p>My CS coursework is an app to help visualize linear transformations. I decided to make it because visualization is a topic that I struggled with at first but made the subject much easier to understand</text:p>
      </table:table-cell>
@@ -1094,7 +1107,49 @@
      <table:table-cell table:style-name="ce26" table:content-validation-name="val2"/>
      <table:table-cell table:number-columns-repeated="59"/>
     </table:table-row>
-    <table:table-row table:style-name="ro5" table:number-rows-repeated="19">
+    <table:table-row table:style-name="ro3">
+     <table:table-cell table:style-name="ce32" table:content-validation-name="val2" office:value-type="string" calcext:value-type="string">
+      <text:p>I helped to teach a Year 11 top set maths class, which gave me experience in teaching and helped me to better understand the process of learning and revising mathematics.</text:p>
+     </table:table-cell>
+     <table:table-cell table:style-name="ce32" table:content-validation-name="val2" office:value-type="string" calcext:value-type="string">
+      <text:p>Looking at GCSE questions and having to explain how to do them to someone else is helpful for me to understand the process of doing maths questions. They’re easy, but the process is quite interesting.</text:p>
+     </table:table-cell>
+     <table:table-cell table:style-name="ce45" table:content-validation-name="val2" office:value-type="string" calcext:value-type="string">
+      <text:p>This experience was helpful for my own revision, since it helped me understand learning and how people remember maths for exams.</text:p>
+     </table:table-cell>
+     <table:table-cell table:style-name="ce24" table:content-validation-name="val2"/>
+     <table:table-cell table:style-name="ce26" table:content-validation-name="val2"/>
+     <table:table-cell table:number-columns-repeated="59"/>
+    </table:table-row>
+    <table:table-row table:style-name="ro3">
+     <table:table-cell table:style-name="ce32" table:content-validation-name="val2" office:value-type="string" calcext:value-type="string">
+      <text:p>I help to run a maths challenge club for younger year groups. This involves picking out questions and activities for them to do, and helping with any issues the encounter.</text:p>
+     </table:table-cell>
+     <table:table-cell table:style-name="ce32" table:content-validation-name="val2" office:value-type="string" calcext:value-type="string">
+      <text:p>I’m in charge of creating the warm up questions every week, so I have to go through past UKMT papers and pick out questions, making sure to avoid questions we’ve had in previous weeks.</text:p>
+     </table:table-cell>
+     <table:table-cell table:style-name="ce45" table:content-validation-name="val2" office:value-type="string" calcext:value-type="string">
+      <text:p>This club has helped me gain experience in teaching, but also in approaching problems; it’s given me the opportunity to do so many UKMT questions. Despite them being quite easy, they’re fun to solve.</text:p>
+     </table:table-cell>
+     <table:table-cell table:style-name="ce24" table:content-validation-name="val2"/>
+     <table:table-cell table:style-name="ce26" table:content-validation-name="val2"/>
+     <table:table-cell table:number-columns-repeated="59"/>
+    </table:table-row>
+    <table:table-row table:style-name="ro3">
+     <table:table-cell table:style-name="ce32" table:content-validation-name="val2" office:value-type="string" calcext:value-type="string">
+      <text:p>I watched the series “Imaginary Numbers Are Real” by Welch Labs on YouTube and used it to teach myself about complex numbers. It covers the history of them and some very advanced concepts.</text:p>
+     </table:table-cell>
+     <table:table-cell table:style-name="ce32" table:content-validation-name="val2" office:value-type="string" calcext:value-type="string">
+      <text:p>I adored the visualisations and part 11 with the complex multifunction demonstration absolutely blew my mind. It gave me the drive to do my own research and delve into multifunctions as a whole.</text:p>
+     </table:table-cell>
+     <table:table-cell table:style-name="ce45" table:content-validation-name="val2" office:value-type="string" calcext:value-type="string">
+      <text:p>This series made me realise that intricate maths could be doable. I was passionate about the topic and wanted to keep learning, so I kept looking for more complicated maths that would blow my mind.</text:p>
+     </table:table-cell>
+     <table:table-cell table:style-name="ce24" table:content-validation-name="val2"/>
+     <table:table-cell table:style-name="ce26" table:content-validation-name="val2"/>
+     <table:table-cell table:number-columns-repeated="59"/>
+    </table:table-row>
+    <table:table-row table:style-name="ro5" table:number-rows-repeated="16">
      <table:table-cell table:style-name="ce32" table:content-validation-name="val2" table:number-columns-repeated="2"/>
      <table:table-cell table:style-name="ce45" table:content-validation-name="val2"/>
      <table:table-cell table:style-name="ce24" table:content-validation-name="val2"/>
@@ -1107,12 +1162,6 @@
     <table:table-row table:style-name="ro1">
      <table:table-cell table:number-columns-repeated="64"/>
     </table:table-row>
-    <calcext:conditional-formats>
-     <calcext:conditional-format calcext:target-range-address="Sheet1.B23:Sheet1.F24">
-      <calcext:condition calcext:apply-style-name="Bad" calcext:value="=&quot;No&quot;" calcext:base-cell-address="Sheet1.B23"/>
-      <calcext:condition calcext:apply-style-name="Good" calcext:value="!=&quot;No&quot;" calcext:base-cell-address="Sheet1.B23"/>
-     </calcext:conditional-format>
-    </calcext:conditional-formats>
    </table:table>
    <table:named-expressions/>
   </office:spreadsheet>
