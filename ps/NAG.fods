@@ -839,7 +839,9 @@
      <table:table-cell table:style-name="ce12" office:value-type="string" calcext:value-type="string">
       <text:p>Mathematics (Mmath)</text:p>
      </table:table-cell>
-     <table:table-cell table:style-name="ce12"/>
+     <table:table-cell table:style-name="ce12" office:value-type="string" calcext:value-type="string">
+      <text:p>Mathematics BSc (Hons)</text:p>
+     </table:table-cell>
      <table:table-cell table:number-columns-repeated="58"/>
     </table:table-row>
     <table:table-row table:style-name="ro2">
@@ -858,7 +860,9 @@
      <table:table-cell table:style-name="ce12" office:value-type="string" calcext:value-type="string">
       <text:p>G103</text:p>
      </table:table-cell>
-     <table:table-cell table:style-name="ce12"/>
+     <table:table-cell table:style-name="ce12" office:value-type="string" calcext:value-type="string">
+      <text:p>G100</text:p>
+     </table:table-cell>
      <table:table-cell table:number-columns-repeated="58"/>
     </table:table-row>
     <table:table-row table:style-name="ro1">
@@ -877,7 +881,9 @@
      <table:table-cell table:style-name="ce14" office:value-type="string" calcext:value-type="string">
       <text:p>University of Warwick</text:p>
      </table:table-cell>
-     <table:table-cell table:style-name="ce14"/>
+     <table:table-cell table:style-name="ce14" office:value-type="string" calcext:value-type="string">
+      <text:p>University of Liverpool</text:p>
+     </table:table-cell>
      <table:table-cell table:number-columns-repeated="58"/>
     </table:table-row>
     <table:table-row table:style-name="ro1">
@@ -887,7 +893,9 @@
      <table:table-cell table:number-columns-repeated="4" table:style-name="ce14" office:value-type="string" calcext:value-type="string">
       <text:p>A*A*A</text:p>
      </table:table-cell>
-     <table:table-cell table:style-name="ce14"/>
+     <table:table-cell table:style-name="ce14" office:value-type="string" calcext:value-type="string">
+      <text:p>ABB</text:p>
+     </table:table-cell>
      <table:table-cell table:number-columns-repeated="58"/>
     </table:table-row>
     <table:table-row table:style-name="ro1">
@@ -906,7 +914,9 @@
      <table:table-cell table:style-name="ce38" office:value-type="string" calcext:value-type="string">
       <text:p>STEP (June) and optionally MAT (November)</text:p>
      </table:table-cell>
-     <table:table-cell table:style-name="ce38"/>
+     <table:table-cell table:style-name="ce38" office:value-type="string" calcext:value-type="string">
+      <text:p>No</text:p>
+     </table:table-cell>
      <table:table-cell table:number-columns-repeated="58"/>
     </table:table-row>
     <table:table-row table:style-name="ro1">
@@ -916,10 +926,9 @@
      <table:table-cell table:style-name="ce38" office:value-type="string" calcext:value-type="string">
       <text:p>Yes</text:p>
      </table:table-cell>
-     <table:table-cell table:number-columns-repeated="3" table:style-name="ce38" office:value-type="string" calcext:value-type="string">
+     <table:table-cell table:number-columns-repeated="4" table:style-name="ce38" office:value-type="string" calcext:value-type="string">
       <text:p>No</text:p>
      </table:table-cell>
-     <table:table-cell table:style-name="ce38"/>
      <table:table-cell table:number-columns-repeated="58"/>
     </table:table-row>
     <table:table-row table:style-name="ro1">
