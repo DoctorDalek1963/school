@@ -3,13 +3,10 @@
 ### Completed
 - [Open University] (2022-01-02 : 2022-01-02) [Egyptian mathematics](https://www.open.edu/openlearn/science-maths-technology/mathematics-and-statistics/mathematics/egyptian-mathematics/content-section-0)
 - [Coursera : University of London] (2021-12-31 : 2022-02-04) [Probability and Statistics: To *p* or not to *p*?](https://www.coursera.org/learn/probability-statistics/home/welcome)
+- [edX : MIT] (2022-01-12 : 2022-03) Differential Equations: Linear Algebra and NxN Systems of Differential Equations (MITx - 18.033x)
 
 ### In progress
 - [Imperial College London] (2022-01-15) [Further mA*ths online programme (year 12)](https://www.imperial.ac.uk/be-inspired/schools-outreach/secondary-schools/mentoring-and-tutoring/further-maths-online-programme/)
-- [edX : MIT] (2022-01-12) Differential Equations: Linear Algebra and NxN Systems of Differential Equations (MITx - 18.033x)
-
-### In future
-- [edX : MIT] (2022-02-16) Multivariable Calculus 1: Vectors and Derivatives (MITx - 18.02.1x)
 
 ---
 
