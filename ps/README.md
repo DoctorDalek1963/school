@@ -35,6 +35,9 @@
 - [Mathologer](https://www.youtube.com/c/Mathologer)
 - [blackpenredpen](https://www.youtube.com/c/blackpenredpen)
 
+### Specific Videos
+- [What is the square root of two? | The Fundamental Theorem of Galois Theory](https://www.youtube.com/watch?v=CwvuZ8aHyH4)
+
 ---
 
 # Lectures
