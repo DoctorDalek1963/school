@@ -1,2 +1,27 @@
 .~lock*
 *.xlsx
+
+compile.sh
+*.pdf
+
+# Ignore all LaTeX auxiliary files
+# These are just the TeXstudio defaults
+*.log
+*.aux
+*.dvi
+*.lof
+*.lot
+*.bit
+*.idx
+*.glo
+*.bbl
+*.bcf
+*.ilg
+*.toc
+*.ind
+*.out
+*.blg
+*.fdb_latexmk
+*.fls
+*.run.xml
+*.synctex*

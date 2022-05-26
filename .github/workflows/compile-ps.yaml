@@ -1,0 +1,45 @@
+name: Compile Personal Statement PDF for gh-pages
+
+on:
+  push:
+    tags:
+      - 'ps-draft-*'
+
+jobs:
+  compile-latex:
+    runs-on: ubuntu-latest
+
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Process ps.tex
+        run: |
+          draftnumber="$(echo $GITHUB_REF | grep -Po '(?<=ps-draft-)\d+')"
+          sed "s/DRAFTNUMBER/$draftnumber/g" -i ps/main.tex
+        shell: bash
+
+      - name: Compile main.tex
+        uses: xu-cheng/latex-action@v2
+        with:
+          root_file: ps/main.tex
+          args: -lualatex -file-line-error -halt-on-error -interaction=nonstopmode -cd
+
+      - name: Put PDF in correct directory
+        run: |
+          mkdir -p pdf_dir
+          mv ps/main.pdf "pdf_dir/Dyson - draft #$(echo $GITHUB_REF | grep -Po '(?<=ps-draft-)\d+').pdf"
+        shell: bash
+
+      - name: Deploy PDF
+        uses: peaceiris/actions-gh-pages@v3.8.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: pdf_dir/
+          destination_dir: ps
+          keep_files: true
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'
+          commit_message: 'compile pdf:'
