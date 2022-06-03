@@ -15,33 +15,39 @@
 \usepackage{luacode}
 \begin{luacode*}
 do
+--[[
+	These two functions are used to get the contents of the personalstatement
+	environent in the whole_buf string, and then get the number of words and
+	chars from that so we can add that information at the end of the environment.
+--]]
 	local whole_buf = ""
-	local envname = "personalstatement"
 
 	function readbuf(buf)
 		whole_buf = whole_buf .. buf .. "\n"
 	end
 
-	function startrecording()
+	function startPersonalStatement()
 		luatexbase.add_to_callback("process_input_buffer", readbuf, "readbuf")
 	end
 
-	function stoprecording()
+	function stopPersonalStatement()
 		luatexbase.remove_from_callback("process_input_buffer", "readbuf")
 
-		local buf = whole_buf:gsub("\\end{" .. envname .. "}\n$","")
+		local buf = whole_buf:gsub("\\end{personalstatement}\n$","")
 		buf = buf:gsub("\n$", "")
 
+		-- string.gsub returns the number of substitutions as
+		-- its second return value, so we only catch that one
 		local _, chars = buf:gsub(".", "")
 		local _, words = buf:gsub("%S+", "")
 
-		local info_string = string.format("\\par\\vspace{3ex}\\hfill %s words, %s characters", words, chars)
+		local info_string = string.format("\\par\\hfill %s words, %s characters", words, chars)
 		tex.sprint(info_string)
 	end
 end
 \end{luacode*}
 
-\newenvironment{personalstatement}{\directlua{startrecording()}}{\directlua{stoprecording()}}
+\newenvironment{personalstatement}{\directlua{startPersonalStatement()}}{\directlua{stopPersonalStatement()}}
 
 \begin{document}
 
@@ -51,7 +57,7 @@ end
 	\vspace*{10mm}
 \end{center}
 
-\setstretch{2.5}
+\setstretch{2.5} % A bit more than double spacing
 
 \begin{personalstatement}
 This is some simple text to test the new environment and lua code.
