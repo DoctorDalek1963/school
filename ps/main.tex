@@ -19,6 +19,9 @@ do
 	These two functions are used to get the contents of the personalstatement
 	environent in the whole_buf string, and then get the number of words and
 	chars from that so we can add that information at the end of the environment.
+
+	This actually counts the raw characters of the source code, and a word is
+	defined as any substring of non-whitespace characters.
 --]]
 	local whole_buf = ""
 
