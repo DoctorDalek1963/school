@@ -12,6 +12,37 @@
 \usepackage{csquotes}
 \usepackage{setspace}
 
+\usepackage{luacode}
+\begin{luacode*}
+do
+	local whole_buf = ""
+	local envname = "personalstatement"
+
+	function readbuf(buf)
+		whole_buf = whole_buf .. buf .. "\n"
+	end
+
+	function startrecording()
+		luatexbase.add_to_callback("process_input_buffer", readbuf, "readbuf")
+	end
+
+	function stoprecording()
+		luatexbase.remove_from_callback("process_input_buffer", "readbuf")
+
+		local buf = whole_buf:gsub("\\end{" .. envname .. "}\n$","")
+		buf = buf:gsub("\n$", "")
+
+		local _, chars = buf:gsub(".", "")
+		local _, words = buf:gsub("%S+", "")
+
+		local info_string = string.format("\\par\\vspace{3ex}\\hfill %s words, %s characters", words, chars)
+		tex.sprint(info_string)
+	end
+end
+\end{luacode*}
+
+\newenvironment{personalstatement}{\directlua{startrecording()}}{\directlua{stoprecording()}}
+
 \begin{document}
 
 \begin{center}
@@ -22,6 +53,8 @@
 
 \setstretch{2.5}
 
-TODO: Write personal statement
+\begin{personalstatement}
+This is some simple text to test the new environment and lua code.
+\end{personalstatement}
 
 \end{document}
