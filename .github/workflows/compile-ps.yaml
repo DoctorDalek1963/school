@@ -18,7 +18,7 @@ jobs:
       - name: Process ps.tex
         run: |
           draftnumber="$(echo $GITHUB_REF | grep -Po '(?<=ps-draft-)\d+')"
-          sed "s/DRAFTNUMBER/$draftnumber/g" -i ps/main.tex
+          sed "s/NUM/$draftnumber/g" -i ps/main.tex
         shell: bash
 
       - name: Compile main.tex
