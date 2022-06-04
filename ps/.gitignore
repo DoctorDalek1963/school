@@ -4,6 +4,9 @@
 compile.sh
 *.pdf
 
+# TeXstudio session file
+*.txss
+
 # Ignore all LaTeX auxiliary files
 # These are just the TeXstudio defaults
 *.log
