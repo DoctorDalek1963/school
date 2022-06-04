@@ -36,8 +36,7 @@ do
 	function stopPersonalStatement()
 		luatexbase.remove_from_callback("process_input_buffer", "readbuf")
 
-		local buf = whole_buf:gsub("\\end{personalstatement}\n$","")
-		buf = buf:gsub("\n$", "")
+		local buf = whole_buf:gsub("\n?\\end{personalstatement}\n$", "")
 
 		-- string.gsub returns the number of substitutions as
 		-- its second return value, so we only catch that one
