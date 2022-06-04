@@ -15,10 +15,19 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Process ps.tex
+      - name: Get info
+        id: getinfo
         run: |
           draftnumber="$(echo $GITHUB_REF | grep -Po '(?<=ps-draft-)\d+')"
-          sed "s/NUM/$draftnumber/g" -i ps/main.tex
+          tagname="$(echo $GITHUB_REF | grep -Po 'ps-draft-\d+')"
+          echo "::set-output name=draftnumber::${draftnumber}"
+          echo "::set-output name=tagname::pdf-${tagname}"
+          echo "::set-output name=tagmsg::Deploy PS draft ${draftnumber}"
+        shell: bash
+
+      - name: Process ps.tex
+        run: |
+          sed "s/NUM/${{ steps.getinfo.outputs.draftnumber }}/g" -i ps/main.tex
         shell: bash
 
       - name: Compile main.tex
@@ -30,7 +39,7 @@ jobs:
       - name: Put PDF in correct directory
         run: |
           mkdir -p pdf_dir
-          mv ps/main.pdf "pdf_dir/Dyson - draft #$(echo $GITHUB_REF | grep -Po '(?<=ps-draft-)\d+').pdf"
+          mv ps/main.pdf "pdf_dir/dyson-draft-${{ steps.getinfo.outputs.draftnumber }}.pdf"
         shell: bash
 
       - name: Deploy PDF
@@ -43,3 +52,5 @@ jobs:
           user_name: 'github-actions[bot]'
           user_email: 'github-actions[bot]@users.noreply.github.com'
           commit_message: 'compile pdf:'
+          tag_name: ${{ steps.getinfo.outputs.tagname }}
+          tag_message: ${{ steps.getinfo.outputs.tagmsg }}
