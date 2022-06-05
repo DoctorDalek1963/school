@@ -45,7 +45,7 @@ jobs:
       - name: Deploy PDF
         uses: peaceiris/actions-gh-pages@v3.8.0
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.UPDATE_PS_DRAFT_LIST }}
           publish_dir: pdf_dir/
           destination_dir: ps
           keep_files: true
