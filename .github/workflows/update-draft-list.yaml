@@ -23,12 +23,15 @@ jobs:
       - name: Run Python script
         run: python update_draft_list.py
 
-      - name: Deploy back to gh-pages
-        uses: peaceiris/actions-gh-pages@v3.8.0
+      - name: Commit changes
+        run: |
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "update draft list: ${GITHUB_SHA}"
+
+      - name: Push changes
+        uses: ad-m/github-push-action@v0.6.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: .
-          keep_files: true
-          user_name: 'github-actions[bot]'
-          user_email: 'github-actions[bot]@users.noreply.github.com'
-          commit_message: 'update draft list:'
+          branch: 'gh-pages'
