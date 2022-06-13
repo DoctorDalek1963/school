@@ -12,6 +12,9 @@
 \usepackage{csquotes}
 \usepackage{setspace}
 
+\usepackage{xcolor}
+\newcommand{\todo}[1]{\textsl{\textcolor{gray}{(TODO: #1)}}}
+
 \usepackage{luacode}
 \begin{luacode*}
 do
@@ -37,6 +40,7 @@ do
 		luatexbase.remove_from_callback("process_input_buffer", "readbuf")
 
 		local buf = whole_buf:gsub("\n?\\end{personalstatement}\n$", "")
+		buf = buf:gsub(" *\\todo{[^{}]+}[. ]*", "") -- Don't count \todo commands
 
 		-- string.gsub returns the number of substitutions as
 		-- its second return value, so we only catch that one
