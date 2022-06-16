@@ -33,6 +33,7 @@ do
 	end
 
 	function startPersonalStatement()
+		whole_buf = ""
 		luatexbase.add_to_callback("process_input_buffer", readbuf, "readbuf")
 	end
 
@@ -40,7 +41,11 @@ do
 		luatexbase.remove_from_callback("process_input_buffer", "readbuf")
 
 		local buf = whole_buf:gsub("\n?\\end{personalstatement}\n$", "")
-		buf = buf:gsub(" *\\todo{[^{}]+}[. ]*", "") -- Don't count \todo commands
+
+		-- Don't count \todo commands, or extraneous whitespace
+		buf = buf:gsub(" *\\todo{[^{}]+}[. ]*", "")
+		buf = buf:gsub("\n", " ")
+		buf = buf:gsub("%s{2,}", "")
 
 		-- string.gsub returns the number of substitutions as
 		-- its second return value, so we only catch that one
