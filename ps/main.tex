@@ -44,8 +44,14 @@ do
 
 		-- Don't count \todo commands, or extraneous whitespace
 		buf = buf:gsub(" *\\todo{[^{}]+}[. ]*", "")
+
+		-- This newlines thing is a hack to remove single newlines but keep double newlines
 		buf = buf:gsub("\n", " ")
-		buf = buf:gsub("%s{2,}", "")
+		buf = buf:gsub("  ", "\n\n")
+
+		print("BUFFER_START")
+		print(buf)
+		print("BUFFER_END")
 
 		-- string.gsub returns the number of substitutions as
 		-- its second return value, so we only catch that one
