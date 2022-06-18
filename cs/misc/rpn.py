@@ -102,6 +102,48 @@ class RPNCalculator:
 
         return tokens
 
+    def get_help(self, command: str) -> str:
+        """Return the help text for the given operator, or the definition of the given macro.
+
+        :raises OperatorError: If the command is invalid
+        """
+        op_help = {
+            '+': 'Add the top two elements',
+            '-': 'Subtract the top two elements',
+            '*': 'Multiply the top two elements',
+            '/': 'Divide the top two elements',
+            '//': 'Divide the top two elements and cast the result to an int',
+            '**': 'Exponentiate the top two elements',
+            'sqrt': 'Take the square root of the top element',
+            '<<': 'Bitshift the second element left by the top element',
+            '>>': 'Bitshift the second element right by the top element',
+            'ceil': 'Round the top element up',
+            'floor': 'Round the top element down',
+            'int': 'Round the top element to the nearest int',
+            'round': 'Round the second element to the top element number of decimal places',
+            'inc': 'Increment the top element',
+            'dec': 'Decrement the top element',
+            'max': 'Take the maximum of the top two elements',
+            'min': 'Take the minimum of the top two elements',
+            'neg': 'Negate the top element',
+            'drop': 'Drop the top element',
+            'swap': 'Swap the top two elements',
+            'dup': 'Duplicate the top element',
+            'over': 'Duplicate the second element and add it to the top',
+            'nip': 'Drop the second element',
+            'tuck': 'Duplicate the top element and tuck it behind the second element',
+            'rot': 'Rotate the top three elements',
+            '-rot': 'Rotate the top three elements in the opposite direction'
+        }
+
+        if command in op_help:
+            return op_help[command]
+
+        if command in self.macros:
+            return self.macros[command]
+
+        raise OperatorError(f'Operator "{command}" not recognised')
+
     def execute(self, expression: str) -> None:
         """Execute an arbitrary expression.
 
@@ -202,6 +244,8 @@ def calculate() -> None:
                 print('Repeat a command N times with `N:command`')
                 print('Repeat a sequence of commands N times with `N:{sequence of commands}`')
                 print('Define a macro with `!{macro_name: macro commands}`')
+                print()
+                print('See help for an operator or the definition of a macro with `command?`')
                 print()
 
                 continue
