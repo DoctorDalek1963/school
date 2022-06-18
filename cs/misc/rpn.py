@@ -2,6 +2,8 @@
 
 """A simple module for a little RPN calculator."""
 
+import os
+import pathlib
 import re
 from inspect import signature
 from math import ceil, floor, sqrt
@@ -144,6 +146,23 @@ class RPNCalculator:
 
         raise OperatorError(f'Operator "{command}" not recognised')
 
+    def load_macros(self) -> list[str]:
+        """Load macros from macros.rpn in same directory and return loaded macro names."""
+        macro_names = []
+        filename = os.path.join(
+            pathlib.Path(__file__).parent.absolute(),
+            'macros.rpn'
+        )
+
+        if os.path.isfile(filename):
+            with open(filename, 'r', encoding='utf-8') as f:
+                for line in f.read().splitlines():
+                    if match := re.match(r'^!\{([^\s]+): (.+)\}$', line):
+                        self.macros[match.group((1))] = match.group(2)
+                        macro_names.append(match.group(1))
+
+        return macro_names
+
     def execute(self, expression: str) -> None:
         """Execute an arbitrary expression.
 
@@ -226,6 +245,12 @@ class RPNCalculator:
 def calculate() -> None:
     """Give the user an RPN calculator in the terminal."""
     calc = RPNCalculator()
+    loaded_macros = calc.load_macros()
+
+    if loaded_macros:
+        print('Loaded macros:')
+        print(' ', *loaded_macros)
+        print()
 
     while True:
         try:
