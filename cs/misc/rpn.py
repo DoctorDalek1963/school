@@ -55,9 +55,11 @@ class RPNCalculator:
         '-rot': lambda c, b, a: [c, a, b],
     }
 
+
     def __init__(self, stack: list[Number] = None):
         """Initialize an RPNCalculator with a given stack ([] if None)."""
         self.stack = stack if stack is not None else []
+        self.macros: dict[str, str] = {}
 
     def __repr__(self) -> str:
         """Return a nice repr of the calculator."""
@@ -144,6 +146,14 @@ class RPNCalculator:
 
             return
 
+        if (match := re.match(r'^!\{([^\s]+): (.+)\}$', operator)) is not None:
+            self.macros[match.group((1))] = match.group(2)
+            return
+
+        if operator in self.macros:
+            self.execute(self.macros[operator])
+            return
+
         if operator not in RPNCalculator.operators:
             raise OperatorError(f'Operator "{operator}" not recognised')
 
@@ -179,9 +189,26 @@ def calculate() -> None:
             inp = input('> ').lower()
 
             if inp in ('help', '?'):
-                print('Available operators:')
-                print(' '.join(RPNCalculator.operators.keys()), 'clear')
+                print('Operators:')
+                print(' ', *RPNCalculator.operators.keys(), 'clear')
+
+                if len(calc.macros) > 0:
+                    print()
+                    print('Macros:')
+                    print(' ', *calc.macros.keys())
+
                 print()
+                print('Repeat a command N times with `N:command`')
+                print('Repeat a sequence of commands N times with `N:{sequence of commands}`')
+                print('Define a macro with `!{macro_name: macro commands}`')
+                print()
+
+                continue
+
+            if match := re.match(r'([^\s\?]+)\?', inp):
+                print(calc.get_help(match.group(1)))
+                print()
+
                 continue
 
             calc.execute(inp)
