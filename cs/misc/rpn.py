@@ -102,12 +102,15 @@ class RPNCalculator:
 
         return tokens
 
-    def execute(self, expression: str) -> list[Number]:
+    def execute(self, expression: str) -> None:
         """Execute an arbitrary expression.
 
         :raises OperatorError: If the operator is invalid or fails (sqrt of a negative number, for example)
         :raises StackError: If there are not enough values on the stack
         """
+        if expression == '':
+            return
+
         tokens = RPNCalculator.tokenize(expression)
 
         for token in [x for x in tokens if x]:
@@ -121,8 +124,6 @@ class RPNCalculator:
 
             except ValueError:
                 self._apply_operator(token)
-
-        return self.stack.copy()
 
     def _apply_operator(self, operator: str) -> None:
         """Apply an operator to the elements on the stack.
