@@ -177,19 +177,19 @@ class RPNCalculator:
             self.stack = []
             return
 
-        if (match := re.match(r'(\d+)\:{(.+)}', operator)) is not None:
+        if match := re.match(r'(\d+)\:{(.+)}', operator):
             for _ in range(int(match.group(1))):
                 self.execute(match.group(2))
 
             return
 
-        if (match := re.match(r'(\d+)\:([^\s]+)', operator)) is not None:
+        if match := re.match(r'(\d+)\:([^\s]+)', operator):
             for _ in range(int(match.group(1))):
                 self._apply_operator(match.group(2))
 
             return
 
-        if (match := re.match(r'^!\{([^\s]+): (.+)\}$', operator)) is not None:
+        if match := re.match(r'^!\{([^\s]+): (.+)\}$', operator):
             self.macros[match.group((1))] = match.group(2)
             return
 
