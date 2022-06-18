@@ -1,2 +1,3 @@
 !{solve_quad: -4 2:{* rot tuck} 2 ** + sqrt swap neg swap rot 2 * -rot 2:over + -rot - rot tuck / -rot / 3 round swap 3 round}
 !{root: 1 swap / **}
+!{sort_two: 2:over min -rot max}
