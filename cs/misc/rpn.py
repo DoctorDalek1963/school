@@ -67,7 +67,7 @@ class RPNCalculator:
     def tokenize(expression: str) -> list[str]:
         """Tokenize the given expression into executable chunks.
 
-        This method exists to allow syntax like "2.{multiple words}" to be parsed correctly as one token.
+        This method exists to allow syntax like "2:{multiple words}" to be parsed correctly as one token.
 
         :raises ParseError: If there are unmatched braces in the expression
         """
@@ -132,13 +132,13 @@ class RPNCalculator:
             self.stack = []
             return
 
-        if (match := re.match(r'(\d+)\.{(.+)}', operator)) is not None:
+        if (match := re.match(r'(\d+)\:{(.+)}', operator)) is not None:
             for _ in range(int(match.group(1))):
                 self.execute(match.group(2))
 
             return
 
-        if (match := re.match(r'(\d+)\.([^\s]+)', operator)) is not None:
+        if (match := re.match(r'(\d+)\:([^\s]+)', operator)) is not None:
             for _ in range(int(match.group(1))):
                 self._apply_operator(match.group(2))
 
