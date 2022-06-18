@@ -157,7 +157,7 @@ class RPNCalculator:
         if os.path.isfile(filename):
             with open(filename, 'r', encoding='utf-8') as f:
                 for line in f.read().splitlines():
-                    if match := re.match(r'^!\{([^\s]+): (.+)\}$', line):
+                    if match := re.match(r'^(\S+)!\{(.+)\}$', line):
                         self.macros[match.group((1))] = match.group(2)
                         macro_names.append(match.group(1))
 
@@ -208,7 +208,7 @@ class RPNCalculator:
 
             return
 
-        if match := re.match(r'^!\{([^\s]+): (.+)\}$', operator):
+        if match := re.match(r'^(\S+)!\{(.+)\}$', operator):
             self.macros[match.group((1))] = match.group(2)
             return
 
@@ -268,7 +268,7 @@ def calculate() -> None:
                 print()
                 print('Repeat a command N times with `N:command`')
                 print('Repeat a sequence of commands N times with `N:{sequence of commands}`')
-                print('Define a macro with `!{macro_name: macro commands}`')
+                print('Define a macro with `macro_name!{macro commands}`')
                 print()
                 print('See help for an operator or the definition of a macro with `command?`')
                 print()
