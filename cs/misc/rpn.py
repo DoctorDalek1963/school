@@ -214,6 +214,13 @@ class RPNCalculator:
             self.macros[match.group((1))] = match.group(2)
             return
 
+        if match := re.match(r'^!(\S+)$', operator):
+            if match.group(1) in self.macros:
+                self.macros.pop(match.group(1))
+                return
+
+            raise OperatorError(f'Macro "{match.group(1)}" not defined')
+
         if operator in self.macros:
             self.execute(self.macros[operator])
             return
@@ -271,6 +278,7 @@ def calculate() -> None:
                 print('Repeat a command N times with `N:command`')
                 print('Repeat a sequence of commands N times with `N:{sequence of commands}`')
                 print('Define a macro with `macro_name!{macro commands}`')
+                print('Remove a macro with `!macro_name`')
                 print()
                 print('See help for an operator or the definition of a macro with `command?`')
                 print()
