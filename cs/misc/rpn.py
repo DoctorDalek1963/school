@@ -64,9 +64,8 @@ class RPNCalculator:
         'nip': lambda a, _: [a],
         'tuck': lambda a, b: [a, b, a],
         'rot': lambda c, b, a: [b, c, a],
-        '-rot': lambda c, b, a: [c, a, b],
+        'rrot': lambda c, b, a: [c, a, b],
     }
-
 
     def __init__(self, stack: list[Number] = None):
         """Initialize an RPNCalculator with a given stack ([] if None)."""
@@ -146,7 +145,7 @@ class RPNCalculator:
             'nip': 'Drop the second element',
             'tuck': 'Duplicate the top element and tuck it behind the second element',
             'rot': 'Rotate the top three elements',
-            '-rot': 'Rotate the top three elements in the opposite direction'
+            'rrot': 'Rotate the top three elements in the opposite direction'
         }
 
         if command in op_help:
