@@ -22,6 +22,10 @@ def file_in_local_dir(filename: str) -> str:
     )
 
 
+class MacroError(Exception):
+    """A simple macro error."""
+
+
 class OperatorError(Exception):
     """A simple operator error."""
 
@@ -67,10 +71,13 @@ class RPNCalculator:
         'rrot': lambda c, b, a: [c, a, b],
     }
 
-    def __init__(self, stack: list[Number] = None):
-        """Initialize an RPNCalculator with a given stack ([] if None)."""
-        self.stack = stack if stack is not None else []
+    def __init__(self, stack: list[Number] = None, *, illegal_chars: str = None):
+        """Initialize an RPNCalculator with a given stack ([] if None) and string of illegal characters."""
+        self.stack = stack if stack else []
         self.macros: dict[str, str] = {}
+
+        illegal_chars = illegal_chars if illegal_chars else readline.get_completer_delims()
+        self.illegal_char_pattern = re.compile('.*[' + re.escape(illegal_chars) + '].*')
 
     def __repr__(self) -> str:
         """Return a nice repr of the calculator."""
@@ -165,7 +172,11 @@ class RPNCalculator:
             with open(filename, 'r', encoding='utf-8') as f:
                 for line in f.read().splitlines():
                     if match := re.match(r'^(\S+)!\{(.+)\}$', line):
-                        self.macros[match.group((1))] = match.group(2)
+                        name = match.group(1)
+                        if re.match(self.illegal_char_pattern, name):
+                            raise MacroError(f'Illegal character in macro name "{name}" in macros.rpn')
+
+                        self.macros[name] = match.group(2)
                         macro_names.append(match.group(1))
 
         return macro_names
@@ -216,6 +227,10 @@ class RPNCalculator:
             return
 
         if match := re.match(r'^(\S+)!\{(.+)\}$', operator):
+            name = match.group(1)
+            if re.match(self.illegal_char_pattern, name):
+                raise MacroError(f'Illegal character in macro name "{name}"')
+
             self.macros[match.group((1))] = match.group(2)
             return
 
@@ -224,7 +239,7 @@ class RPNCalculator:
                 self.macros.pop(match.group(1))
                 return
 
-            raise OperatorError(f'Macro "{match.group(1)}" not defined')
+            raise MacroError(f'Macro "{match.group(1)}" not defined')
 
         if operator in self.macros:
             self.execute(self.macros[operator])
@@ -337,7 +352,7 @@ def main() -> None:
 
             calc.execute(inp)
 
-        except (OperatorError, ParseError, StackError) as e:
+        except (MacroError, OperatorError, ParseError, StackError) as e:
             print(e)
 
         except KeyboardInterrupt:
