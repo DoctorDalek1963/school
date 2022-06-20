@@ -261,18 +261,17 @@ class RPNCalculator:
 
         This function is meant to be registered as the completer for ``readline.set_completer()``.
         """
-        if (match := re.match(r'.*?(\S+)$', text)) is None:
-            return None
-
-        token = match.group(1)
         candidates = list(self.operators.keys()) + list(self.macros.keys())
 
-        # Filter candidates based on each character of the token
-        for i, c in enumerate(token):
-            candidates = [
-                x for x in candidates
-                if x[i] == c
-            ]
+        if match := re.match(r'.*?(\S+)$', text):
+            token = match.group(1)
+
+            # Filter candidates based on each character of the token
+            for i, c in enumerate(token):
+                candidates = [
+                    x for x in candidates
+                    if x[i] == c
+                ]
 
         if state < len(candidates):
             # Add the space at the end to stop readline trying to complete the same token again
