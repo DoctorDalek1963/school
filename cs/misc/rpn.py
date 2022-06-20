@@ -344,7 +344,7 @@ def main() -> None:
 
                 continue
 
-            if match := re.match(r'([^\s\?]+)\?', inp):
+            if match := re.match(r'([^\s\?]+)\?$', inp):
                 print(calc.get_help(match.group(1)))
                 print()
 
