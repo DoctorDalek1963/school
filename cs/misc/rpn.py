@@ -353,7 +353,12 @@ def main() -> None:
             calc.execute(inp)
 
         except (MacroError, OperatorError, ParseError, StackError) as e:
-            print(e)
+            try:
+                import rich
+                rich.print(f'[bold red]{e.__class__.__name__}[/bold red]: {e}')
+
+            except ModuleNotFoundError:
+                print(f'{e.__class__.__name__}: {e}')
 
         except KeyboardInterrupt:
             print('\r')
