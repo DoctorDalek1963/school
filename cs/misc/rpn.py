@@ -5,12 +5,21 @@
 import os
 import pathlib
 import re
+import readline
 from inspect import signature
 from math import ceil, floor, sqrt
 from typing import Callable, TypeAlias
 
 
 Number: TypeAlias = int | float
+
+
+def file_in_local_dir(filename: str) -> str:
+    """Return the full path of a file in the same directory as this script."""
+    return os.path.join(
+        pathlib.Path(__file__).parent.absolute(),
+        filename
+    )
 
 
 class OperatorError(Exception):
@@ -151,10 +160,7 @@ class RPNCalculator:
     def load_macros(self) -> list[str]:
         """Load macros from macros.rpn in same directory and return loaded macro names."""
         macro_names = []
-        filename = os.path.join(
-            pathlib.Path(__file__).parent.absolute(),
-            'macros.rpn'
-        )
+        filename = file_in_local_dir('macros.rpn')
 
         if os.path.isfile(filename):
             with open(filename, 'r', encoding='utf-8') as f:
@@ -251,8 +257,22 @@ class RPNCalculator:
             raise OperatorError(f'Operator "{operator}" failed with operands {args}') from e
 
 
-def calculate() -> None:
+def main() -> None:
     """Give the user an RPN calculator in the terminal."""
+    inputrc = os.path.join(os.path.expanduser('~'), '.inputrc')
+    history_file = file_in_local_dir('.rpn_history')
+
+    if os.path.isfile(inputrc):
+        readline.read_init_file(inputrc)
+
+    readline.parse_and_bind('tab: complete')
+
+    if not os.path.isfile(history_file):
+        open(history_file, 'w', encoding='utf-8').close()
+
+    readline.read_history_file(history_file)
+    readline.set_history_length(1000)
+
     calc = RPNCalculator()
     loaded_macros = calc.load_macros()
 
@@ -296,8 +316,13 @@ def calculate() -> None:
         except (OperatorError, ParseError, StackError) as e:
             print(e)
 
-        except (EOFError, KeyboardInterrupt):
+        except KeyboardInterrupt:
+            print('\r')
+            continue
+
+        except EOFError:
             print()
+            readline.write_history_file(file_in_local_dir('.rpn_history'))
             return
 
         print(calc.stack)
@@ -305,4 +330,4 @@ def calculate() -> None:
 
 
 if __name__ == '__main__':
-    calculate()
+    main()
