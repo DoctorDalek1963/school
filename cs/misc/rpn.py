@@ -276,6 +276,8 @@ class RPNCalculator:
             # Add the space at the end to stop readline trying to complete the same token again
             return candidates[state] + ' '
 
+        return None
+
 
 def main() -> None:
     """Give the user an RPN calculator in the terminal."""
