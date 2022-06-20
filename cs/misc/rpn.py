@@ -256,6 +256,28 @@ class RPNCalculator:
 
             raise OperatorError(f'Operator "{operator}" failed with operands {args}') from e
 
+    def repl_complete(self, text: str, state: int) -> str | None:
+        """Complete the text prompt as given in the REPL.
+
+        This function is meant to be registered as the completer for ``readline.set_completer()``.
+        """
+        if (match := re.match(r'.*?(\S+)$', text)) is None:
+            return None
+
+        token = match.group(1)
+        candidates = list(self.operators.keys()) + list(self.macros.keys())
+
+        # Filter candidates based on each character of the token
+        for i, c in enumerate(token):
+            candidates = [
+                x for x in candidates
+                if x[i] == c
+            ]
+
+        if state < len(candidates):
+            # Add the space at the end to stop readline trying to complete the same token again
+            return candidates[state] + ' '
+
 
 def main() -> None:
     """Give the user an RPN calculator in the terminal."""
@@ -275,6 +297,8 @@ def main() -> None:
 
     calc = RPNCalculator()
     loaded_macros = calc.load_macros()
+
+    readline.set_completer(calc.repl_complete)
 
     if loaded_macros:
         print('Loaded macros:')
