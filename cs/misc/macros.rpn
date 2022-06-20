@@ -1,4 +1,4 @@
-solve_quad!{-4 2:{* rot tuck} 2 ** + sqrt swap neg swap rot 2 * -rot 2:over + -rot - rot tuck / -rot / 3 round swap 3 round}
+solve_quad!{-4 2:{* rot tuck} 2 ** + sqrt swap neg swap rot 2 * rrot 2:over + rrot - rot tuck / rrot / 3 round swap 3 round}
 root!{1 swap / **}
-sort_two!{2:over min -rot max}
-sort_three!{sort_two -rot sort_two rot sort_two}
+sort_two!{2:over min rrot max}
+sort_three!{sort_two rrot sort_two rot sort_two}
