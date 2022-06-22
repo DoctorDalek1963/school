@@ -282,7 +282,7 @@ class RPNCalculator:
             for value in func(*args):
                 self.stack.append(value)
 
-        except ValueError as e:
+        except (ValueError, ZeroDivisionError) as e:
             # Restore stack state
             for arg in args:
                 self.stack.append(arg)
