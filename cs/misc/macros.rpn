@@ -1,4 +1,13 @@
+inv!{1 swap /}
+
+sec!{cos inv}
+csc!{sin inv}
+cot!{tan inv}
+asec!{inv acos}
+acsc!{inv asin}
+acot!{inv atan}
+
 solve_quad!{-4 2:{* rot tuck} 2 ** + sqrt swap neg swap rot 2 * rrot 2:over + rrot - rot tuck / rrot / 3 round swap 3 round}
-root!{1 swap / **}
+root!{inv **}
 sort2!{2:over min rrot max}
 sort3!{sort2 rrot sort2 rot sort2}

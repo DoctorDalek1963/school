@@ -2,12 +2,13 @@
 
 """A simple module for a little RPN calculator."""
 
+import math
 import os
 import pathlib
 import re
 import readline
 from inspect import signature
-from math import ceil, floor, sqrt
+from math import ceil, floor, sqrt, sin, cos, tan, asin, acos, atan
 from typing import Callable, TypeAlias
 
 
@@ -56,6 +57,15 @@ class RPNCalculator:
         'int': lambda a: [int(round(a, 0))],
         'round': lambda a, b: [round(b, a)],
         'abs': lambda a: [abs(a)],
+        'sin': lambda a: [sin(a)],
+        'cos': lambda a: [cos(a)],
+        'tan': lambda a: [tan(a)],
+        'asin': lambda a: [asin(a)],
+        'acos': lambda a: [acos(a)],
+        'atan': lambda a: [atan(a)],
+        'pi': lambda: [math.pi],
+        'deg2rad': lambda a: [math.radians(a)],
+        'rad2deg': lambda a: [math.degrees(a)],
         'inc': lambda a: [a + 1],
         'dec': lambda a: [a - 1],
         'max': lambda a, b: [max(a, b)],
@@ -140,6 +150,15 @@ class RPNCalculator:
             'int': 'Round the top element to the nearest int',
             'round': 'Round the second element to the top element number of decimal places',
             'abs': 'Take the absolute value of the top element',
+            'sin': 'Take the sine of the top element',
+            'cos': 'Take the cosine of the top element',
+            'tan': 'Take the tangent of the top element',
+            'asin': 'Take the arcsin of the top element',
+            'acos': 'Take the arccos of the top element',
+            'atan': 'Take the arctan of the top element',
+            'pi': 'Add pi to the top of the stack',
+            'deg2rad': 'Convert the top element from degrees to radians',
+            'rad2deg': 'Convert the top element from radians to degrees',
             'inc': 'Increment the top element',
             'dec': 'Decrement the top element',
             'max': 'Take the maximum of the top two elements',
