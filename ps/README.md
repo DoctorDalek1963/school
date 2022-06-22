@@ -6,7 +6,7 @@
 - [edX : MIT] (2022-01-12 : 2022-03) Differential Equations: Linear Algebra and NxN Systems of Differential Equations (MITx - 18.033x)
 
 ### In progress
-- [Imperial College London] (2022-01-15) [Further mA*ths online programme (year 12)](https://www.imperial.ac.uk/be-inspired/schools-outreach/secondary-schools/mentoring-and-tutoring/further-maths-online-programme/)
+- [Imperial College London] (2022-01-15 : 2022-05-21) [Further mA*ths online programme (year 12)](https://www.imperial.ac.uk/be-inspired/schools-outreach/secondary-schools/mentoring-and-tutoring/further-maths-online-programme/)
 
 ---
 
