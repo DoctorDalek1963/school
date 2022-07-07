@@ -18,8 +18,8 @@ jobs:
       - name: Get info
         id: getinfo
         run: |
-          draftnumber="$(echo $GITHUB_REF | grep -Po '(?<=ps-draft-)\d+')"
-          tagname="$(echo $GITHUB_REF | grep -Po 'ps-draft-\d+')"
+          draftnumber="$(echo $GITHUB_REF | grep -Po '(?<=ps-draft-)[\d\.]+')"
+          tagname="$(echo $GITHUB_REF | grep -Po 'ps-draft-[\d\.]+')"
           echo "::set-output name=draftnumber::${draftnumber}"
           echo "::set-output name=tagname::pdf-${tagname}"
           echo "::set-output name=tagmsg::Deploy PS draft ${draftnumber}"
