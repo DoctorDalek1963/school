@@ -16,7 +16,7 @@ def main() -> None:
     pdfs: list[tuple[str, int]] = [
         (x, int(match.group(1)))
         for x in raw_pdfs
-        if (match := re.match(r'ps/dyson-draft-(\d+)\.pdf', x)) is not None
+        if (match := re.match(r'ps/dyson-draft-([\d\.]+)\.pdf', x)) is not None
     ]
 
     pdfs.sort(key=lambda t: t[1])
@@ -28,8 +28,8 @@ def main() -> None:
 
     with open('index.html', 'r', encoding='utf-8') as f:
         new_index_html = re.sub(
-            r'(?<=\t<ul id="ps-draft-list">\n)(\t\t<li><a href="ps/dyson-draft-\d+\.pdf" '
-            r'download>Draft \d+</a></li>\n)*(?=\t</ul>)',
+            r'(?<=\t<ul id="ps-draft-list">\n)(\t\t<li><a href="ps/dyson-draft-[\d\.]+\.pdf" '
+            r'download>Draft [\d\.]+</a></li>\n)*(?=\t</ul>)',
             list_content,
             f.read()
         )
