@@ -6,6 +6,16 @@ import re
 from glob import glob
 
 
+def convert_to_number(string: str) -> int | float:
+    """Convert a string number into an int or float."""
+    n = float(string)
+
+    if n == int(n):
+        return int(n)
+
+    return n
+
+
 def main() -> None:
     """Update the list of personal statement drafts in index.html."""
     raw_pdfs: list[str] = []
@@ -13,8 +23,8 @@ def main() -> None:
     for pdf in glob('ps/dyson-draft-*.pdf'):
         raw_pdfs.append(pdf)
 
-    pdfs: list[tuple[str, int]] = [
-        (x, int(match.group(1)))
+    pdfs: list[tuple[str, int | float]] = [
+        (x, convert_to_number(match.group(1)))
         for x in raw_pdfs
         if (match := re.match(r'ps/dyson-draft-([\d\.]+)\.pdf', x)) is not None
     ]
