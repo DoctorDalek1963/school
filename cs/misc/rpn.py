@@ -8,7 +8,7 @@ import pathlib
 import re
 import readline
 from inspect import signature
-from math import ceil, floor, sqrt, sin, cos, tan, asin, acos, atan, log
+from math import ceil, exp, floor, sqrt, sin, cos, tan, asin, acos, atan, log
 from typing import Callable, TypeAlias
 
 
@@ -21,6 +21,15 @@ def file_in_local_dir(filename: str) -> str:
         pathlib.Path(__file__).parent.absolute(),
         filename
     )
+
+
+def is_number(string: str) -> bool:
+    """Check if the given string is a number."""
+    try:
+        float(string)
+        return True
+    except ValueError:
+        return False
 
 
 class MacroError(Exception):
@@ -185,6 +194,38 @@ class RPNCalculator:
             return self.macros[command]
 
         raise OperatorError(f'Operator "{command}" not recognised')
+
+    def fully_expand_macros(self, name: str) -> str:
+        """Return a recursive expansion of the given macro."""
+        if name not in self.macros:
+            if name in self.operators:
+                raise MacroError(f'"{name}" is an operator, not a macro')
+
+            raise MacroError(f'Undefined macro "{name}"')
+
+        try:
+            return self._fully_expand_macros(name)
+        except RecursionError:
+            raise MacroError('Recursion error in expansion (probably a circular definition)')
+
+    def _fully_expand_macros(self, expression: str) -> str:
+        """Return a recursive expansion of the given macro.
+
+        This is the internal equivalent of :meth:`fully_expand_macros`.
+        This one will return an operator name when a given an operator name,
+        which would be very confusing for the user.
+        """
+        if expression in self.operators or is_number(expression):
+            return expression
+
+        if expression in self.macros:
+            return self._fully_expand_macros(self.macros[expression])
+
+        commands = re.sub(r'(\d+:|[{}])', '', expression).split()
+        for command in commands:
+            expression = expression.replace(command, self._fully_expand_macros(command))
+
+        return expression
 
     def load_macros(self) -> list[str]:
         """Load macros from macros.rpn in same directory and return loaded macro names."""
@@ -363,6 +404,13 @@ def main() -> None:
                 print('Remove a macro with `!macro_name`')
                 print()
                 print('See help for an operator or the definition of a macro with `command?`')
+                print('See the full definition of a macro (recursively expanded) with `macro??`')
+                print()
+
+                continue
+
+            if match := re.match(r'([^\s\?]+)\?\?$', inp):
+                print(calc.fully_expand_macros(match.group(1)))
                 print()
 
                 continue
