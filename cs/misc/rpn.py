@@ -461,7 +461,7 @@ def main() -> None:
                 print(f'{e.__class__.__name__}: {e}')
 
         except KeyboardInterrupt:
-            print('\r')
+            print('^C\r')
             continue
 
         except EOFError:
