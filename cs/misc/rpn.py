@@ -8,7 +8,7 @@ import pathlib
 import re
 import readline
 from inspect import signature
-from math import ceil, floor, sqrt, sin, cos, tan, asin, acos, atan
+from math import ceil, floor, sqrt, sin, cos, tan, asin, acos, atan, log
 from typing import Callable, TypeAlias
 
 
@@ -63,6 +63,8 @@ class RPNCalculator:
         'asin': lambda a: [asin(a)],
         'acos': lambda a: [acos(a)],
         'atan': lambda a: [atan(a)],
+        'ln': lambda a: [log(a)],
+        'log': lambda a, b: [log(a, b)],
         'pi': lambda: [math.pi],
         'deg2rad': lambda a: [math.radians(a)],
         'rad2deg': lambda a: [math.degrees(a)],
@@ -156,6 +158,8 @@ class RPNCalculator:
             'asin': 'Take the arcsin of the top element',
             'acos': 'Take the arccos of the top element',
             'atan': 'Take the arctan of the top element',
+            'ln': 'Take the natural logarithm of the top element',
+            'log': 'Take the log of the top element using the element underneath it as the base',
             'pi': 'Add pi to the top of the stack',
             'deg2rad': 'Convert the top element from degrees to radians',
             'rad2deg': 'Convert the top element from radians to degrees',
