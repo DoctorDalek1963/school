@@ -223,7 +223,7 @@ class RPNCalculator:
         if expression in self.macros:
             return self._fully_expand_macros(self.macros[expression])
 
-        commands = re.sub(r'(\d+:|[{}])', '', expression).split()
+        commands = re.sub(r'((\d+|rep):|[{}])', '', expression).split()
         for command in commands:
             expression = expression.replace(command, self._fully_expand_macros(command))
 
@@ -289,6 +289,32 @@ class RPNCalculator:
         if match := re.match(r'(\d+):(\S+)', operator):
             for _ in range(int(match.group(1))):
                 self._apply_operator(match.group(2))
+
+            return
+
+        if match := re.match(r'rep:{(.+)}', operator):
+            rep = self.stack[-1]
+
+            if rep == int(rep):
+                self.stack.pop()
+            else:
+                raise OperatorError('`rep:{commands}` requires an integer on the top of the stack')
+
+            for _ in range(rep):
+                self.execute(match.group(1))
+
+            return
+
+        if match := re.match(r'rep:(\S+)', operator):
+            rep = self.stack[-1]
+
+            if rep == int(rep):
+                self.stack.pop()
+            else:
+                raise OperatorError('`rep:command` requires an integer on the top of the stack')
+
+            for _ in range(rep):
+                self._apply_operator(match.group(1))
 
             return
 
@@ -402,6 +428,7 @@ def main() -> None:
                 print()
                 print('Repeat a command N times with `N:command`')
                 print('Repeat a sequence of commands N times with `N:{sequence of commands}`')
+                print('Replace N with `rep` to use the number on top of the stack as N')
                 print('Define a macro with `macro_name!{macro commands}`')
                 print('Remove a macro with `!macro_name`')
                 print()

@@ -11,3 +11,5 @@ solve_quad!{-4 2:{* rot tuck} 2 ** + sqrt swap neg swap rot 2 * rrot 2:over + rr
 root!{inv **}
 sort2!{2:over min rrot max}
 sort3!{sort2 rrot sort2 rot sort2}
+
+sum!{1 - rep:+}
