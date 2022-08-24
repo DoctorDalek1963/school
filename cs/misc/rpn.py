@@ -2,13 +2,15 @@
 
 """A simple module for a little RPN calculator."""
 
+from __future__ import annotations
+
 import math
 import os
 import pathlib
 import re
 import readline
 from inspect import signature
-from math import ceil, exp, floor, sqrt, sin, cos, tan, asin, acos, atan, log
+from math import ceil, floor, sqrt, sin, cos, tan, asin, acos, atan, log
 from typing import Callable, TypeAlias
 
 
@@ -235,7 +237,7 @@ class RPNCalculator:
         if os.path.isfile(filename):
             with open(filename, 'r', encoding='utf-8') as f:
                 for line in f.read().splitlines():
-                    if match := re.match(r'^(\S+)!\{(.+)\}$', line):
+                    if match := re.match(r'^(\S+)!\{(.+)}$', line):
                         name = match.group(1)
                         if re.match(self.illegal_char_pattern, name):
                             raise MacroError(f'Illegal character in macro name "{name}" in macros.rpn')
@@ -278,24 +280,24 @@ class RPNCalculator:
             self.stack = []
             return
 
-        if match := re.match(r'(\d+)\:{(.+)}', operator):
+        if match := re.match(r'(\d+):{(.+)}', operator):
             for _ in range(int(match.group(1))):
                 self.execute(match.group(2))
 
             return
 
-        if match := re.match(r'(\d+)\:([^\s]+)', operator):
+        if match := re.match(r'(\d+):(\S+)', operator):
             for _ in range(int(match.group(1))):
                 self._apply_operator(match.group(2))
 
             return
 
-        if match := re.match(r'^(\S+)!\{(.+)\}$', operator):
+        if match := re.match(r'^(\S+)!\{(.+)}$', operator):
             name = match.group(1)
             if re.match(self.illegal_char_pattern, name):
                 raise MacroError(f'Illegal character in macro name "{name}"')
 
-            self.macros[match.group((1))] = match.group(2)
+            self.macros[match.group(1)] = match.group(2)
             return
 
         if match := re.match(r'^!(\S+)$', operator):
@@ -409,13 +411,13 @@ def main() -> None:
 
                 continue
 
-            if match := re.match(r'([^\s\?]+)\?\?$', inp):
+            if match := re.match(r'([^\s?]+)\?\?$', inp):
                 print(calc.fully_expand_macros(match.group(1)))
                 print()
 
                 continue
 
-            if match := re.match(r'([^\s\?]+)\?$', inp):
+            if match := re.match(r'([^\s?]+)\?$', inp):
                 print(calc.get_help(match.group(1)))
                 print()
 
