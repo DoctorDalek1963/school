@@ -13,3 +13,7 @@ sort2!{2:over min rrot max}
 sort3!{sort2 rrot sort2 rot sort2}
 
 sum!{1 - rep:+}
+seq!{1 swap 1 - rep:{dup 1 +}}
+
+fib!{1 5 sqrt + over ** swap 1 5 sqrt - over ** swap rrot - swap 2 swap ** 5 sqrt * / int}
+mapfib!{1 swap rep:{dup fib swap 1 +} drop}
