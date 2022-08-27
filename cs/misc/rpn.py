@@ -307,10 +307,10 @@ class RPNCalculator:
         if match := re.match(r'rep:{(.+)}', operator):
             rep = self.stack[-1]
 
-            if rep == int(rep):
+            if rep == int(rep) and rep > 0:
                 self.stack.pop()
             else:
-                raise OperatorError('`rep:{commands}` requires an integer on the top of the stack')
+                raise OperatorError('`rep:{commands}` requires a positive integer on the top of the stack')
 
             for _ in range(rep):
                 self.execute(match.group(1))
@@ -320,10 +320,10 @@ class RPNCalculator:
         if match := re.match(r'rep:(\S+)', operator):
             rep = self.stack[-1]
 
-            if rep == int(rep):
+            if rep == int(rep) and rep > 0:
                 self.stack.pop()
             else:
-                raise OperatorError('`rep:command` requires an integer on the top of the stack')
+                raise OperatorError('`rep:command` requires a positive integer on the top of the stack')
 
             for _ in range(rep):
                 self._apply_operator(match.group(1))
