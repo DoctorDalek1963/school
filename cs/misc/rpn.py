@@ -217,15 +217,26 @@ class RPNCalculator:
         This one will return an operator name when a given an operator name,
         which would be very confusing for the user.
         """
-        if expression in self.operators or is_number(expression):
-            return expression
+        # Find all the commands and filter out just the macros
+        commands = [a + b for a, _, b in re.findall(r'((\d+|rep):)?(\w+)', expression)]
 
-        if expression in self.macros:
-            return self._fully_expand_macros(self.macros[expression])
+        # Some macros will look like `3:macro` and we need to expand these to `3:{macro expansion}`
+        # To do this, we need to know the exact string in the expression, and the macro name itself
+        macros_to_expand = [
+            (x, y)
+            for x in commands
+            if (y := x.split(':')[-1]) in self.macros.keys()
+        ]
 
-        commands = re.sub(r'((\d+|rep):|[{}])', '', expression).split()
-        for command in commands:
-            expression = expression.replace(command, self._fully_expand_macros(command))
+        # We then sort this list of macro tuples to replace the ones with colons first
+        for expr, macro in sorted(macros_to_expand, key=lambda t: ':' not in t[0]):
+            replacement = self._fully_expand_macros(self.macros[macro])
+
+            # Wrap the replacement in braces if necessary
+            if match := re.match(r'^(\d+|rep):\w+$', expr):
+                replacement = match.group(1) + ':{' + replacement + '}'
+
+            expression = expression.replace(expr, replacement)
 
         return expression
 
