@@ -186,7 +186,8 @@ class RPNCalculator:
             'nip': 'Drop the second element',
             'tuck': 'Duplicate the top element and tuck it behind the second element',
             'rot': 'Rotate the top three elements',
-            'rrot': 'Rotate the top three elements in the opposite direction'
+            'rrot': 'Rotate the top three elements in the opposite direction',
+            'clear': 'Remove all elements on the stack (press Ctrl+L to clear the screen)'
         }
 
         if command in op_help:
