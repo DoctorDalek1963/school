@@ -49,6 +49,26 @@ impl Sorter {
         list
     }
 
+    /// Perform a Stalin sort on the list.
+    ///
+    /// This works by removing all elements that aren't in order.
+    pub fn stalin_sort(&self) -> Vec<u32> {
+        let mut list = self.list.clone();
+        let mut i: usize = 0;
+        let mut highest: u32 = 0;
+
+        while i < list.len() {
+            if list[i] < highest {
+                list.remove(i);
+            } else {
+                highest = list[i];
+                i += 1;
+            }
+        }
+
+        list
+    }
+
     /// Sort the list with the standard library `Vec::sort` method.
     pub fn std_sort(&self) -> Vec<u32> {
         let mut list = self.list.clone();
@@ -98,6 +118,11 @@ mod tests {
     #[test]
     fn bubble_sort() {
         assert!(is_sorted(&Sorter::new(1000).bubble_sort()));
+    }
+
+    #[test]
+    fn stalin_sort() {
+        assert!(is_sorted(&Sorter::new(1000).stalin_sort()));
     }
 
     #[test]

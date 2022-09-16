@@ -15,6 +15,7 @@ fn main() {
     let sorts = [
         //(Sorter::bogo_sort as SorterMethod, "bogo_sort"),
         (Sorter::bubble_sort as SorterMethod, "bubble_sort"),
+        (Sorter::stalin_sort as SorterMethod, "stalin_sort"),
         (Sorter::std_sort as SorterMethod, "std_sort"),
     ];
 
