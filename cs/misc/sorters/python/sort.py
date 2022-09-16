@@ -69,6 +69,7 @@ class Sorter:
             for i in range(iterations):
                 if new_list[i] > new_list[i + 1]:
                     new_list[i], new_list[i + 1] = new_list[i + 1], new_list[i]
+            iterations -= 1
 
         return new_list
 
