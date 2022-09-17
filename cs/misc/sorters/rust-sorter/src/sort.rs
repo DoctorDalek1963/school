@@ -8,6 +8,8 @@ pub struct Sorter {
 }
 
 impl Sorter {
+    #![allow(dead_code)]
+
     /// Create a new list with `length` elements and shuffle it.
     pub fn new(length: u32) -> Self {
         let mut list: Vec<u32> = (0..length).collect();
