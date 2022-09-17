@@ -3,6 +3,9 @@ use std::env;
 mod sort;
 use sort::{Sorter, SorterMethod};
 
+/// Create a list of tuples of `Sorter` methods with their associated names.
+///
+/// These tuples are intended to be used for arguments to `sort::time_sort()`.
 macro_rules! sorter_methods {
     ( $( $x:ident ),* ) => {
         {

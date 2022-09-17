@@ -35,14 +35,11 @@ impl Sorter {
     pub fn bubble_sort(&self) -> Vec<u32> {
         let mut list = self.list.clone();
         let mut iterations = list.len() - 1;
-        let mut temp: u32;
 
         for _ in 0..(list.len() - 1) {
             for i in 0..iterations {
                 if list[i] > list[i + 1] {
-                    temp = list[i];
-                    list[i] = list[i + 1];
-                    list[i + 1] = temp;
+                    (list[i], list[i + 1]) = (list[i + 1], list[i]);
                 }
             }
             iterations -= 1;
