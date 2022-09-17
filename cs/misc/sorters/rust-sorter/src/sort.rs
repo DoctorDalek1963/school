@@ -149,6 +149,22 @@ pub fn time_sort(sorter: &Sorter, method: SorterMethod, name: &str) {
 mod tests {
     use super::*;
 
+    /// Test the given `Sorter` method with the optionally given list length.
+    macro_rules! test_sorter_method {
+        ( $meth:ident, $x:literal ) => {{
+            assert!(is_sorted(&Sorter::new($x).$meth()));
+        }};
+    }
+
+    /// Run the given body `x` number of times to ensure good tests.
+    macro_rules! test_multiple {
+        ( $x:literal, $body:expr ) => {{
+            for _ in 0..$x {
+                $body;
+            }
+        }};
+    }
+
     #[test]
     fn sorter_new() {
         assert_eq!(Sorter::new(10).list.len(), 10);
@@ -160,21 +176,26 @@ mod tests {
 
     #[test]
     fn bogo_sort() {
-        assert!(is_sorted(&Sorter::new(5).bogo_sort()));
+        test_multiple!(100, test_sorter_method!(bogo_sort, 5));
     }
 
     #[test]
     fn bubble_sort() {
-        assert!(is_sorted(&Sorter::new(1000).bubble_sort()));
+        test_multiple!(10, test_sorter_method!(bubble_sort, 1000));
+    }
+
+    #[test]
+    fn merge_sort() {
+        test_multiple!(100, test_sorter_method!(merge_sort, 10_000));
     }
 
     #[test]
     fn stalin_sort() {
-        assert!(is_sorted(&Sorter::new(1000).stalin_sort()));
+        test_multiple!(100, test_sorter_method!(stalin_sort, 10_000));
     }
 
     #[test]
     fn std_sort() {
-        assert!(is_sorted(&Sorter::new(1000).std_sort()));
+        test_multiple!(100, test_sorter_method!(std_sort, 10_000));
     }
 }
