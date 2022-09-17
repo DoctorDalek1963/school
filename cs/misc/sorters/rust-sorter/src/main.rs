@@ -25,8 +25,9 @@ fn main() {
 
     let sorts = sorter_methods![
         //bogo_sort,
-        //bubble_sort,
-        //stalin_sort,
+        bubble_sort,
+        merge_sort,
+        stalin_sort,
         std_sort
     ];
 
@@ -35,6 +36,6 @@ fn main() {
 
     // TODO: Parallelize this
     for (method, name) in sorts {
-        sort::time_sort(&sorter, method, name)
+        sort::time_sort(&sorter, method, name);
     }
 }

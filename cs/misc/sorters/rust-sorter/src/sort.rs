@@ -51,6 +51,55 @@ impl Sorter {
         list
     }
 
+    /// Perform a merge sort on the list.
+    pub fn merge_sort(&self) -> Vec<u32> {
+        fn recursive_merge_sort(list: &mut [u32]) {
+            if list.len() < 2 {
+                return;
+            }
+
+            let mid = list.len() / 2;
+
+            // Sort the left and right halves individually
+            recursive_merge_sort(&mut list[..mid]);
+            recursive_merge_sort(&mut list[mid..]);
+
+            // Now we create a vector to store the newly merged list and scan through each half,
+            // adding the smaller number each iteration
+            let mut left_index = 0;
+            let mut right_index = mid;
+            let mut vec = Vec::with_capacity(list.len());
+
+            while left_index < mid && right_index < list.len() {
+                if list[left_index] < list[right_index] {
+                    vec.push(list[left_index]);
+                    left_index += 1;
+                } else {
+                    vec.push(list[right_index]);
+                    right_index += 1;
+                }
+            }
+
+            // One of these slices will be empty, but the other will contain the unmerged, sorted
+            // elements
+            for elem in &list[left_index..mid] {
+                vec.push(*elem);
+            }
+            for elem in &list[right_index..] {
+                vec.push(*elem);
+            }
+
+            // Then we just put the elements back into the list slice
+            for i in 0..list.len() {
+                list[i] = vec[i];
+            }
+        }
+
+        let mut list = self.list.clone();
+        recursive_merge_sort(&mut list[..]);
+        list
+    }
+
     /// Perform a Stalin sort on the list.
     ///
     /// This works by removing all elements that aren't in order.
