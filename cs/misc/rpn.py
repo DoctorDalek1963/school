@@ -60,6 +60,7 @@ class RPNCalculator:
         '/': lambda a, b: [b / a],
         '//': lambda a, b: [int(b // a)],
         '**': lambda a, b: [b ** a],
+        '%': lambda a, b: [b % a],
         'sqrt': lambda a: [sqrt(a)],
         '<<': lambda a, b: [b << a],
         '>>': lambda a, b: [b >> a],
@@ -155,6 +156,7 @@ class RPNCalculator:
             '/': 'Divide the top two elements',
             '//': 'Divide the top two elements and cast the result to an int',
             '**': 'Exponentiate the top two elements',
+            '%': 'Return the modulus of the second element, mod the top elements',
             'sqrt': 'Take the square root of the top element',
             '<<': 'Bitshift the second element left by the top element',
             '>>': 'Bitshift the second element right by the top element',
@@ -464,7 +466,7 @@ def main() -> None:
 
             calc.execute(inp)
 
-        except (MacroError, OperatorError, ParseError, StackError) as e:
+        except (MacroError, OperatorError, ParseError, StackError, RecursionError) as e:
             try:
                 import rich
                 rich.print(f'[bold red]{e.__class__.__name__}[/bold red]: {e}')
