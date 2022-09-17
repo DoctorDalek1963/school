@@ -1,7 +1,8 @@
+use sort::{Sorter, SorterMethod};
 use std::env;
+use threadpool::ThreadPool;
 
 mod sort;
-use sort::{Sorter, SorterMethod};
 
 /// Create a list of tuples of `Sorter` methods with their associated names.
 ///
@@ -37,8 +38,10 @@ fn main() {
     let sorter = Sorter::new(length);
     println!("To sort {} items:\n", length);
 
-    // TODO: Parallelize this
+    let pool = ThreadPool::new(sorts.len());
     for (method, name) in sorts {
-        sort::time_sort(&sorter, method, name);
+        let clone = sorter.clone();
+        pool.execute(move || sort::time_sort(&clone, method, name));
     }
+    pool.join();
 }

@@ -3,6 +3,7 @@ use std::time;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 
+#[derive(Clone)]
 pub struct Sorter {
     list: Vec<u32>,
 }
