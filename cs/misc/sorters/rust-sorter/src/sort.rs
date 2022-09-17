@@ -102,20 +102,24 @@ impl Sorter {
     ///
     /// This works by removing all elements that aren't in order.
     pub fn stalin_sort(&self) -> Vec<u32> {
-        let mut list = self.list.clone();
-        let mut i: usize = 0;
+        let list = self.list.clone();
         let mut highest: u32 = 0;
+        let mut indices: Vec<usize> = Vec::new();
 
-        while i < list.len() {
-            if list[i] < highest {
-                list.remove(i);
-            } else {
+        // Get all the indices of elements we want to keep
+        for i in 0..list.len() {
+            if list[i] > highest {
                 highest = list[i];
-                i += 1;
+                indices.push(i);
             }
         }
 
-        list
+        // Then create a new vec of just the elements we care about
+        let mut new_list: Vec<u32> = Vec::new();
+        for i in indices {
+            new_list.push(list[i]);
+        }
+        new_list
     }
 
     /// Sort the list with the standard library `Vec::sort` method.
