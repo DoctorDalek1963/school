@@ -104,20 +104,14 @@ impl Sorter {
     pub fn stalin_sort(&self) -> Vec<u32> {
         let list = self.list.clone();
         let mut highest: u32 = 0;
-        let mut indices: Vec<usize> = Vec::new();
+        let mut new_list: Vec<u32> = Vec::new();
 
-        // Get all the indices of elements we want to keep
+        // Just take the elements that we want to keep
         for i in 0..list.len() {
             if list[i] > highest {
                 highest = list[i];
-                indices.push(i);
+                new_list.push(list[i]);
             }
-        }
-
-        // Then create a new vec of just the elements we care about
-        let mut new_list: Vec<u32> = Vec::new();
-        for i in indices {
-            new_list.push(list[i]);
         }
         new_list
     }
