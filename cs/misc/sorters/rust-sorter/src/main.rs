@@ -1,6 +1,6 @@
 use sort::{Sorter, SorterMethod};
-use std::env;
-use threadpool::ThreadPool;
+use std::sync::Arc;
+use std::{env, thread};
 
 mod sort;
 
@@ -35,13 +35,18 @@ fn main() {
         std_sort
     ];
 
-    let sorter = Sorter::new(length);
+    let sorter = Arc::new(Sorter::new(length));
+    let mut handles = Vec::new();
     println!("To sort {} items:\n", length);
 
-    let pool = ThreadPool::new(sorts.len());
     for (method, name) in sorts {
-        let clone = sorter.clone();
-        pool.execute(move || sort::time_sort(&clone, method, name));
+        let sorter = Arc::clone(&sorter);
+        handles.push(thread::spawn(move || {
+            sort::time_sort(&sorter, method, name);
+        }));
     }
-    pool.join();
+
+    for handle in handles {
+        handle.join().unwrap();
+    }
 }
