@@ -31,6 +31,7 @@ fn main() {
     let sorts = sorter_methods![
         //bogo_sort,
         bubble_sort,
+        insertion_sort,
         merge_sort,
         stalin_sort,
         std_sort

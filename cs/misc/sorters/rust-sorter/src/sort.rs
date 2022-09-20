@@ -49,6 +49,31 @@ impl Sorter {
         list
     }
 
+    /// Perform an insertion sort on the list.
+    pub fn insertion_sort(&self) -> Vec<u32> {
+        let mut list = self.list.clone();
+
+        for j in 1..list.len() {
+            let next_item = list[j];
+            let mut i = j - 1;
+
+            let mut index: usize = i + 1;
+
+            while list[i] > next_item {
+                list[i + 1] = list[i];
+                index = i;
+                if i == 0 {
+                    break;
+                };
+                i -= 1;
+            }
+
+            list[index] = next_item;
+        }
+
+        list
+    }
+
     /// Perform a merge sort on the list.
     pub fn merge_sort(&self) -> Vec<u32> {
         fn recursive_merge_sort(list: &mut [u32]) {
@@ -181,6 +206,11 @@ mod tests {
     #[test]
     fn bubble_sort() {
         test_multiple!(10, test_sorter_method!(bubble_sort, 1000));
+    }
+
+    #[test]
+    fn insertion_sort() {
+        test_multiple!(100, test_sorter_method!(insertion_sort, 1000));
     }
 
     #[test]
