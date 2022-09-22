@@ -3,8 +3,6 @@ use sort::{Sorter, SorterMethod};
 use std::sync::Arc;
 use std::{env, thread};
 
-mod sort;
-
 /// Create a list of tuples of `Sorter` methods with their associated names.
 ///
 /// These tuples are intended to be used for arguments to `sort::time_sort()`.
