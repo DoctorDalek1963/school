@@ -161,6 +161,7 @@ fn is_sorted(list: &Vec<u32>) -> bool {
 
 pub type SorterMethod = fn(&Sorter) -> Vec<u32>;
 
+/// Time the given `Sorter` method with the given sorter and printable name.
 pub fn time_sort(sorter: &Sorter, method: SorterMethod, name: &str) {
     let start = time::Instant::now();
     method(sorter);
@@ -173,7 +174,7 @@ pub fn time_sort(sorter: &Sorter, method: SorterMethod, name: &str) {
 mod tests {
     use super::*;
 
-    /// Test the given `Sorter` method with the optionally given list length.
+    /// Test the given `Sorter` method with the given list length.
     macro_rules! test_sorter_method {
         ( $meth:ident, $x:literal ) => {{
             assert!(is_sorted(&Sorter::new($x).$meth()));
