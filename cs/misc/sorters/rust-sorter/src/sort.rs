@@ -113,9 +113,7 @@ impl Sorter {
             }
 
             // Then we just put the elements back into the list slice
-            for i in 0..list.len() {
-                list[i] = vec[i];
-            }
+            list.copy_from_slice(&vec[..list.len()]);
         }
 
         let mut list = self.list.clone();
@@ -132,10 +130,10 @@ impl Sorter {
         let mut new_list: Vec<u32> = Vec::new();
 
         // Just take the elements that we want to keep
-        for i in 0..list.len() {
-            if list[i] > highest {
-                highest = list[i];
-                new_list.push(list[i]);
+        for item in list {
+            if item > highest {
+                highest = item;
+                new_list.push(item);
             }
         }
         new_list
