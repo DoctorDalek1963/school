@@ -1,6 +1,6 @@
 use num_format::{Locale, ToFormattedString};
 use sort::{Sorter, SorterMethod};
-use std::sync::Arc;
+use std::sync::{mpsc, Arc};
 use std::{env, thread};
 
 /// Create a list of tuples of `Sorter` methods with their associated names.
@@ -37,6 +37,8 @@ fn main() {
 
     let sorter = Arc::new(Sorter::new(length));
     let mut handles = Vec::new();
+    let (tx, rx) = mpsc::channel();
+
     println!(
         "To sort {} items:\n",
         length.to_formatted_string(&Locale::en)
@@ -44,9 +46,17 @@ fn main() {
 
     for (method, name) in sorts {
         let sorter = Arc::clone(&sorter);
+        let tx_new = tx.clone();
         handles.push(thread::spawn(move || {
-            sort::time_sort(&sorter, method, name);
+            tx_new
+                .send((name, sort::time_sort(&sorter, method)))
+                .unwrap();
         }));
+    }
+    drop(tx);
+
+    for (name, time) in rx {
+        println!("{name} took {time:?}");
     }
 
     for handle in handles {

@@ -1,4 +1,4 @@
-use std::time;
+use std::time::{self, Duration};
 
 use rand::seq::SliceRandom;
 use rand::thread_rng;
@@ -162,12 +162,12 @@ fn is_sorted(list: &Vec<u32>) -> bool {
 pub type SorterMethod = fn(&Sorter) -> Vec<u32>;
 
 /// Time the given `Sorter` method with the given sorter and printable name.
-pub fn time_sort(sorter: &Sorter, method: SorterMethod, name: &str) {
+pub fn time_sort(sorter: &Sorter, method: SorterMethod) -> Duration {
     let start = time::Instant::now();
     method(sorter);
     let end = time::Instant::now();
 
-    println!("{name} took {:?}", end.duration_since(start));
+    end.duration_since(start)
 }
 
 #[cfg(test)]
