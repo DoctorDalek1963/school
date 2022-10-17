@@ -147,6 +147,13 @@ impl Sorter {
         list.sort();
         list
     }
+
+    /// Sort the list with the standard library `Vec::sort_unstable` method.
+    pub fn std_sort_unstable(&self) -> Vec<u32> {
+        let mut list = self.list.clone();
+        list.sort_unstable();
+        list
+    }
 }
 
 /// Check if the given list is sorted in ascending order.
@@ -227,5 +234,10 @@ mod tests {
     #[test]
     fn std_sort() {
         test_multiple!(100, test_sorter_method!(std_sort, 10_000));
+    }
+
+    #[test]
+    fn std_sort_unstable() {
+        test_multiple!(100, test_sorter_method!(std_sort_unstable, 10_000));
     }
 }

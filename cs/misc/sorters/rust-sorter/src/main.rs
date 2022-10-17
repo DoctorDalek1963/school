@@ -7,7 +7,7 @@ use std::{env, thread};
 ///
 /// These tuples are intended to be used for arguments to `sort::time_sort()`.
 macro_rules! sorter_methods {
-    ( $( $x:ident ),* ) => {
+    ( $( $x:ident ),*, ) => {
         {
             let mut temp_vec: Vec<(SorterMethod, &str)> = Vec::new();
             $(
@@ -32,7 +32,8 @@ fn main() {
         insertion_sort,
         merge_sort,
         stalin_sort,
-        std_sort
+        std_sort,
+        std_sort_unstable,
     ];
 
     let sorter = Arc::new(Sorter::new(length));
