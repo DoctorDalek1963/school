@@ -18,6 +18,7 @@ fn benchmark_sorts(c: &mut Criterion) {
     bench_sorter_method!(merge_sort);
     bench_sorter_method!(stalin_sort);
     bench_sorter_method!(std_sort);
+    bench_sorter_method!(std_sort_unstable);
 }
 
 criterion_group!(benches, benchmark_sorts);
