@@ -1,8 +1,10 @@
 //! This module handles linear programming systems.
 
+mod comparison;
+mod constraint;
 mod expression;
 
-use self::expression::Expression;
+use self::{comparison::Comparison, constraint::Constraint, expression::Expression};
 use color_eyre::{Report, Result};
 use lazy_static::lazy_static;
 use regex::Regex;
@@ -19,6 +21,7 @@ lazy_static! {
 }
 
 /// A collection of named variables.
+#[derive(Clone, Debug, PartialEq)]
 pub struct Variables(HashSet<String>);
 
 /// Validate the given variable by trimming it and checking it against the [`VARIABLE_REGEX`].
@@ -38,27 +41,6 @@ enum ObjectiveFunction<'v> {
 
     /// Maximise the expression.
     Maximise(Expression<'v>),
-}
-
-/// Comparison operators.
-enum Comparison {
-    LessThan,
-    LessThanOrEqual,
-    Equal,
-    GreaterThan,
-    GreaterThanOrEqual,
-}
-
-/// A constraint in terms of variables, a comparison operator, and a constant.
-struct Constraint<'v> {
-    /// The LHS expression in terms of the variables.
-    var_expression: Expression<'v>,
-
-    /// The comparison operator.
-    comparison: Comparison,
-
-    /// The constant to compare to.
-    constant: f32,
 }
 
 /// A linear programming system, with a set of variables, objective function, and a set of contraints.
@@ -89,6 +71,32 @@ impl<'v> LinProgSystem<'v> {
     }
 }
 
+fn parse_float_no_e(input: &str) -> nom::IResult<&str, f32> {
+    use nom::{
+        branch::alt,
+        character::complete::{char, digit1},
+        combinator::{map, opt, recognize},
+        sequence::{pair, tuple},
+        ParseTo,
+    };
+
+    let (input, num) = recognize(tuple((
+        opt(alt((char('+'), char('-')))),
+        alt((
+            map(tuple((digit1, opt(pair(char('.'), opt(digit1))))), |_| ()),
+            map(tuple((char('.'), digit1)), |_| ()),
+        )),
+    )))(input)?;
+
+    match num.parse_to() {
+        Some(f) => Ok((input, f)),
+        None => Err(nom::Err::Error(nom::error::Error {
+            input,
+            code: nom::error::ErrorKind::Float,
+        })),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -105,5 +113,20 @@ mod tests {
         assert!(validate_variable("John Smith").is_err());
         assert!(validate_variable("bad variable name").is_err());
         assert!(validate_variable("@").is_err());
+    }
+
+    #[test]
+    fn parse_float_no_e_test() {
+        assert_eq!(parse_float_no_e("1"), Ok(("", 1.)));
+        assert_eq!(parse_float_no_e("1.2 "), Ok((" ", 1.2)));
+        assert_eq!(parse_float_no_e(".3d"), Ok(("d", 0.3)));
+        assert_eq!(parse_float_no_e("-1"), Ok(("", -1.)));
+        assert_eq!(parse_float_no_e("-2.3-"), Ok(("-", -2.3)));
+        assert_eq!(parse_float_no_e("-.4"), Ok(("", -0.4)));
+        assert_eq!(parse_float_no_e("-0.4"), Ok(("", -0.4)));
+        assert_eq!(
+            parse_float_no_e("16 other stuff"),
+            Ok((" other stuff", 16.))
+        );
     }
 }
