@@ -10,7 +10,7 @@ use color_eyre::{Report, Result};
 use inquire::{Select, Text};
 use lazy_static::lazy_static;
 use regex::Regex;
-use std::collections::HashSet;
+use std::{collections::HashSet, fmt};
 use tracing::instrument;
 
 /// The internal representation of the variable RegEx. This string is used in multiple RegExes, so
@@ -45,6 +45,16 @@ enum ObjectiveFunction<'v> {
 
     /// Maximise the expression.
     Maximise(Expression<'v>),
+}
+
+impl<'v> fmt::Display for ObjectiveFunction<'v> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let (word, expression) = match self {
+            ObjectiveFunction::Minimise(exp) => ("Minimise", exp),
+            ObjectiveFunction::Maximise(exp) => ("Maximise", exp),
+        };
+        write!(f, "{} {}", word, expression)
+    }
 }
 
 impl<'v> ObjectiveFunction<'v> {

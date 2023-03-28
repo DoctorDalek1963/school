@@ -4,6 +4,7 @@ use super::{
     expression::ExpressionCustomError, parse_float_no_e, Comparison, Expression, Variables,
 };
 use nom::character::complete::multispace0;
+use std::fmt;
 
 /// A constraint in terms of variables, a comparison operator, and a constant.
 #[derive(Clone, Debug, PartialEq)]
@@ -19,6 +20,16 @@ pub struct Constraint<'v> {
 
     /// The constant to compare to.
     constant: f32,
+}
+
+impl<'v> fmt::Display for Constraint<'v> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{} {} {}",
+            self.var_expression, self.comparison, self.constant
+        )
+    }
 }
 
 impl<'v> Constraint<'v> {

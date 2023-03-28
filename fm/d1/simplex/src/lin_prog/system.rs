@@ -80,6 +80,7 @@ impl LinProgSystem {
                     }
                 }
 
+                debug!(?constraints);
                 constraints
             },
         }
