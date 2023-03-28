@@ -39,12 +39,15 @@ impl<'v> fmt::Display for Expression<'v> {
 /// expression parser without having to abuse nom's own error types.
 #[derive(Debug, thiserror::Error, PartialEq)]
 pub enum ExpressionCustomError<'s, E> {
+    /// An error resulting from `nom`.
     #[error("nom internal error")]
     NomError(nom::Err<E>),
 
+    /// An undefined variable.
     #[error("undefined variable name {0:?}")]
     UndefinedVariable(&'s str),
 
+    /// Bad punctuation in the expression, like "a*b".
     #[error("bad punctuation {0:?}")]
     BadPunctuation(String),
 }
@@ -69,13 +72,14 @@ impl<'s, I> ParseError<I> for ExpressionCustomError<'s, nom::error::Error<I>> {
         Self::NomError(nom::Err::Error(nom::error::Error { input, code }))
     }
 
-    fn append(input: I, kind: nom::error::ErrorKind, other: Self) -> Self {
+    fn append(_input: I, _kind: nom::error::ErrorKind, other: Self) -> Self {
         // I don't know what to do here, so I'm just gonna return the other error.
         other
     }
 }
 
 impl<'v> Expression<'v> {
+    /// Parse an expression from the input using `nom`.
     pub(crate) fn nom_parse<'i>(
         input: &'i str,
         vars: &'v Variables,
@@ -84,7 +88,7 @@ impl<'v> Expression<'v> {
         let regex_disallowed_chars = Regex::new(r"[^a-zA-Z0-9.\s_<>=≤≥+-]").unwrap();
 
         if let Ok((_, punctuation)) =
-            re_find::<'i, nom::error::Error<&'i str>>(regex_disallowed_chars.clone())(input)
+            re_find::<'i, nom::error::Error<&'i str>>(regex_disallowed_chars)(input)
         {
             return Err(nom::Err::Failure(ExpressionCustomError::BadPunctuation(
                 punctuation.to_string(),
@@ -136,9 +140,7 @@ impl<'v> Expression<'v> {
 
                 // Find a variable
                 let (input, var) = re_find(
-                    Regex::new(&format!(r"^\s*{}", _VARIABLE_REGEX_INTERNAL))
-                        .unwrap()
-                        .clone(),
+                    Regex::new(&format!(r"^\s*{_VARIABLE_REGEX_INTERNAL}")).unwrap(),
                 )(input)?;
                 let var = validate_variable(var).map_err(|_| {
                     nom::Err::Failure(ExpressionCustomError::UndefinedVariable(var))
@@ -244,7 +246,7 @@ where
         }
 
         loop {
-            let len = i.input_len();
+            // let len = i.input_len();
             match sep.parse(i.clone()) {
                 Err(nom::Err::Error(_)) => return Ok((i, res)),
                 Err(e) => return Err(e),

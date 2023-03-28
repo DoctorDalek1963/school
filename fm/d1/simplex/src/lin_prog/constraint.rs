@@ -33,6 +33,7 @@ impl<'v> fmt::Display for Constraint<'v> {
 }
 
 impl<'v> Constraint<'v> {
+    /// Parse a constraint from the input using `nom`.
     pub fn nom_parse<'i>(
         input: &'i str,
         vars: &'v Variables,

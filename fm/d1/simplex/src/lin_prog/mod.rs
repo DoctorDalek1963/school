@@ -1,9 +1,9 @@
 //! This module handles linear programming systems.
 
-pub(crate) mod comparison;
-pub(crate) mod constraint;
-pub(crate) mod expression;
-pub(crate) mod system;
+pub mod comparison;
+pub mod constraint;
+pub mod expression;
+pub mod system;
 
 use self::{comparison::Comparison, expression::Expression};
 use color_eyre::{Report, Result};
@@ -16,11 +16,11 @@ use tracing::instrument;
 /// The internal representation of the variable RegEx. This string is used in multiple RegExes, so
 /// I factored it out to here.
 #[doc(hidden)]
-pub(crate) const _VARIABLE_REGEX_INTERNAL: &str = "[a-zA-Z][a-zA-Z0-9_]*";
+pub const _VARIABLE_REGEX_INTERNAL: &str = "[a-zA-Z][a-zA-Z0-9_]*";
 
 lazy_static! {
     /// The RegEx used to validate variables. See [`validate_variable`].
-    static ref VARIABLE_REGEX_ANCHORED: Regex = Regex::new(&format!("^{}$", _VARIABLE_REGEX_INTERNAL)).unwrap();
+    static ref VARIABLE_REGEX_ANCHORED: Regex = Regex::new(&format!("^{_VARIABLE_REGEX_INTERNAL}$")).unwrap();
 }
 
 /// A collection of named variables.
@@ -33,7 +33,7 @@ fn validate_variable(var: &str) -> Result<&str> {
     if VARIABLE_REGEX_ANCHORED.is_match(var) {
         Ok(var)
     } else {
-        Err(Report::msg(format!("Invalid variable name {:?}", var)))
+        Err(Report::msg(format!("Invalid variable name {var:?}")))
     }
 }
 
@@ -53,11 +53,12 @@ impl<'v> fmt::Display for ObjectiveFunction<'v> {
             ObjectiveFunction::Minimise(exp) => ("Minimise", exp),
             ObjectiveFunction::Maximise(exp) => ("Maximise", exp),
         };
-        write!(f, "{} {}", word, expression)
+        write!(f, "{word} {expression}")
     }
 }
 
 impl<'v> ObjectiveFunction<'v> {
+    /// Build an objective function from user input using `inquire`.
     #[instrument]
     pub fn build_from_user(variables: &'v Variables) -> Result<Self> {
         let min_max = Select::new(
@@ -71,7 +72,7 @@ impl<'v> ObjectiveFunction<'v> {
             min_max.to_lowercase()
         ))
         .prompt()?;
-        let expression = Expression::parse(&exp_input, &variables)?;
+        let expression = Expression::parse(&exp_input, variables)?;
 
         Ok(match min_max {
             "Minimise" => Self::Minimise(expression),
@@ -81,6 +82,8 @@ impl<'v> ObjectiveFunction<'v> {
     }
 }
 
+/// Parse a float without the `2.34e12` type of syntax. This function is adapted from `nom`'s
+/// original float parsing system.
 fn parse_float_no_e(input: &str) -> nom::IResult<&str, f32> {
     use nom::{
         branch::alt,
@@ -101,7 +104,7 @@ fn parse_float_no_e(input: &str) -> nom::IResult<&str, f32> {
     )))(input)?;
 
     if num == "-" {
-        num = "-1"
+        num = "-1";
     }
 
     match num.parse_to() {

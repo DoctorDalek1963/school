@@ -7,10 +7,19 @@ use nom::{branch::alt, bytes::complete::tag, IResult, Parser};
 /// Comparison operators.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum Comparison {
+    /// Less than (<).
     LessThan,
+
+    /// Less than or equal (≤ or <=).
     LessThanOrEqual,
+
+    /// Equal (=).
     Equal,
+
+    /// Greater than (>).
     GreaterThan,
+
+    /// Greater than or equal (≥ or >=).
     GreaterThanOrEqual,
 }
 

@@ -1,3 +1,5 @@
+//! This module handles linear programming systems. See [`LinProgSystem`].
+
 use super::{constraint::Constraint, ObjectiveFunction, Variables};
 use crate::lin_prog::validate_variable;
 use color_eyre::Result;
@@ -40,9 +42,9 @@ impl LinProgSystem {
         let variables = Variables(
             Text::new("Please enter all your named variables, separated by spaces:")
                 .prompt()?
-                .split(" ")
+                .split(' ')
                 .filter(|&s| !s.is_empty())
-                .map(|var| validate_variable(var).map(|s| s.to_string()))
+                .map(|var| validate_variable(var).map(ToString::to_string))
                 .collect::<Result<HashSet<String>>>()?,
         );
         debug!(?variables);
@@ -50,7 +52,7 @@ impl LinProgSystem {
         let system = LinProgSystemBuilder {
             variables,
             objective_function_builder: |variables: &Variables| {
-                let objective_function = ObjectiveFunction::build_from_user(&variables)
+                let objective_function = ObjectiveFunction::build_from_user(variables)
                     .expect("Building objective function from user should not fail");
                 debug!(?objective_function);
                 objective_function
@@ -59,17 +61,13 @@ impl LinProgSystem {
                 let mut constraints = Vec::new();
 
                 loop {
-                    let input = match Text::new("Please enter a constraint inequality:")
+                    let Ok(input) = Text::new("Please enter a constraint inequality:")
                         .with_help_message(
                             "The constant must be on the RHS; use <= for ≤ and >= for ≥",
                         )
-                        .prompt()
-                    {
-                        Ok(x) => x,
-                        Err(_) => continue,
-                    };
+                        .prompt() else { continue };
 
-                    let (_, constraint) = Constraint::nom_parse(&input, &variables)
+                    let (_, constraint) = Constraint::nom_parse(&input, variables)
                         .expect("Parsing the constraint should not fail");
                     constraints.push(constraint);
 
