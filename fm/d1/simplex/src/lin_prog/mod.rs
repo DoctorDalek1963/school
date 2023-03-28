@@ -1,14 +1,17 @@
 //! This module handles linear programming systems.
 
-mod comparison;
-mod constraint;
-mod expression;
+pub(crate) mod comparison;
+pub(crate) mod constraint;
+pub(crate) mod expression;
+pub(crate) mod system;
 
-use self::{comparison::Comparison, constraint::Constraint, expression::Expression};
+use self::{comparison::Comparison, expression::Expression};
 use color_eyre::{Report, Result};
+use inquire::{Select, Text};
 use lazy_static::lazy_static;
 use regex::Regex;
 use std::collections::HashSet;
+use tracing::instrument;
 
 /// The internal representation of the variable RegEx. This string is used in multiple RegExes, so
 /// I factored it out to here.
@@ -35,6 +38,7 @@ fn validate_variable(var: &str) -> Result<&str> {
 }
 
 /// The objective function for the [`LinProgSystem`].
+#[derive(Clone, Debug, PartialEq)]
 enum ObjectiveFunction<'v> {
     /// Minimise the expression.
     Minimise(Expression<'v>),
@@ -43,57 +47,56 @@ enum ObjectiveFunction<'v> {
     Maximise(Expression<'v>),
 }
 
-/// A linear programming system, with a set of variables, objective function, and a set of contraints.
-pub struct LinProgSystem<'v> {
-    /// The variable set for the system. Every variable must be listed here for validation.
-    variables: Variables,
+impl<'v> ObjectiveFunction<'v> {
+    #[instrument]
+    pub fn build_from_user(variables: &'v Variables) -> Result<Self> {
+        let min_max = Select::new(
+            "Please select a type of objective function:",
+            vec!["Minimise", "Maximise"],
+        )
+        .prompt()?;
 
-    /// The objective function - to maximise or minimise a given expression.
-    objective_function: ObjectiveFunction<'v>,
+        let exp_input = Text::new(&format!(
+            "Please enter the expression to {}:",
+            min_max.to_lowercase()
+        ))
+        .prompt()?;
+        let expression = Expression::parse(&exp_input, &variables)?;
 
-    /// The constraints to optimise for.
-    constraints: Vec<Constraint<'v>>,
-}
-
-impl<'v> LinProgSystem<'v> {
-    pub fn build_from_user() -> Result<Self> {
-        use inquire::Text;
-
-        let variables: HashSet<String> =
-            Text::new("Please enter all your named variables, separated by spaces:")
-                .prompt()?
-                .split(" ")
-                .filter(|&s| !s.is_empty())
-                .map(|var| validate_variable(var).map(|s| s.to_string()))
-                .collect::<Result<HashSet<String>>>()?;
-
-        todo!()
+        Ok(match min_max {
+            "Minimise" => Self::Minimise(expression),
+            "Maximise" => Self::Maximise(expression),
+            _ => unreachable!("Selected text should only be 'Minimise' or 'Maximise'"),
+        })
     }
 }
 
 fn parse_float_no_e(input: &str) -> nom::IResult<&str, f32> {
     use nom::{
         branch::alt,
+        bytes::complete::tag,
         character::complete::{char, digit1},
         combinator::{map, opt, recognize},
         sequence::{pair, tuple},
         ParseTo,
     };
 
-    let (input, num) = recognize(tuple((
+    let (input, mut num) = recognize(tuple((
         opt(alt((char('+'), char('-')))),
         alt((
             map(tuple((digit1, opt(pair(char('.'), opt(digit1))))), |_| ()),
             map(tuple((char('.'), digit1)), |_| ()),
+            map(tag(""), |_| ()),
         )),
     )))(input)?;
 
+    if num == "-" {
+        num = "-1"
+    }
+
     match num.parse_to() {
         Some(f) => Ok((input, f)),
-        None => Err(nom::Err::Error(nom::error::Error {
-            input,
-            code: nom::error::ErrorKind::Float,
-        })),
+        None => Ok((input, 1.)),
     }
 }
 
@@ -128,5 +131,7 @@ mod tests {
             parse_float_no_e("16 other stuff"),
             Ok((" other stuff", 16.))
         );
+        assert_eq!(parse_float_no_e("-"), Ok(("", -1.)));
+        assert_eq!(parse_float_no_e("b"), Ok(("b", 1.)));
     }
 }

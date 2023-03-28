@@ -6,6 +6,13 @@
 
 mod lin_prog;
 
-fn main() {
-    println!("Hello, world!");
+use self::lin_prog::system::LinProgSystem;
+use color_eyre::Result;
+
+fn main() -> Result<()> {
+    tracing_subscriber::fmt::init();
+
+    let system = LinProgSystem::build_from_user()?;
+
+    Ok(())
 }

@@ -22,7 +22,7 @@ pub struct Constraint<'v> {
 }
 
 impl<'v> Constraint<'v> {
-    pub fn nom_parse<'i: 'v>(
+    pub fn nom_parse<'i>(
         input: &'i str,
         vars: &'v Variables,
     ) -> Result<(&'i str, Self), nom::Err<ExpressionCustomError<'i, nom::error::Error<&'i str>>>>

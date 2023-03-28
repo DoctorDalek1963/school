@@ -9,12 +9,12 @@ use nom::{
     bytes::complete::tag,
     character::complete::{char, multispace0},
     error::ParseError,
-    multi::separated_list1,
+    sequence::pair,
     IResult,
 };
 use nom_regex::str::re_find;
 use regex::Regex;
-use std::fmt;
+use std::{collections::HashMap, fmt};
 
 /// An expression written as a series of variables with coefficients. There are no constants.
 ///
@@ -76,7 +76,7 @@ impl<'s, I> ParseError<I> for ExpressionCustomError<'s, nom::error::Error<I>> {
 }
 
 impl<'v> Expression<'v> {
-    pub(crate) fn nom_parse<'i: 'v>(
+    pub(crate) fn nom_parse<'i>(
         input: &'i str,
         vars: &'v Variables,
     ) -> Result<(&'i str, Self), nom::Err<ExpressionCustomError<'i, nom::error::Error<&'i str>>>>
@@ -91,7 +91,7 @@ impl<'v> Expression<'v> {
             )));
         }
 
-        let (input, expressions) = separated_list1(
+        let (input, expressions) = custom_separated_list1(
             |input| -> Result<
                 (&str, ()),
                 nom::Err<ExpressionCustomError<'i, nom::error::Error<&'i str>>>,
@@ -145,13 +145,12 @@ impl<'v> Expression<'v> {
                 })?;
 
                 // Make sure the variable is valid
-                if !vars.0.contains(var) {
-                    return Err(nom::Err::Failure(ExpressionCustomError::UndefinedVariable(
+                match vars.0.get(var) {
+                    Some(v) => Ok((input, (coeff, v))),
+                    None => Err(nom::Err::Failure(ExpressionCustomError::UndefinedVariable(
                         var,
-                    )));
+                    ))),
                 }
-
-                Ok((input, (coeff, var)))
             },
         )(input)?;
 
@@ -159,7 +158,7 @@ impl<'v> Expression<'v> {
     }
 
     /// Parse an expression from the given input, using the given set of defined variables.
-    pub fn parse<'i: 'v>(input: &'i str, vars: &'v Variables) -> Result<Self> {
+    pub fn parse<'i>(input: &'i str, vars: &'v Variables) -> Result<Self> {
         let parse_result = Self::nom_parse(input, vars);
 
         match parse_result {
@@ -178,18 +177,97 @@ impl<'v> Expression<'v> {
             Err(e) => Err(Report::msg(e.to_string())),
         }
     }
+
+    /// Algebraically simplify the expression.
+    pub fn simplify(self) -> Self {
+        Self(
+            self.0
+                .into_iter()
+                // Fold the values into a map
+                .fold(HashMap::<&str, f32>::new(), |acc, (num, var)| {
+                    let mut map = acc;
+                    match map.get_mut(var) {
+                        Some(n) => *n += num,
+                        None => {
+                            map.insert(var, num);
+                        }
+                    };
+                    map
+                })
+                .into_iter()
+                // Swap the values in the tuple
+                .map(|(var, num)| (num, var))
+                // Filter out zeroes
+                .filter(|&(num, _)| num != 0.)
+                // Sort them by variable name for consistency
+                .sorted_by_key(|&(_, var)| var)
+                .collect(),
+        )
+    }
 }
 
 /// Parse a float as part of an expression, allowing for whitespace between `-` and the number.
 fn parse_float(input: &str) -> IResult<&str, f32> {
     let (input, _) = multispace0(input)?;
-    let (input, negative) = match tag::<&str, &str, nom::error::Error<&str>>("-")(input) {
-        Ok((new_input, _)) => (new_input, true),
-        Err(_) => (input, false),
-    };
+    let (input, negative) =
+        match pair(tag::<&str, &str, nom::error::Error<&str>>("-"), multispace0)(input) {
+            Ok((new_input, (_negative, _space))) => (new_input, true),
+            Err(_) => (input, false),
+        };
     let (input, _) = multispace0(input)?;
     let (input, num) = parse_float_no_e(input)?;
     Ok((input, if negative { num * -1. } else { num }))
+}
+
+/// A custom version of [`nom::multi_separated_list1()`] which allows instances where the `sep`
+/// parser consumes nothing.
+fn custom_separated_list1<I, O, O2, E, F, G>(
+    mut sep: G,
+    mut f: F,
+) -> impl FnMut(I) -> IResult<I, Vec<O>, E>
+where
+    I: Clone + nom::InputLength,
+    F: nom::Parser<I, O, E>,
+    G: nom::Parser<I, O2, E>,
+    E: ParseError<I>,
+{
+    move |mut i: I| {
+        let mut res = Vec::new();
+
+        // Parse the first element
+        match f.parse(i.clone()) {
+            Err(e) => return Err(e),
+            Ok((i1, o)) => {
+                res.push(o);
+                i = i1;
+            }
+        }
+
+        loop {
+            let len = i.input_len();
+            match sep.parse(i.clone()) {
+                Err(nom::Err::Error(_)) => return Ok((i, res)),
+                Err(e) => return Err(e),
+                Ok((i1, _)) => {
+                    // It's okay in this particular instance for the sep parser to consume nothing
+
+                    // infinite loop check: the parser must always consume
+                    //if i1.input_len() == len {
+                    //return Err(Err::Error(E::from_error_kind(i1, ErrorKind::SeparatedList)));
+                    //}
+
+                    match f.parse(i1.clone()) {
+                        Err(nom::Err::Error(_)) => return Ok((i, res)),
+                        Err(e) => return Err(e),
+                        Ok((i2, o)) => {
+                            res.push(o);
+                            i = i2;
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 #[cfg(test)]
@@ -224,6 +302,10 @@ mod tests {
         assert_eq!(
             Expression::nom_parse("2e + 3e - 1 e", &variables),
             Ok(("", Expression(vec![(2., "e"), (3., "e"), (-1., "e")])))
+        );
+        assert_eq!(
+            Expression::nom_parse("2a-b", &variables),
+            Ok(("", Expression(vec![(2., "a"), (-1., "b")])))
         );
 
         assert!(
@@ -304,6 +386,32 @@ mod tests {
                 )))
             ),
             "Undefined variable z"
+        );
+    }
+
+    #[test]
+    fn expression_simplify_test() {
+        assert_eq!(
+            Expression(vec![(2., "a"), (3., "a")]).simplify().0,
+            vec![(5., "a")]
+        );
+        assert_eq!(
+            Expression(vec![(2., "a"), (0.3, "b"), (-1., "a")])
+                .simplify()
+                .0,
+            vec![(1., "a"), (0.3, "b")]
+        );
+        assert_eq!(
+            Expression(vec![(1., "a"), (1., "a"), (3.5, "b"), (-2., "a")])
+                .simplify()
+                .0,
+            vec![(3.5, "b")]
+        );
+        assert_eq!(
+            Expression(vec![(2.3, "x"), (-0.2, "y"), (46., "z")])
+                .simplify()
+                .0,
+            vec![(2.3, "x"), (-0.2, "y"), (46., "z")]
         );
     }
 }
