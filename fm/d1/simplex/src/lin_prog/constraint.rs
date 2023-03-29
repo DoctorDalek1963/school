@@ -9,17 +9,14 @@ use std::fmt;
 /// A constraint in terms of variables, a comparison operator, and a constant.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Constraint<'v> {
-    /// The variable set that this constraint pertains to.
-    vars: &'v Variables,
-
     /// The LHS expression in terms of the variables.
-    var_expression: Expression<'v>,
+    pub var_expression: Expression<'v>,
 
     /// The comparison operator.
-    comparison: Comparison,
+    pub comparison: Comparison,
 
     /// The constant to compare to.
-    constant: f32,
+    pub constant: f32,
 }
 
 impl<'v> fmt::Display for Constraint<'v> {
@@ -54,7 +51,6 @@ impl<'v> Constraint<'v> {
         Ok((
             input,
             Constraint {
-                vars,
                 var_expression,
                 comparison,
                 constant,
@@ -89,7 +85,6 @@ mod tests {
             Ok((
                 "",
                 Constraint {
-                    vars: &variables,
                     var_expression: Expression(vec![(2., "a"), (3., "b")]),
                     comparison: Comparison::LessThanOrEqual,
                     constant: 10.
@@ -102,7 +97,6 @@ mod tests {
             Ok((
                 "",
                 Constraint {
-                    vars: &variables,
                     var_expression: Expression(vec![(2., "a"), (3., "b"), (-1.4, "c")]),
                     comparison: Comparison::LessThanOrEqual,
                     constant: 15.
@@ -115,7 +109,6 @@ mod tests {
             Ok((
                 "",
                 Constraint {
-                    vars: &variables,
                     var_expression: Expression(vec![(2., "a"), (3., "b"), (-13.25, "c")]),
                     comparison: Comparison::GreaterThanOrEqual,
                     constant: 196.
@@ -128,7 +121,6 @@ mod tests {
             Ok((
                 "",
                 Constraint {
-                    vars: &variables,
                     var_expression: Expression(vec![(2., "e"), (3., "e"), (-1., "e")]),
                     comparison: Comparison::GreaterThan,
                     constant: -15.
@@ -141,7 +133,6 @@ mod tests {
             Ok((
                 "",
                 Constraint {
-                    vars: &variables,
                     var_expression: Expression(vec![(-14., "a"), (13., "d"), (2., "a")]),
                     comparison: Comparison::LessThanOrEqual,
                     constant: 1.
@@ -154,7 +145,6 @@ mod tests {
             Ok((
                 "",
                 Constraint {
-                    vars: &variables,
                     var_expression: Expression(vec![(2., "a"), (3., "b")]),
                     comparison: Comparison::LessThanOrEqual,
                     constant: 10.

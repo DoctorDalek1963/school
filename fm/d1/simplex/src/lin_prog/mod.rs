@@ -1,6 +1,7 @@
 //! This module handles linear programming systems.
 
 pub mod comparison;
+pub mod config;
 pub mod constraint;
 pub mod expression;
 pub mod system;

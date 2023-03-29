@@ -1,7 +1,10 @@
 //! This module handles linear programming systems. See [`LinProgSystem`].
 
-use super::{constraint::Constraint, ObjectiveFunction, Variables};
-use crate::lin_prog::validate_variable;
+use crate::lin_prog::{comparison::Comparison, expression::Expression};
+
+use super::{
+    config::Config, constraint::Constraint, validate_variable, ObjectiveFunction, Variables,
+};
 use color_eyre::Result;
 use inquire::{InquireError, Select, Text};
 use ouroboros::self_referencing;
@@ -13,6 +16,9 @@ use tracing::{debug, instrument};
 pub struct LinProgSystem {
     /// The variable set for the system. Every variable must be listed here for validation.
     variables: Variables,
+
+    /// The config for the system.
+    config: Config,
 
     /// The objective function - to maximise or minimise a given expression.
     #[borrows(variables)]
@@ -29,6 +35,7 @@ impl fmt::Debug for LinProgSystem {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut debug_struct = f.debug_struct("LinProgSystem");
         debug_struct.field("variables", self.borrow_variables());
+        debug_struct.field("config", self.borrow_config());
         self.with_objective_function(|obj_func| debug_struct.field("objective_function", obj_func));
         self.with_constraints(|cons| debug_struct.field("constraints", cons));
         debug_struct.finish()
@@ -49,8 +56,12 @@ impl LinProgSystem {
         );
         debug!(?variables);
 
+        let config = Config::build_from_user()?;
+        debug!(?config);
+
         let system = LinProgSystemBuilder {
             variables,
+            config,
             objective_function_builder: |variables: &Variables| {
                 let objective_function = ObjectiveFunction::build_from_user(variables)
                     .expect("Building objective function from user should not fail")
@@ -85,7 +96,7 @@ impl LinProgSystem {
                     'input_loop: loop {
                         match Constraint::nom_parse(&input, variables) {
                             Ok((_, cons)) => {
-                                constraints.push(cons);
+                                constraints.push(cons.simplify());
                                 break 'input_loop;
                             }
                             Err(e) => {
@@ -114,10 +125,6 @@ impl LinProgSystem {
                         }
                     }
 
-                    let (_, constraint) = Constraint::nom_parse(&input, variables)
-                        .expect("Parsing the constraint should not fail");
-                    constraints.push(constraint.simplify());
-
                     match Select::new(
                         "Would you like to add another constraint?",
                         vec!["Yes", "No"],
@@ -133,11 +140,22 @@ impl LinProgSystem {
                     };
                 }
 
+                if config.include_non_negativity {
+                    for var in &variables.0 {
+                        constraints.push(Constraint {
+                            var_expression: Expression(vec![(1., var)]),
+                            comparison: Comparison::GreaterThanOrEqual,
+                            constant: 0.
+                        });
+                    }
+                }
+
                 debug!(?constraints);
                 constraints
             },
         }
         .build();
+
         debug!("{:#?}", system);
         Ok(system)
     }
