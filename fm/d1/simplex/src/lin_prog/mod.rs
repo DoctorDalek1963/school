@@ -7,7 +7,7 @@ pub mod system;
 
 use self::{comparison::Comparison, expression::Expression};
 use color_eyre::{Report, Result};
-use inquire::{Select, Text};
+use inquire::Select;
 use lazy_static::lazy_static;
 use regex::Regex;
 use std::{collections::HashSet, fmt};
@@ -65,20 +65,27 @@ impl<'v> ObjectiveFunction<'v> {
             "Please select a type of objective function:",
             vec!["Minimise", "Maximise"],
         )
-        .prompt()?;
+        .prompt()
+        .expect("inquire::Select should not fail");
 
-        let exp_input = Text::new(&format!(
-            "Please enter the expression to {}:",
-            min_max.to_lowercase()
-        ))
-        .prompt()?;
-        let expression = Expression::parse(&exp_input, variables)?;
+        let expression = Expression::build_from_user(
+            &format!("Please enter the expression to {}:", min_max.to_lowercase()),
+            variables,
+        )?;
 
         Ok(match min_max {
             "Minimise" => Self::Minimise(expression),
             "Maximise" => Self::Maximise(expression),
             _ => unreachable!("Selected text should only be 'Minimise' or 'Maximise'"),
         })
+    }
+
+    /// Simplify the objective function.
+    pub fn simplify(self) -> Self {
+        match self {
+            Self::Minimise(exp) => Self::Minimise(exp.simplify()),
+            Self::Maximise(exp) => Self::Maximise(exp.simplify()),
+        }
     }
 }
 

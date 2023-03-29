@@ -3,7 +3,7 @@
 use super::{constraint::Constraint, ObjectiveFunction, Variables};
 use crate::lin_prog::validate_variable;
 use color_eyre::Result;
-use inquire::{Confirm, Text};
+use inquire::{InquireError, Select, Text};
 use ouroboros::self_referencing;
 use std::{collections::HashSet, fmt};
 use tracing::{debug, instrument};
@@ -53,7 +53,8 @@ impl LinProgSystem {
             variables,
             objective_function_builder: |variables: &Variables| {
                 let objective_function = ObjectiveFunction::build_from_user(variables)
-                    .expect("Building objective function from user should not fail");
+                    .expect("Building objective function from user should not fail")
+                    .simplify();
                 debug!(?objective_function);
                 objective_function
             },
@@ -61,21 +62,75 @@ impl LinProgSystem {
                 let mut constraints = Vec::new();
 
                 loop {
-                    let Ok(input) = Text::new("Please enter a constraint inequality:")
+                    let mut input = match Text::new("Please enter a constraint inequality:")
                         .with_help_message(
                             "The constant must be on the RHS; use <= for ≤ and >= for ≥",
                         )
-                        .prompt() else { continue };
+                        .prompt()
+                    {
+                        Ok(x) => x,
+                        Err(
+                            InquireError::OperationCanceled | InquireError::OperationInterrupted,
+                        ) => {
+                            if constraints.is_empty() {
+                                println!("You must have at least one constraint inequality");
+                                continue;
+                            } else {
+                                break;
+                            }
+                        }
+                        Err(e) => panic!("inquire::Text should not fail: {e:?}"),
+                    };
+
+                    'input_loop: loop {
+                        match Constraint::nom_parse(&input, variables) {
+                            Ok((_, cons)) => {
+                                constraints.push(cons);
+                                break 'input_loop;
+                            }
+                            Err(e) => {
+                                input = match Text::new("Please try again:")
+                                    .with_initial_value(&input)
+                                    .with_help_message(
+                                        "The constant must be on the RHS; use <= for ≤ and >= for ≥",
+                                    )
+                                    .with_help_message(&format!("Error: {e}"))
+                                    .prompt()
+                                {
+                                    Ok(x) => x,
+                                    Err(
+                                        InquireError::OperationCanceled | InquireError::OperationInterrupted,
+                                    ) => {
+                                        if constraints.is_empty() {
+                                            println!("You must have at least one constraint inequality");
+                                            continue;
+                                        } else {
+                                            break;
+                                        }
+                                    }
+                                    Err(e) => panic!("inquire::Text should not fail: {e:?}"),
+                                };
+                            }
+                        }
+                    }
 
                     let (_, constraint) = Constraint::nom_parse(&input, variables)
                         .expect("Parsing the constraint should not fail");
-                    constraints.push(constraint);
+                    constraints.push(constraint.simplify());
 
-                    if let Ok(false) =
-                        Confirm::new("Would you like to add another constraint?").prompt()
+                    match Select::new(
+                        "Would you like to add another constraint?",
+                        vec!["Yes", "No"],
+                    )
+                    .prompt()
+                    .expect("inquire::Select should not fail")
                     {
-                        break;
-                    }
+                        "Yes" => continue,
+                        "No" => break,
+                        _ => unreachable!(
+                            "inquire::Select should only yield the values given in the vec"
+                        ),
+                    };
                 }
 
                 debug!(?constraints);
@@ -83,7 +138,7 @@ impl LinProgSystem {
             },
         }
         .build();
-        debug!(?system);
+        debug!("{:#?}", system);
         Ok(system)
     }
 }

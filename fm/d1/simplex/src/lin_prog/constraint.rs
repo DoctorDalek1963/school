@@ -61,6 +61,14 @@ impl<'v> Constraint<'v> {
             },
         ))
     }
+
+    /// Simplify the constraint.
+    pub fn simplify(self) -> Self {
+        Self {
+            var_expression: self.var_expression.simplify(),
+            ..self
+        }
+    }
 }
 
 #[cfg(test)]

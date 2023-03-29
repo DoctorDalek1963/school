@@ -3,6 +3,7 @@
 use super::{parse_float_no_e, Variables};
 use crate::lin_prog::{validate_variable, _VARIABLE_REGEX_INTERNAL};
 use color_eyre::{Report, Result};
+use inquire::Text;
 use itertools::Itertools;
 use nom::{
     branch::alt,
@@ -205,6 +206,26 @@ impl<'v> Expression<'v> {
                 .sorted_by_key(|&(_, var)| var)
                 .collect(),
         )
+    }
+
+    /// Build an expression from user input with `inquire`.
+    ///
+    /// This method uses the given prompt for the first attempt, and then uses "Please try again:"
+    /// on all subsequent attempts, printing the error in `inquire`'s "help message".
+    pub fn build_from_user(prompt: &str, vars: &'v Variables) -> Result<Self> {
+        let mut input = Text::new(prompt).prompt()?;
+
+        loop {
+            match Expression::parse(&input, vars) {
+                Ok(exp) => return Ok(exp),
+                Err(e) => {
+                    input = Text::new("Please try again:")
+                        .with_initial_value(&input)
+                        .with_help_message(&format!("Error: {e}"))
+                        .prompt()?;
+                }
+            };
+        }
     }
 }
 
