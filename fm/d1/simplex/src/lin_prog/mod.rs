@@ -26,7 +26,13 @@ lazy_static! {
 
 /// A collection of named variables.
 #[derive(Clone, Debug, PartialEq)]
-pub struct Variables(HashSet<String>);
+pub struct Variables(pub HashSet<String>);
+
+impl<const N: usize, S: ToString> From<[S; N]> for Variables {
+    fn from(value: [S; N]) -> Self {
+        Self(value.into_iter().map(|s| s.to_string()).collect())
+    }
+}
 
 /// Validate the given variable by trimming it and checking it against the [`VARIABLE_REGEX`].
 fn validate_variable(var: &str) -> Result<&str> {
@@ -40,7 +46,7 @@ fn validate_variable(var: &str) -> Result<&str> {
 
 /// The objective function for the [`LinProgSystem`].
 #[derive(Clone, Debug, PartialEq)]
-enum ObjectiveFunction<'v> {
+pub enum ObjectiveFunction<'v> {
     /// Minimise the expression.
     Minimise(Expression<'v>),
 
@@ -64,7 +70,7 @@ impl<'v> ObjectiveFunction<'v> {
     pub fn build_from_user(variables: &'v Variables) -> Result<Self> {
         let min_max = Select::new(
             "Please select a type of objective function:",
-            vec!["Minimise", "Maximise"],
+            vec!["Maximise", "Minimise"],
         )
         .prompt()
         .expect("inquire::Select should not fail");

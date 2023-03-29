@@ -1,0 +1,4 @@
+alias r := run
+
+run:
+	RUST_LIB_BACKTRACE=full RUST_BACKTRACE=full RUST_LOG=debug cargo run

@@ -1,7 +1,5 @@
 //! This module handles linear programming systems. See [`LinProgSystem`].
 
-use crate::lin_prog::{comparison::Comparison, expression::Expression};
-
 use super::{
     config::Config, constraint::Constraint, validate_variable, ObjectiveFunction, Variables,
 };
@@ -12,23 +10,23 @@ use std::{collections::HashSet, fmt};
 use tracing::{debug, instrument};
 
 /// A linear programming system, with a set of variables, objective function, and a set of contraints.
-#[self_referencing]
+#[self_referencing(pub_extras)]
 pub struct LinProgSystem {
     /// The variable set for the system. Every variable must be listed here for validation.
-    variables: Variables,
+    pub variables: Variables,
 
     /// The config for the system.
-    config: Config,
+    pub config: Config,
 
     /// The objective function - to maximise or minimise a given expression.
     #[borrows(variables)]
     #[not_covariant]
-    objective_function: ObjectiveFunction<'this>,
+    pub objective_function: ObjectiveFunction<'this>,
 
     /// The constraints to optimise for.
     #[borrows(variables)]
     #[not_covariant]
-    constraints: Vec<Constraint<'this>>,
+    pub constraints: Vec<Constraint<'this>>,
 }
 
 impl fmt::Debug for LinProgSystem {
@@ -138,16 +136,6 @@ impl LinProgSystem {
                             "inquire::Select should only yield the values given in the vec"
                         ),
                     };
-                }
-
-                if config.include_non_negativity {
-                    for var in &variables.0 {
-                        constraints.push(Constraint {
-                            var_expression: Expression(vec![(1., var)]),
-                            comparison: Comparison::GreaterThanOrEqual,
-                            constant: 0.
-                        });
-                    }
                 }
 
                 debug!(?constraints);
