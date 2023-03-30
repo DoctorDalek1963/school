@@ -3,11 +3,14 @@
 #[cfg(test)]
 mod tests;
 
+mod tableau;
+
+use self::tableau::Tableau;
 use crate::lin_prog::{comparison::Comparison, system::LinProgSystem};
 use color_eyre::{Report, Result};
 use itertools::Itertools;
-use std::collections::HashMap;
-use tracing::{debug, error, instrument};
+use std::{collections::HashMap, fmt};
+use tracing::{debug, error, info, instrument};
 
 /// The different types of variables that can be used in solving linear programming problems.
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
@@ -19,9 +22,18 @@ pub enum VariableType<'v> {
     Slack(usize),
 }
 
+impl<'v> fmt::Display for VariableType<'v> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Original(name) => write!(f, "{name}"),
+            Self::Slack(num) => write!(f, "sl#{num}"),
+        }
+    }
+}
+
 /// An equation with variables on the left (including slack variables) and a constant on the right.
 #[derive(Clone, Debug, PartialEq)]
-struct Equation<'v> {
+pub struct Equation<'v> {
     /// The variables on the LHS. The tuples are `(coefficient, variable_name)`.
     variables: Vec<(f32, VariableType<'v>)>,
 
@@ -37,16 +49,6 @@ pub struct SolutionSet<'v> {
 
     /// The values of the variables at the optimal point.
     variable_values: HashMap<VariableType<'v>, f32>,
-}
-
-/// A label to use for a row in the tableau.
-#[derive(Clone, Debug, PartialEq)]
-enum RowLabel<'v> {
-    /// A variable. See [`VariableType`].
-    Variable(VariableType<'v>),
-
-    /// The objective function.
-    ObjectiveFunction,
 }
 
 /// Solve the given linear programming system using simplex tableaux.
@@ -67,6 +69,7 @@ pub fn solve_with_simplex_tableaux<'v>(system: &'v LinProgSystem) -> Result<Solu
 
     let mut equations = vec![];
 
+    // Convert the constraints to equations, creating necessary slack variables
     system.with_constraints(|cons| {
         for constraint in cons {
             if constraint.comparison == Comparison::LessThanOrEqual {
@@ -84,7 +87,7 @@ pub fn solve_with_simplex_tableaux<'v>(system: &'v LinProgSystem) -> Result<Solu
                     .0
                     .iter()
                     .map(|&(coeff, var)| (coeff, VariableType::Original(var)))
-                    .chain([(1., slack)].into_iter())
+                    .chain(std::iter::once((1., slack)))
                     .collect();
 
                 // Add the equation to the vec
@@ -106,91 +109,9 @@ pub fn solve_with_simplex_tableaux<'v>(system: &'v LinProgSystem) -> Result<Solu
 
     // Each row has n + 3 columns, where n is the number of variables. We have a column for each
     // variable, a column for the value, a column for theta, and a column for the row operation
-    let initial_rows: Vec<(RowLabel, Vec<f32>)> = variables
-        .iter()
-        // Filter the variables to just the slacks. These are the basic variables at the start
-        .filter_map(|&(var, _)| match var {
-            VariableType::Slack(_) => Some(RowLabel::Variable(var)),
-            _ => None
-        })
-        .map(|label| {
-            (
-                label.clone(),
-                equations
-                    .iter()
-                    .find_map(|equation| {
-                        // Try to find a term with the variable in this row of the table. We don't care about
-                        // that term right now, so we discard it. But the ? at the end means that if we can't
-                        // find a term with the required variable, then we return from the closure early
-                        equation
-                            .variables
-                            .iter()
-                            .find(|&&(_, var)| RowLabel::Variable(var) == label)?;
+    let initial_tableau: Tableau = Tableau::create_initial(system, &variables, &equations);
 
-                        // If we get here, then we know this is the right equation. We need to extract the
-                        // coefficients IN THE RIGHT ORDER, so we iter the variables and find the
-                        // coefficient of each one
-                        Some(
-                            variables
-                                .iter()
-                                .map(|&(var, _)| {
-                                    equation
-                                        .variables
-                                        .iter()
-                                        .find_map(|&(n, eq_var)| if eq_var == var { Some(n) } else { None })
-                                        .unwrap_or(0.)
-                                })
-                                .collect::<Vec<_>>()
-                        )
-                    })
-                    .expect("There should be at least one equation which contains this slack variable")
-            )
-        })
-        // Now add the value to the end
-        // TODO: Add theta and row operations
-        .map(|(label, mut coeffs)| {
-            coeffs.push(
-                variables
-                    .iter()
-                    .find(|&(var, _)| RowLabel::Variable(*var) == label)
-                    .unwrap()
-                    .1
-            );
-            (label, coeffs)
-        })
-        // Now add the final row for the objective function
-        .chain(
-            [(
-                RowLabel::ObjectiveFunction,
-                system.with_objective_function(|obj_func| {
-                    // Go through the variables and find the coefficient of each one in the
-                    // objective function
-                    variables
-                        .iter()
-                        .map(|(var, _)| {
-                            obj_func
-                                .expression()
-                                .0
-                                .iter()
-                                .find_map(|&(coeff, of_var)| {
-                                    if VariableType::Original(of_var) == *var {
-                                        Some(-coeff)
-                                    } else {
-                                        None
-                                    }
-                                })
-                                .unwrap_or(0.)
-                        })
-                        // And add the value
-                        .chain([0.].into_iter())
-                        .collect()
-                })
-            )]
-            .into_iter()
-        )
-        .collect();
-
-    debug!(?initial_rows);
+    info!(%initial_tableau);
 
     todo!()
 }

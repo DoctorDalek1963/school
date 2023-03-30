@@ -98,8 +98,7 @@ impl<'v> ObjectiveFunction<'v> {
     /// Return a reference to the inner expression of the objective function.
     pub fn expression(&self) -> &Expression<'v> {
         match self {
-            Self::Minimise(exp) => exp,
-            Self::Maximise(exp) => exp,
+            Self::Minimise(exp) | Self::Maximise(exp) => exp,
         }
     }
 }
