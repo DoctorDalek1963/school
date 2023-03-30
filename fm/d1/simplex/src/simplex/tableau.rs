@@ -27,6 +27,40 @@ impl<'v> fmt::Display for RowLabel<'v> {
     }
 }
 
+/// A number to use in a tableau. This is used to allow certain values (like theta) to be optional,
+/// as well as allowing for the row operation columns.
+#[derive(Clone, Copy, Debug, PartialEq)]
+enum TableauNumber {
+    /// A simple number.
+    Simple(f32),
+
+    /// A theta value, which will not exist at first, since it must be populated later.
+    Theta(Option<f32>),
+}
+
+impl fmt::Display for TableauNumber {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let s = match self {
+            Self::Simple(n) => n.to_string(),
+            Self::Theta(Some(n)) => n.to_string(),
+            Self::Theta(None) => String::new(),
+        };
+        write!(f, "{s}")
+    }
+}
+
+impl TableauNumber {
+    /// Return the number if this is a simple tableau number, otherwise panic.
+    ///
+    /// This method should only be used if you know the number is simple.
+    fn simple_num(&self) -> &f32 {
+        match self {
+            Self::Simple(n) => n,
+            x => panic!("TableauNumber::simple_num() called on a non-simple number: {x:?}"),
+        }
+    }
+}
+
 /// A single tableau for simplex tableaux.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Tableau<'v> {
@@ -34,7 +68,13 @@ pub struct Tableau<'v> {
     column_labels: Vec<String>,
 
     /// The rows of the table.
-    rows: Vec<(RowLabel<'v>, Vec<f32>)>,
+    rows: Vec<(RowLabel<'v>, Vec<TableauNumber>)>,
+
+    /// The index of the value column.
+    value_idx: usize,
+
+    /// The index of the theta column.
+    theta_idx: usize,
 }
 
 impl<'v> fmt::Display for Tableau<'v> {
@@ -59,7 +99,7 @@ impl<'v> fmt::Display for Tableau<'v> {
 
 impl<'v> Tableau<'v> {
     /// Generate the initial tableau for the given system with its variables and equations.
-    #[instrument]
+    #[instrument(skip(system))]
     pub fn create_initial(system: &'v LinProgSystem) -> Result<Self> {
         // Convert the original variables from the system into [`VariableType::Original`] variables.
         // This HashMap maps variables to their current values. These values will change during the
@@ -104,7 +144,11 @@ impl<'v> Tableau<'v> {
                         constant: constraint.constant,
                     });
                 } else {
-                    error!(comparison = ?constraint.comparison, %constraint, "Unsupported comparison in constraint");
+                    error!(
+                        comparison = ?constraint.comparison,
+                        %constraint,
+                        "Unsupported comparison in constraint"
+                    );
                     return Err(Report::msg(format!(
                         "Simplex tableaux currently only supports ≤ inequalities: {constraint:?}",
                     )));
@@ -118,7 +162,7 @@ impl<'v> Tableau<'v> {
         let column_labels = variables
             .iter()
             .map(|&(var, _)| var.to_string())
-            .chain(iter::once("Value".to_string()))
+            .chain(["Value".to_string(), "θ".to_string()].into_iter())
             .collect();
 
         // Each row has n + 3 columns, where n is the number of variables. We have a column for each
@@ -204,11 +248,76 @@ impl<'v> Tableau<'v> {
                     })
                 ))
             )
+            // Convert the numbers to the right type and add the theta values
+            .map(|(label, nums)| (
+                    label,
+                    nums
+                        .into_iter()
+                        .map(|n| TableauNumber::Simple(n))
+                        .chain(iter::once(TableauNumber::Theta(None)))
+                        .collect()
+                ))
             .collect();
+
+        let value_idx = variables.len();
+        let theta_idx = value_idx + 1;
 
         Ok(Self {
             column_labels,
             rows,
+            value_idx,
+            theta_idx,
         })
+    }
+
+    /// Return a reference to the bottom row of the table.
+    fn bottom_row(&self) -> &(RowLabel<'v>, Vec<TableauNumber>) {
+        self.rows.last().expect("There should be a bottom row")
+    }
+
+    /// Check if there are any negative numbers in the bottom row of the tableau.
+    fn negatives_in_bottom_row(&self) -> bool {
+        self.bottom_row().1.iter().any(|&n| match n {
+            TableauNumber::Simple(n) => n < 0.,
+            _ => false,
+        })
+    }
+
+    /// Return the index of the pivot column. This is calculated by finding the most negative
+    /// number in the bottom row.
+    fn find_pivot_column(&self) -> usize {
+        self.bottom_row()
+            .1
+            .iter()
+            .enumerate()
+            .fold(
+                (0, 0.),
+                |(acc_idx, acc_min), (this_idx, &this_num)| match this_num {
+                    TableauNumber::Simple(n) => {
+                        if n < acc_min {
+                            (this_idx, n)
+                        } else {
+                            (acc_idx, acc_min)
+                        }
+                    }
+                    _ => (acc_idx, acc_min),
+                },
+            )
+            .0
+    }
+
+    /// Populate this tableau with theta values.
+    pub fn populate_theta_values(&mut self) {
+        let pivot_col = self.find_pivot_column();
+        for (label, numbers) in self.rows.iter_mut() {
+            match label {
+                RowLabel::Variable(_) => {
+                    numbers[self.theta_idx] = TableauNumber::Theta(Some(
+                        numbers[self.value_idx].simple_num() / numbers[pivot_col].simple_num(),
+                    ))
+                }
+                RowLabel::ObjectiveFunction => (),
+            }
+        }
     }
 }
