@@ -3,7 +3,7 @@ use crate::{
         config::Config, constraint::Constraint, expression::Expression,
         system::LinProgSystemBuilder, ObjectiveFunction, Variables,
     },
-    simplex::{solve_with_simplex_tableaux, SolutionSet, VariableType},
+    simplex::{solve_with_simplex_tableaux, tableau::Tableau, SolutionSet, VariableType},
 };
 use std::collections::HashMap;
 
@@ -128,5 +128,86 @@ fn solve_with_simplex_tableaux_test() {
             ])
         },
         "Ch 7 Example 11"
+    );
+}
+
+#[test]
+fn create_initial_tableau_test() {
+    use pretty_assertions::assert_eq;
+
+    assert_eq!(
+        Tableau::create_initial(
+            &LinProgSystemBuilder {
+                variables: Variables::from(["x", "y", "z"]),
+                config: Config::default(),
+                objective_function_builder: |vars| ObjectiveFunction::Maximise(
+                    Expression::nom_parse("3x + 5y - z", vars).unwrap().1
+                ),
+                constraints_builder: |vars| vec![
+                    Constraint::nom_parse("x - 2y + 10z <= 100", vars)
+                        .unwrap()
+                        .1,
+                    Constraint::nom_parse("2x + y - 13z ≤ 34", vars).unwrap().1,
+                    Constraint::nom_parse("3x + 4x - 7y + 3z <= 400", vars)
+                        .unwrap()
+                        .1
+                        .simplify(),
+                ]
+            }
+            .build(),
+        )
+        .unwrap()
+        .to_string(),
+        r#"
+┌───────────┬────┬────┬─────┬──────┬──────┬──────┬───────┐
+│ Basic var │ x  │ y  │ z   │ sl#0 │ sl#1 │ sl#2 │ Value │
+├───────────┼────┼────┼─────┼──────┼──────┼──────┼───────┤
+│ sl#0      │ 1  │ -2 │ 10  │ 1    │ 0    │ 0    │ 100   │
+├───────────┼────┼────┼─────┼──────┼──────┼──────┼───────┤
+│ sl#1      │ 2  │ 1  │ -13 │ 0    │ 1    │ 0    │ 34    │
+├───────────┼────┼────┼─────┼──────┼──────┼──────┼───────┤
+│ sl#2      │ 7  │ -7 │ 3   │ 0    │ 0    │ 1    │ 400   │
+├───────────┼────┼────┼─────┼──────┼──────┼──────┼───────┤
+│ ObjFunc#  │ -3 │ -5 │ 1   │ 0    │ 0    │ 0    │ 0     │
+└───────────┴────┴────┴─────┴──────┴──────┴──────┴───────┘"#
+    );
+
+    assert_eq!(
+        Tableau::create_initial(
+            &LinProgSystemBuilder {
+                variables: Variables::from(["x", "y", "z", "w"]),
+                config: Config::default(),
+                objective_function_builder: |vars| ObjectiveFunction::Maximise(
+                    Expression::nom_parse("3x + 5y - z + 1.5w", vars).unwrap().1
+                ),
+                constraints_builder: |vars| vec![
+                    Constraint::nom_parse("x - 10z <= 100", vars).unwrap().1,
+                    Constraint::nom_parse("w <= 19", vars).unwrap().1,
+                    Constraint::nom_parse("2w - 3z + x <= 12.2", vars)
+                        .unwrap()
+                        .1,
+                    Constraint::nom_parse("3y + 3x + 2z - 0.2w <= 250", vars)
+                        .unwrap()
+                        .1
+                ]
+            }
+            .build(),
+        )
+        .unwrap()
+        .to_string(),
+        r#"
+┌───────────┬──────┬────┬────┬─────┬──────┬──────┬──────┬──────┬───────┐
+│ Basic var │ w    │ x  │ y  │ z   │ sl#0 │ sl#1 │ sl#2 │ sl#3 │ Value │
+├───────────┼──────┼────┼────┼─────┼──────┼──────┼──────┼──────┼───────┤
+│ sl#0      │ 0    │ 1  │ 0  │ -10 │ 1    │ 0    │ 0    │ 0    │ 100   │
+├───────────┼──────┼────┼────┼─────┼──────┼──────┼──────┼──────┼───────┤
+│ sl#1      │ 1    │ 0  │ 0  │ 0   │ 0    │ 1    │ 0    │ 0    │ 19    │
+├───────────┼──────┼────┼────┼─────┼──────┼──────┼──────┼──────┼───────┤
+│ sl#2      │ 2    │ 1  │ 0  │ -3  │ 0    │ 0    │ 1    │ 0    │ 12.2  │
+├───────────┼──────┼────┼────┼─────┼──────┼──────┼──────┼──────┼───────┤
+│ sl#3      │ -0.2 │ 3  │ 3  │ 2   │ 0    │ 0    │ 0    │ 1    │ 250   │
+├───────────┼──────┼────┼────┼─────┼──────┼──────┼──────┼──────┼───────┤
+│ ObjFunc#  │ -1.5 │ -3 │ -5 │ 1   │ 0    │ 0    │ 0    │ 0    │ 0     │
+└───────────┴──────┴────┴────┴─────┴──────┴──────┴──────┴──────┴───────┘"#
     );
 }

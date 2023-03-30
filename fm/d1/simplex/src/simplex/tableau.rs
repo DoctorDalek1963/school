@@ -1,9 +1,12 @@
 //! This module handles the tableaux. Tableau is singular; tableaux is plural.
 
 use super::{Equation, VariableType};
-use crate::lin_prog::system::LinProgSystem;
+use crate::lin_prog::{comparison::Comparison, system::LinProgSystem};
+use color_eyre::{Report, Result};
+use itertools::Itertools;
 use std::{fmt, iter};
 use tabled::{builder::Builder, Style};
+use tracing::{debug, error, instrument};
 
 /// A label to use for a row in the tableau.
 #[derive(Clone, Debug, PartialEq)]
@@ -56,17 +59,70 @@ impl<'v> fmt::Display for Tableau<'v> {
 
 impl<'v> Tableau<'v> {
     /// Generate the initial tableau for the given system with its variables and equations.
-    pub fn create_initial(
-        system: &'v LinProgSystem,
-        variables: &'v Vec<(VariableType, f32)>,
-        equations: &'v Vec<Equation>,
-    ) -> Self {
+    #[instrument]
+    pub fn create_initial(system: &'v LinProgSystem) -> Result<Self> {
+        // Convert the original variables from the system into [`VariableType::Original`] variables.
+        // This HashMap maps variables to their current values. These values will change during the
+        // execution of the algorithm.
+        let mut variables: Vec<(VariableType<'v>, f32)> = system
+            .borrow_variables()
+            .0
+            .iter()
+            .sorted() // Alphabetically
+            .map(|s| (VariableType::Original(s), 0.))
+            .collect();
+
+        debug!(?variables);
+
+        let mut slack_counter = 0;
+        let mut equations = vec![];
+
+        // Convert the constraints to equations, creating necessary slack variables
+        system.with_constraints(|cons| {
+            for constraint in cons {
+                if constraint.comparison == Comparison::LessThanOrEqual {
+                    // When creating a new slack variable, we need to increment the counter for the
+                    // next one and add it to the simplex variables set, with a starting value of the
+                    // constant, since the original variables start at 0
+                    let slack = VariableType::Slack(slack_counter);
+                    slack_counter += 1;
+                    variables.push((slack, constraint.constant));
+
+                    // Convert the old variables from the constraint into the required type and add the
+                    // slack variable for this equation
+                    let variables = constraint
+                        .var_expression
+                        .0
+                        .iter()
+                        .map(|&(coeff, var)| (coeff, VariableType::Original(var)))
+                        .chain(std::iter::once((1., slack)))
+                        .collect();
+
+                    // Add the equation to the vec
+                    equations.push(Equation {
+                        variables,
+                        constant: constraint.constant,
+                    });
+                } else {
+                    error!(comparison = ?constraint.comparison, %constraint, "Unsupported comparison in constraint");
+                    return Err(Report::msg(format!(
+                        "Simplex tableaux currently only supports ≤ inequalities: {constraint:?}",
+                    )));
+                }
+            }
+            Ok(())
+        })?;
+
+        debug!(?equations);
+
         let column_labels = variables
             .iter()
             .map(|&(var, _)| var.to_string())
             .chain(iter::once("Value".to_string()))
             .collect();
 
+        // Each row has n + 3 columns, where n is the number of variables. We have a column for each
+        // variable, a column for the value, a column for theta, and a column for the row operation
         let rows = variables
             .iter()
             // Filter the variables to just the slacks. These are the basic variables at the start
@@ -150,9 +206,9 @@ impl<'v> Tableau<'v> {
             )
             .collect();
 
-        Self {
+        Ok(Self {
             column_labels,
             rows,
-        }
+        })
     }
 }
