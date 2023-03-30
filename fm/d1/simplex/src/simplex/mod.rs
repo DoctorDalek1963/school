@@ -110,7 +110,7 @@ pub fn solve_with_simplex_tableaux<'v>(system: &'v LinProgSystem) -> Result<Solu
         .iter()
         // Filter the variables to just the slacks. These are the basic variables at the start
         .filter_map(|&(var, _)| match var {
-            VariableType::Slack(slack_num) => Some(RowLabel::Variable(var)),
+            VariableType::Slack(_) => Some(RowLabel::Variable(var)),
             _ => None
         })
         .map(|label| {
@@ -125,7 +125,7 @@ pub fn solve_with_simplex_tableaux<'v>(system: &'v LinProgSystem) -> Result<Solu
                         equation
                             .variables
                             .iter()
-                            .find(|&&(n, var)| RowLabel::Variable(var) == label)?;
+                            .find(|&&(_, var)| RowLabel::Variable(var) == label)?;
 
                         // If we get here, then we know this is the right equation. We need to extract the
                         // coefficients IN THE RIGHT ORDER, so we iter the variables and find the

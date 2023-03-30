@@ -29,7 +29,7 @@ fn install_tracing() {
 }
 
 fn main() -> Result<()> {
-    tracing_subscriber::fmt::init();
+    install_tracing();
     color_eyre::install()?;
 
     let system = LinProgSystem::build_from_user()?;
