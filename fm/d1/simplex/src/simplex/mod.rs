@@ -5,6 +5,7 @@ mod tests;
 
 use crate::lin_prog::{comparison::Comparison, system::LinProgSystem};
 use color_eyre::{Report, Result};
+use itertools::Itertools;
 use std::collections::HashMap;
 use tracing::{debug, error, instrument};
 
@@ -38,6 +39,16 @@ pub struct SolutionSet<'v> {
     variable_values: HashMap<VariableType<'v>, f32>,
 }
 
+/// A label to use for a row in the tableau.
+#[derive(Clone, Debug, PartialEq)]
+enum RowLabel<'v> {
+    /// A variable. See [`VariableType`].
+    Variable(VariableType<'v>),
+
+    /// The objective function.
+    ObjectiveFunction,
+}
+
 /// Solve the given linear programming system using simplex tableaux.
 #[instrument(skip(system))]
 pub fn solve_with_simplex_tableaux<'v>(system: &'v LinProgSystem) -> Result<SolutionSet<'v>> {
@@ -50,6 +61,7 @@ pub fn solve_with_simplex_tableaux<'v>(system: &'v LinProgSystem) -> Result<Solu
         .borrow_variables()
         .0
         .iter()
+        .sorted() // Alphabetically
         .map(|s| (VariableType::Original(s), 0.))
         .collect();
 
@@ -91,6 +103,94 @@ pub fn solve_with_simplex_tableaux<'v>(system: &'v LinProgSystem) -> Result<Solu
     })?;
 
     debug!(?variables, ?equations);
+
+    // Each row has n + 3 columns, where n is the number of variables. We have a column for each
+    // variable, a column for the value, a column for theta, and a column for the row operation
+    let initial_rows: Vec<(RowLabel, Vec<f32>)> = variables
+        .iter()
+        // Filter the variables to just the slacks. These are the basic variables at the start
+        .filter_map(|&(var, _)| match var {
+            VariableType::Slack(slack_num) => Some(RowLabel::Variable(var)),
+            _ => None
+        })
+        .map(|label| {
+            (
+                label.clone(),
+                equations
+                    .iter()
+                    .find_map(|equation| {
+                        // Try to find a term with the variable in this row of the table. We don't care about
+                        // that term right now, so we discard it. But the ? at the end means that if we can't
+                        // find a term with the required variable, then we return from the closure early
+                        equation
+                            .variables
+                            .iter()
+                            .find(|&&(n, var)| RowLabel::Variable(var) == label)?;
+
+                        // If we get here, then we know this is the right equation. We need to extract the
+                        // coefficients IN THE RIGHT ORDER, so we iter the variables and find the
+                        // coefficient of each one
+                        Some(
+                            variables
+                                .iter()
+                                .map(|&(var, _)| {
+                                    equation
+                                        .variables
+                                        .iter()
+                                        .find_map(|&(n, eq_var)| if eq_var == var { Some(n) } else { None })
+                                        .unwrap_or(0.)
+                                })
+                                .collect::<Vec<_>>()
+                        )
+                    })
+                    .expect("There should be at least one equation which contains this slack variable")
+            )
+        })
+        // Now add the value to the end
+        // TODO: Add theta and row operations
+        .map(|(label, mut coeffs)| {
+            coeffs.push(
+                variables
+                    .iter()
+                    .find(|&(var, _)| RowLabel::Variable(*var) == label)
+                    .unwrap()
+                    .1
+            );
+            (label, coeffs)
+        })
+        // Now add the final row for the objective function
+        .chain(
+            [(
+                RowLabel::ObjectiveFunction,
+                system.with_objective_function(|obj_func| {
+                    // Go through the variables and find the coefficient of each one in the
+                    // objective function
+                    variables
+                        .iter()
+                        .map(|(var, _)| {
+                            obj_func
+                                .expression()
+                                .0
+                                .iter()
+                                .find_map(|&(coeff, of_var)| {
+                                    if VariableType::Original(of_var) == *var {
+                                        Some(-coeff)
+                                    } else {
+                                        None
+                                    }
+                                })
+                                .unwrap_or(0.)
+                        })
+                        // And add the value
+                        .chain([0.].into_iter())
+                        .collect()
+                })
+            )]
+            .into_iter()
+        )
+        .collect();
+
+    debug!(?initial_rows);
 
     todo!()
 }

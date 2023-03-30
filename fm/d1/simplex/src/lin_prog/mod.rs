@@ -94,6 +94,14 @@ impl<'v> ObjectiveFunction<'v> {
             Self::Maximise(exp) => Self::Maximise(exp.simplify()),
         }
     }
+
+    /// Return a reference to the inner expression of the objective function.
+    pub fn expression(&self) -> &Expression<'v> {
+        match self {
+            Self::Minimise(exp) => exp,
+            Self::Maximise(exp) => exp,
+        }
+    }
 }
 
 /// Parse a float without the `2.34e12` type of syntax. This function is adapted from `nom`'s
