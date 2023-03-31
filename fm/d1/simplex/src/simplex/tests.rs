@@ -5,134 +5,177 @@ use crate::{
     },
     simplex::{solve_with_simplex_tableaux, tableau::Tableau, SolutionSet, VariableType},
 };
-use pretty_assertions::assert_eq;
+use float_cmp::{approx_eq, ApproxEq, F32Margin};
+use itertools::Itertools;
 use std::collections::HashMap;
+
+impl<'v> ApproxEq for SolutionSet<'v> {
+    type Margin = F32Margin;
+
+    fn approx_eq<M: Into<Self::Margin>>(self, other: Self, margin: M) -> bool {
+        let margin = margin.into();
+
+        self.objective_function_value
+            .approx_eq(other.objective_function_value, margin)
+            && self
+                .variable_values
+                .into_iter()
+                .sorted_by_key(|&(var, _)| var)
+                .zip(
+                    other
+                        .variable_values
+                        .into_iter()
+                        .sorted_by_key(|&(var, _)| var),
+                )
+                .all(|((s_var, s_num), (o_var, o_num))| {
+                    s_var == o_var && s_num.approx_eq(o_num, margin)
+                })
+    }
+}
 
 #[test]
 fn solve_with_simplex_tableaux_test() {
-    assert_eq!(
-        solve_with_simplex_tableaux(
-            &LinProgSystemBuilder {
-                variables: Variables::from(["x", "y", "z"]),
-                config: Config::default(),
-                objective_function_builder: |vars| {
-                    ObjectiveFunction::Maximise(
-                        Expression::nom_parse("10x + 12y + 8z", vars).unwrap().1,
-                    )
-                },
-                constraints_builder: |vars| vec![
-                    Constraint::nom_parse("2x + 2y <= 5", vars).unwrap().1,
-                    Constraint::nom_parse("5x + 3y + 4z <= 15", vars).unwrap().1,
-                ]
+    assert!(
+        approx_eq!(
+            SolutionSet,
+            solve_with_simplex_tableaux(
+                &LinProgSystemBuilder {
+                    variables: Variables::from(["x", "y", "z"]),
+                    config: Config::default(),
+                    objective_function_builder: |vars| {
+                        ObjectiveFunction::Maximise(
+                            Expression::nom_parse("10x + 12y + 8z", vars).unwrap().1,
+                        )
+                    },
+                    constraints_builder: |vars| vec![
+                        Constraint::nom_parse("2x + 2y <= 5", vars).unwrap().1,
+                        Constraint::nom_parse("5x + 3y + 4z <= 15", vars).unwrap().1,
+                    ]
+                }
+                .build()
+            )
+            .unwrap(),
+            SolutionSet {
+                objective_function_value: 45.,
+                variable_values: HashMap::from([
+                    (VariableType::Original("x"), 0.),
+                    (VariableType::Original("y"), 5. / 2.),
+                    (VariableType::Original("z"), 15. / 8.),
+                    (VariableType::Slack(0), 0.),
+                    (VariableType::Slack(1), 0.),
+                ])
             }
-            .build()
-        )
-        .unwrap(),
-        SolutionSet {
-            objective_function_value: 45.,
-            variable_values: HashMap::from([
-                (VariableType::Original("x"), 0.),
-                (VariableType::Original("y"), 5. / 2.),
-                (VariableType::Original("z"), 15. / 8.),
-                (VariableType::Slack(0), 0.),
-                (VariableType::Slack(1), 0.),
-            ])
-        },
+        ),
         "Ch 7 Example 7 or 10"
     );
 
-    assert_eq!(
-        solve_with_simplex_tableaux(
-            &LinProgSystemBuilder {
-                variables: Variables::from(["x", "y"]),
-                config: Config::default(),
-                objective_function_builder: |vars| {
-                    ObjectiveFunction::Maximise(Expression::nom_parse("3x + 2y", vars).unwrap().1)
-                },
-                constraints_builder: |vars| vec![
-                    Constraint::nom_parse("5x + 7y ≤ 70", vars).unwrap().1,
-                    Constraint::nom_parse("10x + 3y ≤ 60", vars).unwrap().1,
-                ]
+    assert!(
+        approx_eq!(
+            SolutionSet,
+            solve_with_simplex_tableaux(
+                &LinProgSystemBuilder {
+                    variables: Variables::from(["x", "y"]),
+                    config: Config::default(),
+                    objective_function_builder: |vars| {
+                        ObjectiveFunction::Maximise(
+                            Expression::nom_parse("3x + 2y", vars).unwrap().1,
+                        )
+                    },
+                    constraints_builder: |vars| vec![
+                        Constraint::nom_parse("5x + 7y ≤ 70", vars).unwrap().1,
+                        Constraint::nom_parse("10x + 3y ≤ 60", vars).unwrap().1,
+                    ]
+                }
+                .build()
+            )
+            .unwrap(),
+            SolutionSet {
+                objective_function_value: 26.,
+                variable_values: HashMap::from([
+                    (VariableType::Original("x"), 42. / 11.),
+                    (VariableType::Original("y"), 80. / 11.),
+                    (VariableType::Slack(0), 0.),
+                    (VariableType::Slack(1), 0.),
+                ])
             }
-            .build()
-        )
-        .unwrap(),
-        SolutionSet {
-            objective_function_value: 26.,
-            variable_values: HashMap::from([
-                (VariableType::Original("x"), 42. / 11.),
-                (VariableType::Original("y"), 80. / 11.),
-                (VariableType::Slack(0), 0.),
-                (VariableType::Slack(1), 0.),
-            ])
-        },
+        ),
         "Ch 7 Example 8"
     );
 
-    //assert_eq!(
-    //solve_with_simplex_tableaux(
-    //&LinProgSystemBuilder {
-    //variables: Variables::from(["x", "y"]),
-    //config: Config::default(),
-    //objective_function_builder: |vars| {
-    //ObjectiveFunction::Minimise(Expression::nom_parse("3x - y", vars).unwrap().1)
-    //},
-    //constraints_builder: |vars| vec![
-    //Constraint::nom_parse("2x + y ≤ 12", vars).unwrap().1,
-    //Constraint::nom_parse("x + 4y <= 8", vars).unwrap().1,
-    //]
-    //}
-    //.build()
-    //)
-    //.unwrap(),
-    //SolutionSet {
-    //objective_function_value: -2.,
-    //variable_values: HashMap::from([
-    //(VariableType::Original("x"), 0.),
-    //(VariableType::Original("y"), 2.),
-    //(VariableType::Slack(0), 10.),
-    //(VariableType::Slack(1), 0.),
-    //])
-    //},
-    //"Ch 7 Example 9 (minimise)"
-    //);
+    assert!(
+        approx_eq!(
+            SolutionSet,
+            solve_with_simplex_tableaux(
+                &LinProgSystemBuilder {
+                    variables: Variables::from(["x", "y"]),
+                    config: Config::default(),
+                    objective_function_builder: |vars| {
+                        ObjectiveFunction::Minimise(
+                            Expression::nom_parse("3x - y", vars).unwrap().1,
+                        )
+                    },
+                    constraints_builder: |vars| vec![
+                        Constraint::nom_parse("2x + y ≤ 12", vars).unwrap().1,
+                        Constraint::nom_parse("x + 4y <= 8", vars).unwrap().1,
+                    ]
+                }
+                .build()
+            )
+            .unwrap(),
+            SolutionSet {
+                objective_function_value: -2.,
+                variable_values: HashMap::from([
+                    (VariableType::Original("x"), 0.),
+                    (VariableType::Original("y"), 2.),
+                    (VariableType::Slack(0), 10.),
+                    (VariableType::Slack(1), 0.),
+                ])
+            }
+        ),
+        "Ch 7 Example 9 (minimise)"
+    );
 
-    //assert_eq!(
-    //solve_with_simplex_tableaux(
-    //&LinProgSystemBuilder {
-    //variables: Variables::from(["x", "y", "z"]),
-    //config: Config::default(),
-    //objective_function_builder: |vars| {
-    //ObjectiveFunction::Minimise(
-    //Expression::nom_parse("3x + 4y - 5z", vars).unwrap().1,
-    //)
-    //},
-    //constraints_builder: |vars| vec![
-    //Constraint::nom_parse("2x - 3y + 2z <= 4", vars).unwrap().1,
-    //Constraint::nom_parse("x + 2y + 4z <= 8", vars).unwrap().1,
-    //Constraint::nom_parse("y - z <= 6", vars).unwrap().1,
-    //]
-    //}
-    //.build()
-    //)
-    //.unwrap(),
-    //SolutionSet {
-    //objective_function_value: -2.,
-    //variable_values: HashMap::from([
-    //(VariableType::Original("x"), 32. / 7.),
-    //(VariableType::Original("y"), 12. / 7.),
-    //(VariableType::Original("z"), 0.),
-    //(VariableType::Slack(0), 0.),
-    //(VariableType::Slack(1), 0.),
-    //(VariableType::Slack(2), 30. / 7.),
-    //])
-    //},
-    //"Ch 7 Example 11"
-    //);
+    assert!(
+        approx_eq!(
+            SolutionSet,
+            solve_with_simplex_tableaux(
+                &LinProgSystemBuilder {
+                    variables: Variables::from(["x", "y", "z"]),
+                    config: Config::default(),
+                    objective_function_builder: |vars| {
+                        ObjectiveFunction::Maximise(
+                            Expression::nom_parse("3x + 4y - 5z", vars).unwrap().1,
+                        )
+                    },
+                    constraints_builder: |vars| vec![
+                        Constraint::nom_parse("2x - 3y + 2z <= 4", vars).unwrap().1,
+                        Constraint::nom_parse("x + 2y + 4z <= 8", vars).unwrap().1,
+                        Constraint::nom_parse("y - z <= 6", vars).unwrap().1,
+                    ]
+                }
+                .build()
+            )
+            .unwrap(),
+            SolutionSet {
+                objective_function_value: 144. / 7.,
+                variable_values: HashMap::from([
+                    (VariableType::Original("x"), 32. / 7.),
+                    (VariableType::Original("y"), 12. / 7.),
+                    (VariableType::Original("z"), 0.),
+                    (VariableType::Slack(0), 0.),
+                    (VariableType::Slack(1), 0.),
+                    (VariableType::Slack(2), 30. / 7.),
+                ])
+            }
+        ),
+        "Ch 7 Example 11"
+    );
 }
 
 #[test]
 fn create_initial_tableau_test() {
+    use pretty_assertions::assert_eq;
+
     assert_eq!(
         Tableau::create_initial(
             &LinProgSystemBuilder {
@@ -212,6 +255,8 @@ fn create_initial_tableau_test() {
 
 #[test]
 fn tableau_iteration_test() {
+    use pretty_assertions::assert_eq;
+
     let system = &LinProgSystemBuilder {
         variables: Variables::from(["x", "y"]),
         config: Config::default(),

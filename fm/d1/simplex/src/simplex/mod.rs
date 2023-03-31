@@ -5,8 +5,8 @@ mod tableau;
 mod tests;
 
 use self::tableau::Tableau;
-use crate::lin_prog::{system::LinProgSystem, ObjectiveFunction};
-use color_eyre::{Report, Result};
+use crate::lin_prog::system::LinProgSystem;
+use color_eyre::Result;
 use itertools::Itertools;
 use std::{cmp::Ordering, collections::HashMap, fmt};
 use tracing::{info, instrument};
@@ -86,13 +86,6 @@ impl<'v> fmt::Display for SolutionSet<'v> {
 /// Solve the given linear programming system using simplex tableaux.
 #[instrument(skip(system))]
 pub fn solve_with_simplex_tableaux<'v>(system: &'v LinProgSystem) -> Result<SolutionSet<'v>> {
-    system.with_objective_function(|func| match func {
-        ObjectiveFunction::Maximise(_) => Ok(()),
-        ObjectiveFunction::Minimise(_) => Err(Report::msg(
-            "Simplex tableaux currently only supports maximising objective functions",
-        )),
-    })?;
-
     let mut tableau: Tableau = Tableau::create_initial(system)?;
     info!(%tableau, "Initial tableau");
     while tableau.negatives_in_bottom_row() {

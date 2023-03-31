@@ -5,7 +5,7 @@ mod labels;
 use self::labels::{ColumnLabel, RowLabel};
 use super::SolutionSet;
 use crate::{
-    lin_prog::{comparison::Comparison, system::LinProgSystem},
+    lin_prog::{comparison::Comparison, system::LinProgSystem, ObjectiveFunction},
     simplex::{Equation, VariableType},
 };
 use color_eyre::{Report, Result};
@@ -94,6 +94,9 @@ pub struct Tableau<'v> {
     /// The rows of the table.
     rows: Vec<(RowLabel<'v>, Vec<TableauNumber>)>,
 
+    /// Whether to minimise the objective function rather than the default of maximising it.
+    minimise: bool,
+
     /// The index of the value column.
     value_idx: usize,
 
@@ -127,6 +130,9 @@ impl<'v> Tableau<'v> {
     /// Generate the initial tableau for the given system with its variables and equations.
     #[instrument(skip(system))]
     pub fn create_initial(system: &'v LinProgSystem) -> Result<Self> {
+        let minimise = system
+            .with_objective_function(|obj_func| matches!(obj_func, ObjectiveFunction::Minimise(_)));
+
         // Convert the original variables from the system into [`VariableType::Original`] variables.
         // This HashMap maps variables to their current values. These values will change during the
         // execution of the algorithm.
@@ -260,7 +266,11 @@ impl<'v> Tableau<'v> {
                                     .iter()
                                     .find_map(|&(coeff, of_var)| {
                                         if VariableType::Original(of_var) == *var {
-                                            Some(-coeff)
+                                            if minimise {
+                                                Some(coeff)
+                                            } else {
+                                                Some(-coeff)
+                                            }
                                         } else {
                                             None
                                         }
@@ -289,6 +299,7 @@ impl<'v> Tableau<'v> {
         Ok(Self {
             column_labels,
             rows,
+            minimise,
             value_idx,
             theta_idx: value_idx + 1,
             row_ops_idx: value_idx + 2,
@@ -490,13 +501,17 @@ impl<'v> Tableau<'v> {
         }
 
         // Find the value of the objective function.
-        let objective_function_value = *self
+        let mut objective_function_value = *self
             .rows
             .iter()
             .find(|&(label, _)| matches!(label, RowLabel::ObjectiveFunction))
             .expect("The objective function must have a value")
             .1[self.value_idx]
             .simple_num();
+
+        if self.minimise {
+            objective_function_value *= -1.;
+        }
 
         let variable_values = self
             // Get the variables from the column labels
