@@ -62,8 +62,7 @@ pub fn solve_with_simplex_tableaux<'v>(system: &'v LinProgSystem) -> Result<Solu
 
     let mut initial_tableau: Tableau = Tableau::create_initial(system)?;
     info!(%initial_tableau);
-    initial_tableau.populate_theta_values();
-    info!(%initial_tableau);
+    initial_tableau.do_iteration();
 
     todo!()
 }

@@ -6,7 +6,7 @@ use color_eyre::{Report, Result};
 use itertools::Itertools;
 use std::{fmt, iter};
 use tabled::{builder::Builder, Style};
-use tracing::{debug, error, instrument};
+use tracing::{debug, error, info, instrument};
 
 /// A label to use for a row in the tableau.
 #[derive(Clone, Debug, PartialEq)]
@@ -27,6 +27,39 @@ impl<'v> fmt::Display for RowLabel<'v> {
     }
 }
 
+/// The operation to be applied to a particular row.
+#[derive(Clone, Copy, Debug, PartialEq)]
+enum RowOperation {
+    /// No-op; do nothing.
+    Nop,
+
+    /// Multiply every number in the row by a constant.
+    MulConst(f32),
+
+    /// Add a multiple of another row to this row.
+    ///
+    /// The `usize` here is the index of the row, so it starts at 0. When printing it with
+    /// [`Display`], we increment it.
+    AddRow(f32, usize),
+}
+
+impl fmt::Display for RowOperation {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let s = match self {
+            RowOperation::Nop => "Nop".to_string(),
+            RowOperation::MulConst(n) => format!("× {n}"),
+            RowOperation::AddRow(n, idx) => {
+                if *n > 0. {
+                    format!("+{n} R{}", idx + 1)
+                } else {
+                    format!("{n} R{}", idx + 1)
+                }
+            }
+        };
+        write!(f, "{s}")
+    }
+}
+
 /// A number to use in a tableau. This is used to allow certain values (like theta) to be optional,
 /// as well as allowing for the row operation columns.
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -36,6 +69,9 @@ enum TableauNumber {
 
     /// A theta value, which will not exist at first, since it must be populated later.
     Theta(Option<f32>),
+
+    /// The operation to be applied to the row.
+    RowOperation(Option<RowOperation>),
 }
 
 impl fmt::Display for TableauNumber {
@@ -43,7 +79,8 @@ impl fmt::Display for TableauNumber {
         let s = match self {
             Self::Simple(n) => n.to_string(),
             Self::Theta(Some(n)) => n.to_string(),
-            Self::Theta(None) => String::new(),
+            Self::RowOperation(Some(op)) => op.to_string(),
+            Self::Theta(None) | Self::RowOperation(None) => String::new(),
         };
         write!(f, "{s}")
     }
@@ -75,6 +112,9 @@ pub struct Tableau<'v> {
 
     /// The index of the theta column.
     theta_idx: usize,
+
+    /// The index of the row ops column.
+    row_ops_idx: usize,
 }
 
 impl<'v> fmt::Display for Tableau<'v> {
@@ -162,7 +202,7 @@ impl<'v> Tableau<'v> {
         let column_labels = variables
             .iter()
             .map(|&(var, _)| var.to_string())
-            .chain(["Value".to_string(), "θ".to_string()].into_iter())
+            .chain(["Value".to_string(), "θ".to_string(), "Row op".to_string()].into_iter())
             .collect();
 
         // Each row has n + 3 columns, where n is the number of variables. We have a column for each
@@ -208,7 +248,6 @@ impl<'v> Tableau<'v> {
                 )
             })
             // Now add the value to the end
-            // TODO: Add theta and row operations
             .map(|(label, mut coeffs)| {
                 coeffs.push(
                     variables
@@ -253,26 +292,37 @@ impl<'v> Tableau<'v> {
                     label,
                     nums
                         .into_iter()
-                        .map(|n| TableauNumber::Simple(n))
-                        .chain(iter::once(TableauNumber::Theta(None)))
+                        .map(TableauNumber::Simple)
+                        .chain([TableauNumber::Theta(None), TableauNumber::RowOperation(None)].into_iter())
                         .collect()
                 ))
             .collect();
 
         let value_idx = variables.len();
-        let theta_idx = value_idx + 1;
 
         Ok(Self {
             column_labels,
             rows,
             value_idx,
-            theta_idx,
+            theta_idx: value_idx + 1,
+            row_ops_idx: value_idx + 2,
         })
     }
 
     /// Return a reference to the bottom row of the table.
     fn bottom_row(&self) -> &(RowLabel<'v>, Vec<TableauNumber>) {
         self.rows.last().expect("There should be a bottom row")
+    }
+
+    /// Return the values in the theta column.
+    fn theta_column(&self) -> Vec<Option<f32>> {
+        self.rows
+            .iter()
+            .map(|(_, numbers)| match numbers[self.theta_idx] {
+                TableauNumber::Theta(n) => n,
+                other => panic!("The theta column must only contain theta values, not {other:?}"),
+            })
+            .collect()
     }
 
     /// Check if there are any negative numbers in the bottom row of the tableau.
@@ -290,34 +340,85 @@ impl<'v> Tableau<'v> {
             .1
             .iter()
             .enumerate()
+            .filter_map(|(idx, num)| match num {
+                TableauNumber::Simple(n) if *n < 0. => Some((idx, *n)),
+                _ => None,
+            })
+            .fold((0, 0.), |(acc_idx, acc_min), (this_idx, this_num)| {
+                if this_num < acc_min {
+                    (this_idx, this_num)
+                } else {
+                    (acc_idx, acc_min)
+                }
+            })
+            .0
+    }
+
+    /// Return the index of the pivot row. This is calculated by finding the smallest positive
+    /// theta value.
+    fn find_pivot_row(&self) -> usize {
+        self.theta_column()
+            .iter()
+            .enumerate()
+            .filter_map(|(idx, &theta)| match theta {
+                Some(n) if n > 0. => Some((idx, n)),
+                _ => None,
+            })
             .fold(
-                (0, 0.),
-                |(acc_idx, acc_min), (this_idx, &this_num)| match this_num {
-                    TableauNumber::Simple(n) => {
-                        if n < acc_min {
-                            (this_idx, n)
-                        } else {
-                            (acc_idx, acc_min)
-                        }
+                (0, f32::INFINITY),
+                |(acc_idx, acc_min), (this_idx, this_num)| {
+                    if this_num < acc_min {
+                        (this_idx, this_num)
+                    } else {
+                        (acc_idx, acc_min)
                     }
-                    _ => (acc_idx, acc_min),
                 },
             )
             .0
     }
 
     /// Populate this tableau with theta values.
-    pub fn populate_theta_values(&mut self) {
+    fn populate_theta_values(&mut self) {
         let pivot_col = self.find_pivot_column();
-        for (label, numbers) in self.rows.iter_mut() {
+        for (label, numbers) in &mut self.rows {
             match label {
                 RowLabel::Variable(_) => {
                     numbers[self.theta_idx] = TableauNumber::Theta(Some(
                         numbers[self.value_idx].simple_num() / numbers[pivot_col].simple_num(),
-                    ))
+                    ));
                 }
                 RowLabel::ObjectiveFunction => (),
             }
         }
+    }
+
+    /// Populate this tableau with row operations.
+    fn populate_row_ops(&mut self) {
+        let pivot_col = self.find_pivot_column();
+        let pivot_row = self.find_pivot_row();
+
+        for (idx, (_label, nums)) in self.rows.iter_mut().enumerate() {
+            if idx == pivot_row {
+                nums[self.row_ops_idx] = TableauNumber::RowOperation(Some(RowOperation::MulConst(
+                    nums[pivot_col].simple_num().recip(),
+                )));
+            } else {
+                let row_op_coeff = -nums[pivot_col].simple_num();
+                nums[self.row_ops_idx] = if row_op_coeff != 0. {
+                    TableauNumber::RowOperation(Some(RowOperation::AddRow(row_op_coeff, pivot_row)))
+                } else {
+                    TableauNumber::RowOperation(Some(RowOperation::Nop))
+                };
+            }
+        }
+    }
+
+    /// Do a single iteration of the simplex tableaux algorithm.
+    #[instrument(skip(self))]
+    pub fn do_iteration(&mut self) {
+        self.populate_theta_values();
+        info!(%self, "After populating theta values");
+        self.populate_row_ops();
+        info!(%self, "After populating row ops");
     }
 }
