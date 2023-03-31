@@ -7,7 +7,8 @@ mod tests;
 use self::tableau::Tableau;
 use crate::lin_prog::{system::LinProgSystem, ObjectiveFunction};
 use color_eyre::{Report, Result};
-use std::{collections::HashMap, fmt};
+use itertools::Itertools;
+use std::{cmp::Ordering, collections::HashMap, fmt};
 use tracing::{info, instrument};
 
 /// The different types of variables that can be used in solving linear programming problems.
@@ -25,6 +26,25 @@ impl<'v> fmt::Display for VariableType<'v> {
         match self {
             Self::Original(name) => write!(f, "{name}"),
             Self::Slack(num) => write!(f, "sl#{num}"),
+        }
+    }
+}
+
+impl<'v> PartialOrd for VariableType<'v> {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl<'v> Ord for VariableType<'v> {
+    fn cmp(&self, other: &Self) -> Ordering {
+        use VariableType::*;
+
+        match (*self, *other) {
+            (Original(a), Original(b)) => a.cmp(b),
+            (Original(_), _) => Ordering::Less,
+            (_, Original(_)) => Ordering::Greater,
+            (Slack(a), Slack(b)) => a.cmp(&b),
         }
     }
 }
@@ -49,6 +69,20 @@ pub struct SolutionSet<'v> {
     variable_values: HashMap<VariableType<'v>, f32>,
 }
 
+impl<'v> fmt::Display for SolutionSet<'v> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "\nObjFunc# = {}", self.objective_function_value)?;
+        for (var, value) in self
+            .variable_values
+            .iter()
+            .sorted_by_key(|&(var_type, _)| var_type)
+        {
+            write!(f, "\n{var} = {value}")?;
+        }
+        Ok(())
+    }
+}
+
 /// Solve the given linear programming system using simplex tableaux.
 #[instrument(skip(system))]
 pub fn solve_with_simplex_tableaux<'v>(system: &'v LinProgSystem) -> Result<SolutionSet<'v>> {
@@ -61,7 +95,9 @@ pub fn solve_with_simplex_tableaux<'v>(system: &'v LinProgSystem) -> Result<Solu
 
     let mut tableau: Tableau = Tableau::create_initial(system)?;
     info!(%tableau, "Initial tableau");
-    tableau.do_iteration();
+    while tableau.negatives_in_bottom_row() {
+        tableau.do_iteration();
+    }
 
-    todo!()
+    Ok(tableau.get_solution())
 }

@@ -3,6 +3,7 @@
 mod labels;
 
 use self::labels::{ColumnLabel, RowLabel};
+use super::SolutionSet;
 use crate::{
     lin_prog::{comparison::Comparison, system::LinProgSystem},
     simplex::{Equation, VariableType},
@@ -311,7 +312,7 @@ impl<'v> Tableau<'v> {
     }
 
     /// Check if there are any negative numbers in the bottom row of the tableau.
-    fn negatives_in_bottom_row(&self) -> bool {
+    pub fn negatives_in_bottom_row(&self) -> bool {
         self.bottom_row().1.iter().any(|&n| match n {
             TableauNumber::Simple(n) => n < 0.,
             _ => false,
@@ -481,5 +482,51 @@ impl<'v> Tableau<'v> {
 
         self.perform_row_ops();
         info!(%self, "After performing row ops");
+    }
+
+    pub fn get_solution(self) -> SolutionSet<'v> {
+        if self.negatives_in_bottom_row() {
+            panic!("There must not be negatives in the bottom row when getting the solution");
+        }
+
+        // Find the value of the objective function.
+        let objective_function_value = *self
+            .rows
+            .iter()
+            .find(|&(label, _)| matches!(label, RowLabel::ObjectiveFunction))
+            .expect("The objective function must have a value")
+            .1[self.value_idx]
+            .simple_num();
+
+        let variable_values = self
+            // Get the variables from the column labels
+            .column_labels
+            .into_iter()
+            .filter_map(|label| match label {
+                ColumnLabel::Variable(var) => Some(var),
+                _ => None,
+            })
+            // Find the values for each basic variable, defaulting to 0 if there's no row for them
+            .map(|var| {
+                (
+                    var,
+                    self.rows
+                        .iter()
+                        .find_map(|(row_label, nums)| {
+                            if *row_label == RowLabel::Variable(var) {
+                                Some(*nums[self.value_idx].simple_num())
+                            } else {
+                                None
+                            }
+                        })
+                        .unwrap_or(0.),
+                )
+            })
+            .collect();
+
+        SolutionSet {
+            objective_function_value,
+            variable_values,
+        }
     }
 }

@@ -34,7 +34,7 @@ fn main() -> Result<()> {
 
     let system = LinProgSystem::build_from_user()?;
     let solution = solve_with_simplex_tableaux(&system)?;
-    info!(?solution, "Solution found!");
+    info!(%solution, "Solution found!");
 
     Ok(())
 }
