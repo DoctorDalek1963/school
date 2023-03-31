@@ -1,31 +1,17 @@
 //! This module handles the tableaux. Tableau is singular; tableaux is plural.
 
-use super::{Equation, VariableType};
-use crate::lin_prog::{comparison::Comparison, system::LinProgSystem};
+mod labels;
+
+use self::labels::{ColumnLabel, RowLabel};
+use crate::{
+    lin_prog::{comparison::Comparison, system::LinProgSystem},
+    simplex::{Equation, VariableType},
+};
 use color_eyre::{Report, Result};
 use itertools::Itertools;
 use std::{fmt, iter};
 use tabled::{builder::Builder, Style};
 use tracing::{debug, error, info, instrument};
-
-/// A label to use for a row in the tableau.
-#[derive(Clone, Debug, PartialEq)]
-enum RowLabel<'v> {
-    /// A variable. See [`VariableType`].
-    Variable(VariableType<'v>),
-
-    /// The objective function.
-    ObjectiveFunction,
-}
-
-impl<'v> fmt::Display for RowLabel<'v> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::Variable(var) => write!(f, "{var}"),
-            Self::ObjectiveFunction => write!(f, "ObjFunc#"),
-        }
-    }
-}
 
 /// The operation to be applied to a particular row.
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -36,7 +22,7 @@ enum RowOperation {
     /// Multiply every number in the row by a constant.
     MulConst(f32),
 
-    /// Add a multiple of another row to this row.
+    /// Add a multiple of another row to this row. The other row should always be the pivot row.
     ///
     /// The `usize` here is the index of the row, so it starts at 0. When printing it with
     /// [`Display`], we increment it.
@@ -102,7 +88,7 @@ impl TableauNumber {
 #[derive(Clone, Debug, PartialEq)]
 pub struct Tableau<'v> {
     /// The titles of the columns.
-    column_labels: Vec<String>,
+    column_labels: Vec<ColumnLabel<'v>>,
 
     /// The rows of the table.
     rows: Vec<(RowLabel<'v>, Vec<TableauNumber>)>,
@@ -121,8 +107,7 @@ impl<'v> fmt::Display for Tableau<'v> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut builder = Builder::default();
         builder.add_record(
-            iter::once("Basic var".to_string())
-                .chain(self.column_labels.iter().map(|s| s.to_owned())),
+            iter::once("Basic var".into()).chain(self.column_labels.iter().map(|s| s.to_string())),
         );
 
         for (label, nums) in &self.rows {
@@ -201,8 +186,8 @@ impl<'v> Tableau<'v> {
 
         let column_labels = variables
             .iter()
-            .map(|&(var, _)| var.to_string())
-            .chain(["Value".to_string(), "θ".to_string(), "Row op".to_string()].into_iter())
+            .map(|&(var, _)| var.into())
+            .chain(["Value".into(), "θ".into(), "Row op".into()].into_iter())
             .collect();
 
         // Each row has n + 3 columns, where n is the number of variables. We have a column for each
@@ -392,6 +377,17 @@ impl<'v> Tableau<'v> {
         }
     }
 
+    /// Change the label of the pivot row to be that of the pivot column.
+    fn change_pivot_row_label(&mut self) {
+        let pivot_col = self.find_pivot_column();
+        let pivot_row = self.find_pivot_row();
+
+        self.rows[pivot_row].0 = self.column_labels[pivot_col]
+            .clone()
+            .try_into()
+            .expect("The pivot column should have a variable lable");
+    }
+
     /// Populate this tableau with row operations.
     fn populate_row_ops(&mut self) {
         let pivot_col = self.find_pivot_column();
@@ -413,12 +409,77 @@ impl<'v> Tableau<'v> {
         }
     }
 
+    /// Perform the row operations that were previously calculated, and then clear the theta and
+    /// row op columns.
+    fn perform_row_ops(&mut self) {
+        // First pass to apply row op to the pivot row
+        for (_label, nums) in &mut self.rows {
+            let row_op = match nums[self.row_ops_idx] {
+                TableauNumber::RowOperation(Some(op)) => op,
+                other => panic!("The row op must exist at this point and not be {other:?}"),
+            };
+
+            match row_op {
+                RowOperation::Nop => (),
+                // Multiply by a constant. This should only appear in the pivot row
+                RowOperation::MulConst(multiplier) => {
+                    for number in nums.iter_mut() {
+                        if let TableauNumber::Simple(n) = number {
+                            *n *= multiplier;
+                        }
+                    }
+                }
+                // Do nothing on this pass
+                RowOperation::AddRow(_, _) => (),
+            };
+        }
+
+        let pivot_row = self.find_pivot_row();
+        let (_, pivot_row_nums) = self.rows[pivot_row].clone();
+
+        // Second pass to apply other row ops and clear theta and row op columns
+        for (_label, nums) in self.rows.iter_mut() {
+            let row_op = match nums[self.row_ops_idx] {
+                TableauNumber::RowOperation(Some(op)) => op,
+                other => panic!("The row op must exist at this point and not be {other:?}"),
+            };
+
+            match row_op {
+                // We currently only support adding multiples of the pivot row due to borrowing
+                // problems
+                RowOperation::AddRow(multiplier, idx) => {
+                    assert_eq!(
+                        idx, pivot_row,
+                        "The index of the row to add must be the same as the pivot row"
+                    );
+
+                    for (num, other_num) in nums.iter_mut().zip(pivot_row_nums.iter()) {
+                        if let TableauNumber::Simple(n) = num {
+                            *n += multiplier * other_num.simple_num();
+                        }
+                    }
+                }
+                // These have already been dealt with
+                RowOperation::Nop | RowOperation::MulConst(_) => (),
+            }
+
+            // Clear the theta and row op columns
+            nums[self.theta_idx] = TableauNumber::Theta(None);
+            nums[self.row_ops_idx] = TableauNumber::RowOperation(None);
+        }
+    }
+
     /// Do a single iteration of the simplex tableaux algorithm.
     #[instrument(skip(self))]
     pub fn do_iteration(&mut self) {
         self.populate_theta_values();
         info!(%self, "After populating theta values");
+
+        self.change_pivot_row_label();
         self.populate_row_ops();
-        info!(%self, "After populating row ops");
+        info!(%self, "After populating row ops and changing pivot row label");
+
+        self.perform_row_ops();
+        info!(%self, "After performing row ops");
     }
 }
