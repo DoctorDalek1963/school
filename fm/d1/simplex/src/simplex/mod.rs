@@ -1,9 +1,8 @@
 //! This module handles execution of the actual simplex algorithm itself.
 
+mod tableau;
 #[cfg(test)]
 mod tests;
-
-mod tableau;
 
 use self::tableau::Tableau;
 use crate::lin_prog::{system::LinProgSystem, ObjectiveFunction};
@@ -60,9 +59,9 @@ pub fn solve_with_simplex_tableaux<'v>(system: &'v LinProgSystem) -> Result<Solu
         )),
     })?;
 
-    let mut initial_tableau: Tableau = Tableau::create_initial(system)?;
-    info!(%initial_tableau);
-    initial_tableau.do_iteration();
+    let mut tableau: Tableau = Tableau::create_initial(system)?;
+    info!(%tableau, "Initial tableau");
+    tableau.do_iteration();
 
     todo!()
 }
