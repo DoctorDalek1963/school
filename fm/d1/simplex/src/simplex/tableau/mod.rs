@@ -10,7 +10,7 @@ use crate::{
 };
 use color_eyre::{Report, Result};
 use itertools::Itertools;
-use std::{fmt, iter};
+use std::{collections::HashMap, fmt, iter};
 use tabled::{builder::Builder, Style};
 use tracing::{debug, error, info, instrument};
 
@@ -86,7 +86,7 @@ impl TableauNumber {
 }
 
 /// A single tableau for simplex tableaux.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug)]
 pub struct Tableau<'v> {
     /// The titles of the columns.
     column_labels: Vec<ColumnLabel<'v>>,
@@ -94,8 +94,16 @@ pub struct Tableau<'v> {
     /// The rows of the table.
     rows: Vec<(RowLabel<'v>, Vec<TableauNumber>)>,
 
+    /// Hold a reference to the system to check against constraints at the end.
+    ///
+    /// Ouroboros prevents us from holding a direct reference to the constraints.
+    system: &'v LinProgSystem,
+
     /// Whether to minimise the objective function rather than the default of maximising it.
     minimise: bool,
+
+    /// Whether we need integer solutions.
+    integer_solutions: bool,
 
     /// The index of the value column.
     value_idx: usize,
@@ -299,7 +307,9 @@ impl<'v> Tableau<'v> {
         Ok(Self {
             column_labels,
             rows,
+            system,
             minimise,
+            integer_solutions: system.borrow_config().integer_solutions,
             value_idx,
             theta_idx: value_idx + 1,
             row_ops_idx: value_idx + 2,
@@ -513,7 +523,7 @@ impl<'v> Tableau<'v> {
             objective_function_value *= -1.;
         }
 
-        let variable_values = self
+        let variable_values: HashMap<VariableType, f32> = self
             // Get the variables from the column labels
             .column_labels
             .into_iter()
@@ -539,9 +549,103 @@ impl<'v> Tableau<'v> {
             })
             .collect();
 
-        SolutionSet {
-            objective_function_value,
-            variable_values,
+        if !self.integer_solutions {
+            SolutionSet {
+                objective_function_value,
+                variable_values,
+            }
+        } else {
+            let variable_options: HashMap<_, _> = variable_values
+                .iter()
+
+                // We only care about the original variables here
+                .filter_map(|(&var, &num)| match var {
+                    VariableType::Original(v) => Some((v, num)),
+                    _ => None,
+                })
+
+                // Each variable could be rounded up or down. We're using 0.4999 instead of 0.5
+                // here because if we use 0.5, then 0. will be rounded to -1. and 1. but not 0.,
+                // which is a problem
+                .map(|(var, num)| (var, ((num - 0.4999).round(), (num + 0.4999).round())))
+                .collect();
+            debug!(?variable_options);
+
+            let var_count = variable_options.len();
+            let points_around_optimal = variable_options
+                .into_iter()
+
+                // Split the interior tuples and flatten so we get a tuple for each possibility
+                .map(|(var, (a, b))| [(var, a), (var, b)])
+                .flatten()
+
+                // Filter out negatives
+                .filter(|&(_, num)| num >= 0.)
+
+                // Find all the permutations and get rid of any with duplicated variables like
+                // [("x", 3), ("x", 4)]
+                .permutations(var_count)
+                .map(|possibility| {
+                    possibility
+                        .into_iter()
+                        .unique_by(|&(var, _)| var)
+                        .collect_vec()
+                })
+                .filter(|possibility| possibility.len() == var_count)
+
+                // Sort the variables in each possibility and eliminate duplicates
+                .map(|possibility| possibility.into_iter().sorted_by_key(|(var, _)| var.to_string()).collect_vec())
+                .unique_by(|possibility| format!("{possibility:?}"))
+                .collect_vec();
+            debug!(?points_around_optimal);
+
+            let in_feasible_region = self.system.with_constraints(|cons| {
+                points_around_optimal
+                    .into_iter()
+                    // Filter to get just the possibilities that satisfy every constraint
+                    .filter(|possibility| {
+                        cons.iter()
+                            .all(|con| {
+                                con.test(
+                                    &possibility
+                                    .iter()
+                                    .map(|&tuple| tuple)
+                                    .collect_vec()
+                                )
+                            })
+                    })
+                    .collect_vec()
+            });
+            debug!(?in_feasible_region);
+
+            let (vars, objective_function_value) =
+                self.system.with_objective_function(|obj_func| {
+                    in_feasible_region
+                    .into_iter()
+                    .map(|possibility| {
+                        let value = obj_func.expression().evaluate(&possibility);
+                        (possibility, value)
+                    })
+                    //.max_by_key(|&(vars, value)| value)
+                    .fold((vec![], 0.), |(acc_vars, acc_value), (cur_vars, cur_value)| {
+                        if cur_value > acc_value {
+                            (cur_vars, cur_value)
+                        } else {
+                            (acc_vars, acc_value)
+                        }
+                    })
+                });
+            let variable_values = vars
+                .into_iter()
+                .map(|(var, num)| (VariableType::Original(var), num))
+                .collect();
+
+            debug!(?objective_function_value, ?variable_values);
+
+            SolutionSet {
+                objective_function_value,
+                variable_values,
+            }
         }
     }
 }

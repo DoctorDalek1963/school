@@ -1,8 +1,7 @@
 //! This module deals with comparison operators, as used in inequalities.
 
-use std::fmt;
-
 use nom::{branch::alt, bytes::complete::tag, IResult, Parser};
+use std::fmt;
 
 /// Comparison operators.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -51,6 +50,17 @@ impl Comparison {
             tag(">=").map(|_| Self::GreaterThanOrEqual),
             tag(">").map(|_| Self::GreaterThan),
         ))(input)
+    }
+
+    /// Compare the given values with the comparison operator.
+    pub fn compare<T: PartialOrd>(&self, lhs: &T, rhs: &T) -> bool {
+        match self {
+            Self::LessThan => lhs.lt(rhs),
+            Self::LessThanOrEqual => lhs.le(rhs),
+            Self::Equal => lhs.eq(rhs),
+            Self::GreaterThan => lhs.gt(rhs),
+            Self::GreaterThanOrEqual => lhs.ge(rhs),
+        }
     }
 }
 

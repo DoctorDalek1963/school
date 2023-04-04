@@ -208,6 +208,20 @@ impl<'v> Expression<'v> {
         )
     }
 
+    /// Evaluate the expression for the given variables.
+    pub fn evaluate(&self, vars: &[(&'v str, f32)]) -> f32 {
+        self
+            .0
+            .iter()
+            .map(|&(coeff, exp_var)| {
+                let (_, value) = *vars
+                    .iter()
+                    .find(|&(v, _)| *v == exp_var)
+                    .expect("We should be able to find every variable in the expression in the set of given variables");
+                coeff * value
+            }).sum()
+    }
+
     /// Build an expression from user input with `inquire`.
     ///
     /// This method uses the given prompt for the first attempt, and then uses "Please try again:"

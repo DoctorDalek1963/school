@@ -8,6 +8,7 @@ use crate::{
 use float_cmp::{approx_eq, ApproxEq, F32Margin};
 use itertools::Itertools;
 use std::collections::HashMap;
+use tracing_test::traced_test;
 
 impl<'v> ApproxEq for SolutionSet<'v> {
     type Margin = F32Margin;
@@ -34,6 +35,7 @@ impl<'v> ApproxEq for SolutionSet<'v> {
 }
 
 #[test]
+#[traced_test]
 fn solve_with_simplex_tableaux_test() {
     assert!(
         approx_eq!(
@@ -173,6 +175,82 @@ fn solve_with_simplex_tableaux_test() {
 }
 
 #[test]
+#[traced_test]
+fn solve_with_simplex_tableaux_integer_solutions_test() {
+    assert!(
+        approx_eq!(
+            SolutionSet,
+            solve_with_simplex_tableaux(
+                &LinProgSystemBuilder {
+                    variables: Variables::from(["x", "y"]),
+                    config: Config {
+                        integer_solutions: true,
+                    },
+                    objective_function_builder: |vars| {
+                        ObjectiveFunction::Maximise(
+                            Expression::nom_parse("3x + 2y", vars).unwrap().1,
+                        )
+                    },
+                    constraints_builder: |vars| {
+                        vec![
+                            Constraint::nom_parse("5x + 7y <= 70", vars).unwrap().1,
+                            Constraint::nom_parse("10x + 3y <= 60", vars).unwrap().1,
+                        ]
+                    },
+                }
+                .build()
+            )
+            .unwrap(),
+            SolutionSet {
+                objective_function_value: 23.,
+                variable_values: HashMap::from([
+                    (VariableType::Original("x"), 3.),
+                    (VariableType::Original("y"), 7.),
+                ])
+            }
+        ),
+        "Ch 7 Example 12"
+    );
+
+    assert!(
+        approx_eq!(
+            SolutionSet,
+            solve_with_simplex_tableaux(
+                &LinProgSystemBuilder {
+                    variables: Variables::from(["x", "y", "z"]),
+                    config: Config {
+                        integer_solutions: true,
+                    },
+                    objective_function_builder: |vars| {
+                        ObjectiveFunction::Maximise(
+                            Expression::nom_parse("10x + 12y + 8z", vars).unwrap().1,
+                        )
+                    },
+                    constraints_builder: |vars| {
+                        vec![
+                            Constraint::nom_parse("2x + 2y <= 5", vars).unwrap().1,
+                            Constraint::nom_parse("5x + 3y + 4z <= 15", vars).unwrap().1,
+                        ]
+                    },
+                }
+                .build()
+            )
+            .unwrap(),
+            SolutionSet {
+                objective_function_value: 40.,
+                variable_values: HashMap::from([
+                    (VariableType::Original("x"), 0.),
+                    (VariableType::Original("y"), 2.),
+                    (VariableType::Original("z"), 2.),
+                ])
+            }
+        ),
+        "Ch 7 Example 12"
+    );
+}
+
+#[test]
+#[traced_test]
 fn create_initial_tableau_test() {
     use pretty_assertions::assert_eq;
 
@@ -254,6 +332,7 @@ fn create_initial_tableau_test() {
 }
 
 #[test]
+#[traced_test]
 fn tableau_iteration_test() {
     use pretty_assertions::assert_eq;
 

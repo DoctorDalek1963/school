@@ -3,6 +3,7 @@
 use super::{
     expression::ExpressionCustomError, parse_float_no_e, Comparison, Expression, Variables,
 };
+use color_eyre::Result;
 use nom::character::complete::multispace0;
 use std::fmt;
 
@@ -64,6 +65,12 @@ impl<'v> Constraint<'v> {
             var_expression: self.var_expression.simplify(),
             ..self
         }
+    }
+
+    /// Test to see if the constraint holds true for the given set of variables.
+    pub fn test(&self, vars: &[(&'v str, f32)]) -> bool {
+        let lhs = self.var_expression.evaluate(vars);
+        self.comparison.compare(&lhs, &self.constant)
     }
 }
 
