@@ -5,7 +5,7 @@ mod tableau;
 mod tests;
 
 use self::tableau::Tableau;
-use crate::lin_prog::system::LinProgSystem;
+use crate::{lin_prog::system::LinProgSystem, Frac};
 use color_eyre::Result;
 use itertools::Itertools;
 use std::{cmp::Ordering, collections::HashMap, fmt};
@@ -53,20 +53,20 @@ impl<'v> Ord for VariableType<'v> {
 #[derive(Clone, Debug, PartialEq)]
 pub struct Equation<'v> {
     /// The variables on the LHS. The tuples are `(coefficient, variable_name)`.
-    variables: Vec<(f32, VariableType<'v>)>,
+    variables: Vec<(Frac, VariableType<'v>)>,
 
     /// The constant that the variables are equal to.
-    constant: f32,
+    constant: Frac,
 }
 
 /// A solution to a linear programming problem.
 #[derive(Clone, Debug, PartialEq)]
 pub struct SolutionSet<'v> {
     /// The value of the objective function for the optimal point.
-    objective_function_value: f32,
+    objective_function_value: Frac,
 
     /// The values of the variables at the optimal point.
-    variable_values: HashMap<VariableType<'v>, f32>,
+    variable_values: HashMap<VariableType<'v>, Frac>,
 }
 
 impl<'v> fmt::Display for SolutionSet<'v> {

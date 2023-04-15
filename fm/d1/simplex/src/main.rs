@@ -9,7 +9,10 @@ mod simplex;
 
 use self::{lin_prog::system::LinProgSystem, simplex::solve_with_simplex_tableaux};
 use color_eyre::Result;
+use fraction::GenericFraction;
 use tracing::info;
+
+type Frac = GenericFraction<u32>;
 
 fn install_tracing() {
     use tracing_error::ErrorLayer;

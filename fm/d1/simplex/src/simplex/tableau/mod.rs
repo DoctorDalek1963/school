@@ -3,12 +3,13 @@
 mod labels;
 
 use self::labels::{ColumnLabel, RowLabel};
-use super::SolutionSet;
 use crate::{
     lin_prog::{comparison::Comparison, system::LinProgSystem, ObjectiveFunction},
-    simplex::{Equation, VariableType},
+    simplex::{Equation, SolutionSet, VariableType},
+    Frac,
 };
 use color_eyre::{Report, Result};
+use fraction::Zero;
 use itertools::Itertools;
 use std::{collections::HashMap, fmt, iter};
 use tabled::{builder::Builder, Style};
@@ -21,22 +22,22 @@ enum RowOperation {
     Nop,
 
     /// Multiply every number in the row by a constant.
-    MulConst(f32),
+    MulConst(Frac),
 
     /// Add a multiple of another row to this row. The other row should always be the pivot row.
     ///
     /// The `usize` here is the index of the row, so it starts at 0. When printing it with
     /// [`Display`], we increment it.
-    AddRow(f32, usize),
+    AddRow(Frac, usize),
 }
 
 impl fmt::Display for RowOperation {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let s = match self {
             RowOperation::Nop => "Nop".to_string(),
-            RowOperation::MulConst(n) => format!("× {n}"),
+            RowOperation::MulConst(n) => format!("×{n}"),
             RowOperation::AddRow(n, idx) => {
-                if *n > 0. {
+                if *n > Frac::zero() {
                     format!("+{n} R{}", idx + 1)
                 } else {
                     format!("{n} R{}", idx + 1)
@@ -52,10 +53,10 @@ impl fmt::Display for RowOperation {
 #[derive(Clone, Copy, Debug, PartialEq)]
 enum TableauNumber {
     /// A simple number.
-    Simple(f32),
+    Simple(Frac),
 
     /// A theta value, which will not exist at first, since it must be populated later.
-    Theta(Option<f32>),
+    Theta(Option<Frac>),
 
     /// The operation to be applied to the row.
     RowOperation(Option<RowOperation>),
@@ -77,7 +78,7 @@ impl TableauNumber {
     /// Return the number if this is a simple tableau number, otherwise panic.
     ///
     /// This method should only be used if you know the number is simple.
-    fn simple_num(&self) -> &f32 {
+    fn simple_num(&self) -> &Frac {
         match self {
             Self::Simple(n) => n,
             x => panic!("TableauNumber::simple_num() called on a non-simple number: {x:?}"),
@@ -144,12 +145,12 @@ impl<'v> Tableau<'v> {
         // Convert the original variables from the system into [`VariableType::Original`] variables.
         // This HashMap maps variables to their current values. These values will change during the
         // execution of the algorithm.
-        let mut variables: Vec<(VariableType<'v>, f32)> = system
+        let mut variables: Vec<(VariableType<'v>, Frac)> = system
             .borrow_variables()
             .0
             .iter()
             .sorted() // Alphabetically
-            .map(|s| (VariableType::Original(s), 0.))
+            .map(|s| (VariableType::Original(s), Frac::zero()))
             .collect();
 
         debug!(?variables);
@@ -170,17 +171,17 @@ impl<'v> Tableau<'v> {
 
                     // Convert the old variables from the constraint into the required type and add the
                     // slack variable for this equation
-                    let variables = constraint
+                    let eqn_variables = constraint
                         .var_expression
                         .0
                         .iter()
                         .map(|&(coeff, var)| (coeff, VariableType::Original(var)))
-                        .chain(std::iter::once((1., slack)))
+                        .chain(std::iter::once((Frac::new(1u32, 1u32), slack)))
                         .collect();
 
                     // Add the equation to the vec
                     equations.push(Equation {
-                        variables,
+                        variables: eqn_variables,
                         constant: constraint.constant,
                     });
                 } else {
@@ -239,7 +240,7 @@ impl<'v> Tableau<'v> {
                                             .variables
                                             .iter()
                                             .find_map(|&(n, eq_var)| if eq_var == var { Some(n) } else { None })
-                                            .unwrap_or(0.)
+                                            .unwrap_or(Frac::zero())
                                     })
                                     .collect::<Vec<_>>()
                             )
@@ -283,10 +284,10 @@ impl<'v> Tableau<'v> {
                                             None
                                         }
                                     })
-                                    .unwrap_or(0.)
+                                    .unwrap_or(Frac::zero())
                             })
                             // And add the value
-                            .chain(iter::once(0.))
+                            .chain(iter::once(Frac::zero()))
                             .collect()
                     })
                 ))
@@ -322,7 +323,7 @@ impl<'v> Tableau<'v> {
     }
 
     /// Return the values in the theta column.
-    fn theta_column(&self) -> Vec<Option<f32>> {
+    fn theta_column(&self) -> Vec<Option<Frac>> {
         self.rows
             .iter()
             .map(|(_, numbers)| match numbers[self.theta_idx] {
@@ -335,7 +336,7 @@ impl<'v> Tableau<'v> {
     /// Check if there are any negative numbers in the bottom row of the tableau.
     pub fn negatives_in_bottom_row(&self) -> bool {
         self.bottom_row().1.iter().any(|&n| match n {
-            TableauNumber::Simple(n) => n < 0.,
+            TableauNumber::Simple(n) => n < Frac::zero(),
             _ => false,
         })
     }
@@ -348,16 +349,19 @@ impl<'v> Tableau<'v> {
             .iter()
             .enumerate()
             .filter_map(|(idx, num)| match num {
-                TableauNumber::Simple(n) if *n < 0. => Some((idx, *n)),
+                TableauNumber::Simple(n) if *n < Frac::zero() => Some((idx, *n)),
                 _ => None,
             })
-            .fold((0, 0.), |(acc_idx, acc_min), (this_idx, this_num)| {
-                if this_num < acc_min {
-                    (this_idx, this_num)
-                } else {
-                    (acc_idx, acc_min)
-                }
-            })
+            .fold(
+                (0, Frac::zero()),
+                |(acc_idx, acc_min), (this_idx, this_num)| {
+                    if this_num < acc_min {
+                        (this_idx, this_num)
+                    } else {
+                        (acc_idx, acc_min)
+                    }
+                },
+            )
             .0
     }
 
@@ -368,11 +372,11 @@ impl<'v> Tableau<'v> {
             .iter()
             .enumerate()
             .filter_map(|(idx, &theta)| match theta {
-                Some(n) if n > 0. => Some((idx, n)),
+                Some(n) if n > Frac::zero() => Some((idx, n)),
                 _ => None,
             })
             .fold(
-                (0, f32::INFINITY),
+                (0, Frac::infinity()),
                 |(acc_idx, acc_min), (this_idx, this_num)| {
                     if this_num < acc_min {
                         (this_idx, this_num)
@@ -422,7 +426,7 @@ impl<'v> Tableau<'v> {
                 )));
             } else {
                 let row_op_coeff = -nums[pivot_col].simple_num();
-                nums[self.row_ops_idx] = if row_op_coeff != 0. {
+                nums[self.row_ops_idx] = if row_op_coeff != Frac::zero() {
                     TableauNumber::RowOperation(Some(RowOperation::AddRow(row_op_coeff, pivot_row)))
                 } else {
                     TableauNumber::RowOperation(Some(RowOperation::Nop))
@@ -477,7 +481,7 @@ impl<'v> Tableau<'v> {
 
                     for (num, other_num) in nums.iter_mut().zip(pivot_row_nums.iter()) {
                         if let TableauNumber::Simple(n) = num {
-                            *n += multiplier * other_num.simple_num();
+                            *n += multiplier * *other_num.simple_num();
                         }
                     }
                 }
@@ -523,7 +527,7 @@ impl<'v> Tableau<'v> {
             objective_function_value *= -1.;
         }
 
-        let variable_values: HashMap<VariableType, f32> = self
+        let variable_values: HashMap<VariableType, Frac> = self
             // Get the variables from the column labels
             .column_labels
             .into_iter()
@@ -544,7 +548,7 @@ impl<'v> Tableau<'v> {
                                 None
                             }
                         })
-                        .unwrap_or(0.),
+                        .unwrap_or(Frac::zero()),
                 )
             })
             .collect();
@@ -555,7 +559,7 @@ impl<'v> Tableau<'v> {
                 variable_values,
             }
         } else {
-            let variable_options: HashMap<_, _> = variable_values
+            let variable_options: HashMap<&str, (Frac, Frac)> = variable_values
                 .iter()
 
                 // We only care about the original variables here
@@ -564,10 +568,7 @@ impl<'v> Tableau<'v> {
                     _ => None,
                 })
 
-                // Each variable could be rounded up or down. We're using 0.4999 instead of 0.5
-                // here because if we use 0.5, then 0. will be rounded to -1. and 1. but not 0.,
-                // which is a problem
-                .map(|(var, num)| (var, ((num - 0.4999).round(), (num + 0.4999).round())))
+                .map(|(var, num)| (var, (num.floor(), num.ceil())))
                 .collect();
             debug!(?variable_options);
 
@@ -580,7 +581,7 @@ impl<'v> Tableau<'v> {
                 .flatten()
 
                 // Filter out negatives
-                .filter(|&(_, num)| num >= 0.)
+                .filter(|&(_, num)| num >= Frac::zero())
 
                 // Find all the permutations and get rid of any with duplicated variables like
                 // [("x", 3), ("x", 4)]
@@ -627,7 +628,7 @@ impl<'v> Tableau<'v> {
                         (possibility, value)
                     })
                     //.max_by_key(|&(vars, value)| value)
-                    .fold((vec![], 0.), |(acc_vars, acc_value), (cur_vars, cur_value)| {
+                    .fold((vec![], Frac::zero()), |(acc_vars, acc_value), (cur_vars, cur_value)| {
                         if cur_value > acc_value {
                             (cur_vars, cur_value)
                         } else {

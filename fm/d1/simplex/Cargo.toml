@@ -7,6 +7,7 @@ authors = ["Dyson Dyson <dyson.dyson@icloud.com>"]
 
 [dependencies]
 color-eyre = "0.6.2"
+fraction = { version = "0.13.1", default-features = false }
 inquire = "0.6.0"
 itertools = "0.10.5"
 lazy_static = "1.4.0"
@@ -21,6 +22,5 @@ tracing-error = "0.2.0"
 tracing-subscriber = { version = "0.3.16", features = ["env-filter"] }
 
 [dev-dependencies]
-float-cmp = "0.9.0"
 pretty_assertions = "1.3.0"
 tracing-test = "0.2.4"

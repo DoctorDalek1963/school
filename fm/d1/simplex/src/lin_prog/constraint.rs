@@ -3,6 +3,7 @@
 use super::{
     expression::ExpressionCustomError, parse_float_no_e, Comparison, Expression, Variables,
 };
+use crate::Frac;
 use color_eyre::Result;
 use nom::character::complete::multispace0;
 use std::fmt;
@@ -17,7 +18,7 @@ pub struct Constraint<'v> {
     pub comparison: Comparison,
 
     /// The constant to compare to.
-    pub constant: f32,
+    pub constant: Frac,
 }
 
 impl<'v> fmt::Display for Constraint<'v> {
@@ -54,7 +55,7 @@ impl<'v> Constraint<'v> {
             Constraint {
                 var_expression,
                 comparison,
-                constant,
+                constant: constant.into(),
             },
         ))
     }
@@ -68,7 +69,7 @@ impl<'v> Constraint<'v> {
     }
 
     /// Test to see if the constraint holds true for the given set of variables.
-    pub fn test(&self, vars: &[(&'v str, f32)]) -> bool {
+    pub fn test(&self, vars: &[(&'v str, Frac)]) -> bool {
         let lhs = self.var_expression.evaluate(vars);
         self.comparison.compare(&lhs, &self.constant)
     }
@@ -92,9 +93,9 @@ mod tests {
             Ok((
                 "",
                 Constraint {
-                    var_expression: Expression(vec![(2., "a"), (3., "b")]),
+                    var_expression: Expression(vec![(2.into(), "a"), (3.into(), "b")]),
                     comparison: Comparison::LessThanOrEqual,
-                    constant: 10.
+                    constant: 10.into()
                 }
             ))
         );
@@ -104,9 +105,13 @@ mod tests {
             Ok((
                 "",
                 Constraint {
-                    var_expression: Expression(vec![(2., "a"), (3., "b"), (-1.4, "c")]),
+                    var_expression: Expression(vec![
+                        (2.into(), "a"),
+                        (3.into(), "b"),
+                        (-Frac::new(7u32, 5u32), "c")
+                    ]),
                     comparison: Comparison::LessThanOrEqual,
-                    constant: 15.
+                    constant: 15.into()
                 }
             ))
         );
@@ -116,9 +121,13 @@ mod tests {
             Ok((
                 "",
                 Constraint {
-                    var_expression: Expression(vec![(2., "a"), (3., "b"), (-13.25, "c")]),
+                    var_expression: Expression(vec![
+                        (2.into(), "a"),
+                        (3.into(), "b"),
+                        (-Frac::new(53u32, 4u32), "c")
+                    ]),
                     comparison: Comparison::GreaterThanOrEqual,
-                    constant: 196.
+                    constant: 196.into()
                 }
             ))
         );
@@ -128,9 +137,13 @@ mod tests {
             Ok((
                 "",
                 Constraint {
-                    var_expression: Expression(vec![(2., "e"), (3., "e"), (-1., "e")]),
+                    var_expression: Expression(vec![
+                        (2.into(), "e"),
+                        (3.into(), "e"),
+                        (-Frac::new(1u32, 1u32), "e")
+                    ]),
                     comparison: Comparison::GreaterThan,
-                    constant: -15.
+                    constant: -Frac::new(15u32, 1u32)
                 }
             ))
         );
@@ -140,9 +153,13 @@ mod tests {
             Ok((
                 "",
                 Constraint {
-                    var_expression: Expression(vec![(-14., "a"), (13., "d"), (2., "a")]),
+                    var_expression: Expression(vec![
+                        (-Frac::new(14u32, 1u32), "a"),
+                        (13.into(), "d"),
+                        (2.into(), "a")
+                    ]),
                     comparison: Comparison::LessThanOrEqual,
-                    constant: 1.
+                    constant: 1.into()
                 }
             ))
         );
@@ -152,9 +169,9 @@ mod tests {
             Ok((
                 "",
                 Constraint {
-                    var_expression: Expression(vec![(2., "a"), (3., "b")]),
+                    var_expression: Expression(vec![(2.into(), "a"), (3.into(), "b")]),
                     comparison: Comparison::LessThanOrEqual,
-                    constant: 10.
+                    constant: 10.into()
                 }
             ))
         );

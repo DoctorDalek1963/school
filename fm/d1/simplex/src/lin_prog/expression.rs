@@ -1,8 +1,11 @@
 //! This module handles parsing and using expressions.
 
-use super::{parse_float_no_e, Variables};
-use crate::lin_prog::{validate_variable, _VARIABLE_REGEX_INTERNAL};
+use crate::{
+    lin_prog::{parse_float_no_e, validate_variable, Variables, _VARIABLE_REGEX_INTERNAL},
+    Frac,
+};
 use color_eyre::{Report, Result};
+use fraction::Zero;
 use inquire::Text;
 use itertools::Itertools;
 use nom::{
@@ -21,7 +24,7 @@ use std::{collections::HashMap, fmt};
 ///
 /// The string slices should reference a [`Variables`] instance.
 #[derive(Clone, Debug, PartialEq)]
-pub struct Expression<'v>(pub(crate) Vec<(f32, &'v str)>);
+pub struct Expression<'v>(pub(crate) Vec<(Frac, &'v str)>);
 
 impl<'v> fmt::Display for Expression<'v> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -114,7 +117,7 @@ impl<'v> Expression<'v> {
             },
             // This closure parses a single term
             move |input| -> Result<
-                (&'i str, (f32, &'v str)),
+                (&'i str, (Frac, &'v str)),
                 nom::Err<ExpressionCustomError<'i, nom::error::Error<&'i str>>>,
             > {
                 // If we've got any unconsumed punctuation at this point, then it's bad punctuation
@@ -149,7 +152,7 @@ impl<'v> Expression<'v> {
 
                 // Make sure the variable is valid
                 match vars.0.get(var) {
-                    Some(v) => Ok((input, (coeff, v))),
+                    Some(v) => Ok((input, (coeff.into(), v))),
                     None => Err(nom::Err::Failure(ExpressionCustomError::UndefinedVariable(
                         var,
                     ))),
@@ -187,7 +190,7 @@ impl<'v> Expression<'v> {
             self.0
                 .into_iter()
                 // Fold the values into a map
-                .fold(HashMap::<&str, f32>::new(), |acc, (num, var)| {
+                .fold(HashMap::<&str, Frac>::new(), |acc, (num, var)| {
                     let mut map = acc;
                     match map.get_mut(var) {
                         Some(n) => *n += num,
@@ -201,7 +204,7 @@ impl<'v> Expression<'v> {
                 // Swap the values in the tuple
                 .map(|(var, num)| (num, var))
                 // Filter out zeroes
-                .filter(|&(num, _)| num != 0.)
+                .filter(|&(num, _)| num != Frac::zero())
                 // Sort them by variable name for consistency
                 .sorted_by_key(|&(_, var)| var)
                 .collect(),
@@ -209,7 +212,7 @@ impl<'v> Expression<'v> {
     }
 
     /// Evaluate the expression for the given variables.
-    pub fn evaluate(&self, vars: &[(&'v str, f32)]) -> f32 {
+    pub fn evaluate(&self, vars: &[(&'v str, Frac)]) -> Frac {
         self
             .0
             .iter()
@@ -322,27 +325,47 @@ mod tests {
 
         assert_eq!(
             Expression::nom_parse("a+b", &variables),
-            Ok(("", Expression(vec![(1., "a"), (1., "b")])))
+            Ok(("", Expression(vec![(1.into(), "a"), (1.into(), "b")])))
         );
         assert_eq!(
             Expression::nom_parse("2.3a + -1.2b   +4.63c", &variables),
-            Ok(("", Expression(vec![(2.3, "a"), (-1.2, "b"), (4.63, "c")])))
+            Ok((
+                "",
+                Expression(vec![
+                    (Frac::new(23u32, 10u32), "a"),
+                    (-Frac::new(12u32, 10u32), "b"),
+                    (Frac::new(463u32, 100u32), "c")
+                ])
+            ))
         );
         assert_eq!(
             Expression::nom_parse("3a+2a", &variables),
-            Ok(("", Expression(vec![(3., "a"), (2., "a")])))
+            Ok(("", Expression(vec![(3.into(), "a"), (2.into(), "a")])))
         );
         assert_eq!(
             Expression::nom_parse("-1.2a + 19b  ", &variables),
-            Ok(("  ", Expression(vec![(-1.2, "a"), (19., "b")])))
+            Ok((
+                "  ",
+                Expression(vec![(-Frac::new(6u32, 5u32), "a"), (19.into(), "b")])
+            ))
         );
         assert_eq!(
             Expression::nom_parse("2e + 3e - 1 e", &variables),
-            Ok(("", Expression(vec![(2., "e"), (3., "e"), (-1., "e")])))
+            Ok((
+                "",
+                Expression(vec![
+                    (2.into(), "e"),
+                    (3.into(), "e"),
+                    (-Frac::new(1u32, 1u32), "e")
+                ])
+            ))
         );
         assert_eq!(
             Expression::nom_parse("2a-b", &variables),
-            Ok(("", Expression(vec![(2., "a"), (-1., "b")])))
+            Ok((
+                "",
+                Expression(vec![(2.into(), "a"), (-Frac::new(1u32, 1u32), "b")])
+            ))
         );
 
         assert!(
@@ -429,26 +452,45 @@ mod tests {
     #[test]
     fn expression_simplify_test() {
         assert_eq!(
-            Expression(vec![(2., "a"), (3., "a")]).simplify().0,
-            vec![(5., "a")]
-        );
-        assert_eq!(
-            Expression(vec![(2., "a"), (0.3, "b"), (-1., "a")])
+            Expression(vec![(2.into(), "a"), (3.into(), "a")])
                 .simplify()
                 .0,
-            vec![(1., "a"), (0.3, "b")]
+            vec![(5.into(), "a")]
         );
         assert_eq!(
-            Expression(vec![(1., "a"), (1., "a"), (3.5, "b"), (-2., "a")])
-                .simplify()
-                .0,
-            vec![(3.5, "b")]
+            Expression(vec![
+                (2.into(), "a"),
+                (Frac::new(3u32, 10u32), "b"),
+                (-Frac::new(1u32, 1u32), "a")
+            ])
+            .simplify()
+            .0,
+            vec![(1.into(), "a"), (Frac::new(3u32, 10u32), "b")]
         );
         assert_eq!(
-            Expression(vec![(2.3, "x"), (-0.2, "y"), (46., "z")])
-                .simplify()
-                .0,
-            vec![(2.3, "x"), (-0.2, "y"), (46., "z")]
+            Expression(vec![
+                (1.into(), "a"),
+                (1.into(), "a"),
+                (Frac::new(35u32, 10u32), "b"),
+                (-Frac::new(2u32, 1u32), "a")
+            ])
+            .simplify()
+            .0,
+            vec![(Frac::new(35u32, 10u32), "b")]
+        );
+        assert_eq!(
+            Expression(vec![
+                (Frac::new(23u32, 10u32), "x"),
+                (-Frac::new(2u32, 10u32), "y"),
+                (Frac::new(46u32, 10u32), "z")
+            ])
+            .simplify()
+            .0,
+            vec![
+                (Frac::new(23u32, 10u32), "x"),
+                (-Frac::new(2u32, 10u32), "y"),
+                (Frac::new(46u32, 10u32), "z")
+            ]
         );
     }
 }
