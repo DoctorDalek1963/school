@@ -1,7 +1,8 @@
 //! This module handles constraints, which express how variable expressions relate to contants.
 
 use super::{
-    expression::ExpressionCustomError, parse_float_no_e, Comparison, Expression, Variables,
+    expression::simple_expression::parse::ExpressionCustomParseError, parse_float_no_e, Comparison,
+    Expression, Variables,
 };
 use crate::Frac;
 use color_eyre::Result;
@@ -36,18 +37,18 @@ impl<'v> Constraint<'v> {
     pub fn nom_parse<'i>(
         input: &'i str,
         vars: &'v Variables,
-    ) -> Result<(&'i str, Self), nom::Err<ExpressionCustomError<'i, nom::error::Error<&'i str>>>>
+    ) -> Result<(&'i str, Self), nom::Err<ExpressionCustomParseError<'i, nom::error::Error<&'i str>>>>
     {
         let (input, var_expression) = Expression::nom_parse(input, vars)?;
         let (input, _) = multispace0(input)?;
         let (input, comparison) = match Comparison::nom_parse(input) {
             Ok(x) => Ok(x),
-            Err(e) => Err(nom::Err::Error(ExpressionCustomError::NomError(e))),
+            Err(e) => Err(nom::Err::Error(ExpressionCustomParseError::NomError(e))),
         }?;
         let (input, _) = multispace0(input)?;
         let (input, constant) = match parse_float_no_e(input) {
             Ok(x) => Ok(x),
-            Err(e) => Err(nom::Err::Error(ExpressionCustomError::NomError(e))),
+            Err(e) => Err(nom::Err::Error(ExpressionCustomParseError::NomError(e))),
         }?;
 
         Ok((

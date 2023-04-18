@@ -4,7 +4,12 @@ mod labels;
 
 use self::labels::{ColumnLabel, RowLabel};
 use crate::{
-    lin_prog::{comparison::Comparison, system::LinProgSystem, ObjectiveFunction},
+    lin_prog::{
+        comparison::Comparison,
+        expression::{const_expression::VariableOrConst, ConstExpression},
+        system::LinProgSystem,
+        ObjectiveFunction,
+    },
     simplex::{Equation, SolutionSet, VariableType},
     Frac,
 };
@@ -156,49 +161,84 @@ impl<'v> Tableau<'v> {
         debug!(?variables);
 
         let mut slack_counter = 0;
+        let mut surplus_counter = 0;
+        let mut artificial_counter = 0;
         let mut equations = vec![];
 
         // Convert the constraints to equations, creating necessary slack variables
         system.with_constraints(|cons| {
             for constraint in cons {
-                if constraint.comparison == Comparison::LessThanOrEqual {
-                    // When creating a new slack variable, we need to increment the counter for the
-                    // next one and add it to the simplex variables set, with a starting value of the
-                    // constant, since the original variables start at 0
-                    let slack = VariableType::Slack(slack_counter);
-                    slack_counter += 1;
-                    variables.push((slack, constraint.constant));
+                match constraint.comparison {
+                    Comparison::LessThanOrEqual => {
+                        // When creating a new slack variable, we need to increment the counter for the
+                        // next one and add it to the simplex variables set, with a starting value of the
+                        // constant, since the original variables start at 0
+                        let slack = VariableType::Slack(slack_counter);
+                        slack_counter += 1;
+                        variables.push((slack, constraint.constant));
 
-                    // Convert the old variables from the constraint into the required type and add the
-                    // slack variable for this equation
-                    let eqn_variables = constraint
-                        .var_expression
-                        .0
-                        .iter()
-                        .map(|&(coeff, var)| (coeff, VariableType::Original(var)))
-                        .chain(std::iter::once((Frac::new(1u32, 1u32), slack)))
-                        .collect();
+                        // Convert the old variables from the constraint into the required type and add the
+                        // slack variable for this equation
+                        let eqn_variables = constraint
+                            .var_expression
+                            .0
+                            .iter()
+                            .map(|&(coeff, var)| (coeff, VariableType::Original(var)))
+                            .chain(iter::once((1.into(), slack)))
+                            .collect();
 
-                    // Add the equation to the vec
-                    equations.push(Equation {
-                        variables: eqn_variables,
-                        constant: constraint.constant,
-                    });
-                } else {
-                    error!(
-                        comparison = ?constraint.comparison,
-                        %constraint,
-                        "Unsupported comparison in constraint"
-                    );
-                    return Err(Report::msg(format!(
-                        "Simplex tableaux currently only supports ≤ inequalities: {constraint:?}",
-                    )));
-                }
+                        // Add the equation to the vec
+                        equations.push(Equation {
+                            variables: eqn_variables,
+                            constant: constraint.constant,
+                        });
+                    }
+                    Comparison::GreaterThanOrEqual => {
+                        let surplus = VariableType::Surplus(surplus_counter);
+                        surplus_counter += 1;
+                        // The surplus variable starts at 0
+                        variables.push((surplus, Frac::zero()));
+
+                        let artificial = VariableType::Artificial(artificial_counter);
+                        artificial_counter += 1;
+                        // The artificial variable starts at the constraint's constant
+                        variables.push((artificial, constraint.constant));
+
+                        let eqn_variables = constraint
+                            .var_expression
+                            .0
+                            .iter()
+                            .map(|&(coeff, var)| (coeff, VariableType::Original(var)))
+                            .chain(
+                                [(-Frac::new(1u32, 1u32), surplus), (1.into(), artificial)]
+                                    .into_iter(),
+                            )
+                            .collect();
+
+                        equations.push(Equation {
+                            variables: eqn_variables,
+                            constant: constraint.constant,
+                        })
+                    }
+                    _ => {
+                        error!(
+                            comparison = ?constraint.comparison,
+                            %constraint,
+                            "Unsupported comparison in constraint"
+                        );
+                        return Err(Report::msg(format!(
+                            "Unsupported comparison in constraint: {constraint:?}",
+                        )));
+                    }
+                };
             }
             Ok(())
         })?;
 
         debug!(?equations);
+
+        // Sort the variables by type, so it goes original, slack, surplus, artificial
+        variables.sort_by_key(|&(var, _)| var);
 
         let column_labels = variables
             .iter()
@@ -210,10 +250,13 @@ impl<'v> Tableau<'v> {
         // variable, a column for the value, a column for theta, and a column for the row operation
         let rows = variables
             .iter()
-            // Filter the variables to just the slacks. These are the basic variables at the start
+            // Filter the variables to just the slack, surplus, and artificial variables. These are
+            // the basic variables at the start
             .filter_map(|&(var, _)| match var {
-                VariableType::Slack(_) => Some(RowLabel::Variable(var)),
-                VariableType::Original(_) => None
+                VariableType::Original(_) | VariableType::Surplus(_) => None,
+                VariableType::Slack(_) | VariableType::Artificial(_) => {
+                    Some(RowLabel::Variable(var))
+                },
             })
             .map(|label| {
                 (
@@ -292,6 +335,72 @@ impl<'v> Tableau<'v> {
                     })
                 ))
             )
+            // Add the row for the new objective function for the first stage of the two stage
+            // simplex if necessary
+            .chain(
+                {
+                    let iterator: Box<dyn Iterator<Item = (RowLabel, Vec<Frac>)>> =
+                        if surplus_counter > 0 || artificial_counter > 0 {
+                            Box::new(iter::once((
+                                RowLabel::TwoStageArtificial,
+                                {
+                                    // We want a new objective function I = -sum(artificials)
+                                    let new_obj_func: ConstExpression<'_, VariableType<'_>> = equations
+                                        .iter()
+                                        // Filter equations down to just those containing
+                                        // artificial variables
+                                        .filter(|&eq| {
+                                            eq.variables
+                                                .iter()
+                                                .find(|&(_, var)| matches!(var, VariableType::Artificial(_)))
+                                                .is_some()
+                                        })
+                                        // Solve for each artificial variable
+                                        .map(|eq| ConstExpression(
+                                            iter::once(VariableOrConst::Constant(eq.constant))
+                                                .chain(
+                                                    eq.variables
+                                                        .iter()
+                                                        // Filter out artificials, since we're
+                                                        // solving for the artificials
+                                                        .filter(|&(_, var)| !matches!(var, VariableType::Artificial(_)))
+                                                        .map(|(coeff, var)| VariableOrConst::Variable(-coeff, var))
+                                                )
+                                                .collect()
+                                        ))
+                                        // Sum the expressions
+                                        .sum();
+
+                                    // Negate the expression sum
+                                    let new_obj_func = -new_obj_func;
+
+                                    variables
+                                        .iter()
+                                        .map(|(variable, _)| {
+                                            new_obj_func.0
+                                                .iter()
+                                                // Find this variable in the new objective function
+                                                .find_map(|var_or_const| match var_or_const {
+                                                    VariableOrConst::Variable(num, var) if *var == variable => Some(-*num),
+                                                    _ => None,
+                                                })
+                                                .unwrap_or(Frac::zero())
+                                        })
+                                        // Add the value to the end
+                                        .chain(iter::once(
+                                            new_obj_func
+                                                .constant()
+                                                .unwrap_or(Frac::zero())
+                                        ))
+                                        .collect()
+                                }
+                            )))
+                        } else {
+                            Box::new(iter::empty())
+                        };
+                    iterator
+                }
+            )
             // Convert the numbers to the right type and add the theta values
             .map(|(label, nums)| (
                     label,
@@ -348,6 +457,7 @@ impl<'v> Tableau<'v> {
             .1
             .iter()
             .enumerate()
+            .take(self.value_idx)
             .filter_map(|(idx, num)| match num {
                 TableauNumber::Simple(n) if *n < Frac::zero() => Some((idx, *n)),
                 _ => None,
@@ -398,7 +508,7 @@ impl<'v> Tableau<'v> {
                         numbers[self.value_idx].simple_num() / numbers[pivot_col].simple_num(),
                     ));
                 }
-                RowLabel::ObjectiveFunction => (),
+                RowLabel::ObjectiveFunction | RowLabel::TwoStageArtificial => (),
             }
         }
     }
@@ -411,7 +521,7 @@ impl<'v> Tableau<'v> {
         self.rows[pivot_row].0 = self.column_labels[pivot_col]
             .clone()
             .try_into()
-            .expect("The pivot column should have a variable lable");
+            .expect("The pivot column should have a variable label");
     }
 
     /// Populate this tableau with row operations.
@@ -499,11 +609,11 @@ impl<'v> Tableau<'v> {
     #[instrument(skip(self))]
     pub fn do_iteration(&mut self) {
         self.populate_theta_values();
-        info!(%self, "After populating theta values");
+        debug!(%self, "After populating theta values");
 
         self.change_pivot_row_label();
         self.populate_row_ops();
-        info!(%self, "After populating row ops and changing pivot row label");
+        debug!(%self, "After populating row ops and changing pivot row label");
 
         self.perform_row_ops();
         info!(%self, "After performing row ops");
@@ -595,7 +705,10 @@ impl<'v> Tableau<'v> {
                 .filter(|possibility| possibility.len() == var_count)
 
                 // Sort the variables in each possibility and eliminate duplicates
-                .map(|possibility| possibility.into_iter().sorted_by_key(|(var, _)| var.to_string()).collect_vec())
+                .map(|possibility| {
+                    possibility.into_iter()
+                        .sorted_by_key(|(var, _)| var.to_string()).collect_vec()
+                })
                 .unique_by(|possibility| format!("{possibility:?}"))
                 .collect_vec();
             debug!(?points_around_optimal);

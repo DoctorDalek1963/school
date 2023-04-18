@@ -19,6 +19,12 @@ pub enum VariableType<'v> {
 
     /// A slack variable used in simplex.
     Slack(usize),
+
+    /// A surplus variable used in simplex.
+    Surplus(usize),
+
+    /// An artificial variable used in simplex.
+    Artificial(usize),
 }
 
 impl<'v> fmt::Display for VariableType<'v> {
@@ -26,6 +32,8 @@ impl<'v> fmt::Display for VariableType<'v> {
         match self {
             Self::Original(name) => write!(f, "{name}"),
             Self::Slack(num) => write!(f, "sl#{num}"),
+            Self::Surplus(num) => write!(f, "su#{num}"),
+            Self::Artificial(num) => write!(f, "ar#{num}"),
         }
     }
 }
@@ -42,9 +50,19 @@ impl<'v> Ord for VariableType<'v> {
 
         match (*self, *other) {
             (Original(a), Original(b)) => a.cmp(b),
+            (Slack(a), Slack(b)) => a.cmp(&b),
+            (Surplus(a), Surplus(b)) => a.cmp(&b),
+            (Artificial(a), Artificial(b)) => a.cmp(&b),
+
+            // Original < Slack < Surplus < Artificial
             (Original(_), _) => Ordering::Less,
             (_, Original(_)) => Ordering::Greater,
-            (Slack(a), Slack(b)) => a.cmp(&b),
+            (Slack(_), Surplus(_)) => Ordering::Less,
+            (Slack(_), Artificial(_)) => Ordering::Less,
+            (Surplus(_), Slack(_)) => Ordering::Greater,
+            (Surplus(_), Artificial(_)) => Ordering::Less,
+            (Artificial(_), Surplus(_)) => Ordering::Greater,
+            (Artificial(_), Slack(_)) => Ordering::Greater,
         }
     }
 }

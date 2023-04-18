@@ -11,6 +11,9 @@ pub(super) enum RowLabel<'v> {
 
     /// The objective function.
     ObjectiveFunction,
+
+    /// The expression of `I`, which is used in two stage simplex, where `I = -(a1 + a2 + ...)`
+    TwoStageArtificial,
 }
 
 impl<'v> fmt::Display for RowLabel<'v> {
@@ -18,6 +21,7 @@ impl<'v> fmt::Display for RowLabel<'v> {
         match self {
             Self::Variable(var) => write!(f, "{var}"),
             Self::ObjectiveFunction => write!(f, "ObjFunc#"),
+            Self::TwoStageArtificial => write!(f, "TwoStageAr#"),
         }
     }
 }

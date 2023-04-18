@@ -1,13 +1,11 @@
-//! This module handles parsing and using expressions.
+//! This module handles parsing expressions.
 
+use super::Expression;
 use crate::{
     lin_prog::{parse_float_no_e, validate_variable, Variables, _VARIABLE_REGEX_INTERNAL},
     Frac,
 };
 use color_eyre::{Report, Result};
-use fraction::Zero;
-use inquire::Text;
-use itertools::Itertools;
 use nom::{
     branch::alt,
     bytes::complete::tag,
@@ -18,31 +16,11 @@ use nom::{
 };
 use nom_regex::str::re_find;
 use regex::Regex;
-use std::{collections::HashMap, fmt};
-
-/// An expression written as a series of variables with coefficients. There are no constants.
-///
-/// The string slices should reference a [`Variables`] instance.
-#[derive(Clone, Debug, PartialEq)]
-pub struct Expression<'v>(pub(crate) Vec<(Frac, &'v str)>);
-
-impl<'v> fmt::Display for Expression<'v> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "{}",
-            self.0
-                .iter()
-                .map(|&(coeff, var)| format!("{coeff}{var}"))
-                .join(" + ")
-        )
-    }
-}
 
 /// This custom error type allows me to propagate undefined variable errors up through the
 /// expression parser without having to abuse nom's own error types.
 #[derive(Debug, thiserror::Error, PartialEq)]
-pub enum ExpressionCustomError<'s, E> {
+pub enum ExpressionCustomParseError<'s, E> {
     /// An error resulting from `nom`.
     #[error("nom internal error")]
     NomError(nom::Err<E>),
@@ -57,13 +35,13 @@ pub enum ExpressionCustomError<'s, E> {
 }
 
 // Convert from a nom error to mine using `?`.
-impl<'s, E> From<nom::Err<E>> for ExpressionCustomError<'s, E> {
+impl<'s, E> From<nom::Err<E>> for ExpressionCustomParseError<'s, E> {
     fn from(value: nom::Err<E>) -> Self {
         Self::NomError(value)
     }
 }
 
-impl<'s, I> From<nom::error::Error<I>> for ExpressionCustomError<'s, nom::error::Error<I>> {
+impl<'s, I> From<nom::error::Error<I>> for ExpressionCustomParseError<'s, nom::error::Error<I>> {
     fn from(value: nom::error::Error<I>) -> Self {
         Self::NomError(nom::Err::Error(value))
     }
@@ -71,7 +49,7 @@ impl<'s, I> From<nom::error::Error<I>> for ExpressionCustomError<'s, nom::error:
 
 // Allow my error to be used inside nom's own error type. I need to wrap it in nom's error type to
 // allow it be used like an error type in [`IResult`].
-impl<'s, I> ParseError<I> for ExpressionCustomError<'s, nom::error::Error<I>> {
+impl<'s, I> ParseError<I> for ExpressionCustomParseError<'s, nom::error::Error<I>> {
     fn from_error_kind(input: I, code: nom::error::ErrorKind) -> Self {
         Self::NomError(nom::Err::Error(nom::error::Error { input, code }))
     }
@@ -87,22 +65,22 @@ impl<'v> Expression<'v> {
     pub(crate) fn nom_parse<'i>(
         input: &'i str,
         vars: &'v Variables,
-    ) -> Result<(&'i str, Self), nom::Err<ExpressionCustomError<'i, nom::error::Error<&'i str>>>>
+    ) -> Result<(&'i str, Self), nom::Err<ExpressionCustomParseError<'i, nom::error::Error<&'i str>>>>
     {
         let regex_disallowed_chars = Regex::new(r"[^a-zA-Z0-9.\s_<>=≤≥+-]").unwrap();
 
         if let Ok((_, punctuation)) =
             re_find::<'i, nom::error::Error<&'i str>>(regex_disallowed_chars)(input)
         {
-            return Err(nom::Err::Failure(ExpressionCustomError::BadPunctuation(
-                punctuation.to_string(),
-            )));
+            return Err(nom::Err::Failure(
+                ExpressionCustomParseError::BadPunctuation(punctuation.to_string()),
+            ));
         }
 
         let (input, expressions) = custom_separated_list1(
             |input| -> Result<
                 (&str, ()),
-                nom::Err<ExpressionCustomError<'i, nom::error::Error<&'i str>>>,
+                nom::Err<ExpressionCustomParseError<'i, nom::error::Error<&'i str>>>,
             > {
                 let (input, _) = multispace0(input)?;
                 let (input2, plus_minus) = alt((tag("+"), tag("-")))(input)?;
@@ -118,15 +96,15 @@ impl<'v> Expression<'v> {
             // This closure parses a single term
             move |input| -> Result<
                 (&'i str, (Frac, &'v str)),
-                nom::Err<ExpressionCustomError<'i, nom::error::Error<&'i str>>>,
+                nom::Err<ExpressionCustomParseError<'i, nom::error::Error<&'i str>>>,
             > {
                 // If we've got any unconsumed punctuation at this point, then it's bad punctuation
                 if let Ok((_, punctuation)) =
                     char::<&'i str, nom::error::Error<&'i str>>('+')(input)
                 {
-                    return Err(nom::Err::Failure(ExpressionCustomError::BadPunctuation(
-                        punctuation.to_string(),
-                    )));
+                    return Err(nom::Err::Failure(
+                        ExpressionCustomParseError::BadPunctuation(punctuation.to_string()),
+                    ));
                 }
 
                 let (input, coeff) = match parse_float(input) {
@@ -139,7 +117,9 @@ impl<'v> Expression<'v> {
                     })) => (input, 1.),
 
                     // In the case of a different error, just wrap and propagate
-                    Err(e) => return Err(nom::Err::Failure(ExpressionCustomError::NomError(e))),
+                    Err(e) => {
+                        return Err(nom::Err::Failure(ExpressionCustomParseError::NomError(e)))
+                    }
                 };
 
                 // Find a variable
@@ -147,15 +127,15 @@ impl<'v> Expression<'v> {
                     Regex::new(&format!(r"^\s*{_VARIABLE_REGEX_INTERNAL}")).unwrap(),
                 )(input)?;
                 let var = validate_variable(var).map_err(|_| {
-                    nom::Err::Failure(ExpressionCustomError::UndefinedVariable(var))
+                    nom::Err::Failure(ExpressionCustomParseError::UndefinedVariable(var))
                 })?;
 
                 // Make sure the variable is valid
                 match vars.0.get(var) {
                     Some(v) => Ok((input, (coeff.into(), v))),
-                    None => Err(nom::Err::Failure(ExpressionCustomError::UndefinedVariable(
-                        var,
-                    ))),
+                    None => Err(nom::Err::Failure(
+                        ExpressionCustomParseError::UndefinedVariable(var),
+                    )),
                 }
             },
         )(input)?;
@@ -181,67 +161,6 @@ impl<'v> Expression<'v> {
                 }
             }
             Err(e) => Err(Report::msg(e.to_string())),
-        }
-    }
-
-    /// Algebraically simplify the expression.
-    pub fn simplify(self) -> Self {
-        Self(
-            self.0
-                .into_iter()
-                // Fold the values into a map
-                .fold(HashMap::<&str, Frac>::new(), |acc, (num, var)| {
-                    let mut map = acc;
-                    match map.get_mut(var) {
-                        Some(n) => *n += num,
-                        None => {
-                            map.insert(var, num);
-                        }
-                    };
-                    map
-                })
-                .into_iter()
-                // Swap the values in the tuple
-                .map(|(var, num)| (num, var))
-                // Filter out zeroes
-                .filter(|&(num, _)| num != Frac::zero())
-                // Sort them by variable name for consistency
-                .sorted_by_key(|&(_, var)| var)
-                .collect(),
-        )
-    }
-
-    /// Evaluate the expression for the given variables.
-    pub fn evaluate(&self, vars: &[(&'v str, Frac)]) -> Frac {
-        self
-            .0
-            .iter()
-            .map(|&(coeff, exp_var)| {
-                let (_, value) = *vars
-                    .iter()
-                    .find(|&(v, _)| *v == exp_var)
-                    .expect("We should be able to find every variable in the expression in the set of given variables");
-                coeff * value
-            }).sum()
-    }
-
-    /// Build an expression from user input with `inquire`.
-    ///
-    /// This method uses the given prompt for the first attempt, and then uses "Please try again:"
-    /// on all subsequent attempts, printing the error in `inquire`'s "help message".
-    pub fn build_from_user(prompt: &str, vars: &'v Variables) -> Result<Self> {
-        let mut input = Text::new(prompt).prompt()?;
-
-        loop {
-            match Expression::parse(&input, vars) {
-                Ok(exp) => return Ok(exp),
-                Err(e) => {
-                    input = Text::new("Please try again:")
-                        .with_initial_value(&input)
-                        .with_help_message(&format!("Error: {e}"))
-                        .prompt()?;
-                }
-            };
         }
     }
 }
@@ -371,23 +290,23 @@ mod tests {
         assert!(
             matches!(
                 Expression::nom_parse("", &variables),
-                Err(nom::Err::Error(ExpressionCustomError::NomError(_)))
+                Err(nom::Err::Error(ExpressionCustomParseError::NomError(_)))
             ),
             "Empty string"
         );
         assert!(
             matches!(
                 Expression::nom_parse("ab", &variables),
-                Err(nom::Err::Failure(ExpressionCustomError::UndefinedVariable(
-                    "ab"
-                )))
+                Err(nom::Err::Failure(
+                    ExpressionCustomParseError::UndefinedVariable("ab")
+                ))
             ),
             "Multiplying separate variables (read as one variable ab)"
         );
         assert!(
             matches!(
                 Expression::nom_parse("a++b", &variables),
-                Err(nom::Err::Failure(ExpressionCustomError::BadPunctuation(
+                Err(nom::Err::Failure(ExpressionCustomParseError::BadPunctuation(
                     punc
                 ))) if punc == "+"
             ),
@@ -396,7 +315,7 @@ mod tests {
         assert!(
             matches!(
                 Expression::nom_parse("a*b", &variables),
-                Err(nom::Err::Failure(ExpressionCustomError::BadPunctuation(
+                Err(nom::Err::Failure(ExpressionCustomParseError::BadPunctuation(
                     punc
                 ))) if punc == "*"
             ),
@@ -405,7 +324,7 @@ mod tests {
         assert!(
             matches!(
                 Expression::nom_parse("a/b", &variables),
-                Err(nom::Err::Failure(ExpressionCustomError::BadPunctuation(
+                Err(nom::Err::Failure(ExpressionCustomParseError::BadPunctuation(
                     punc
                 ))) if punc == "/"
             ),
@@ -414,7 +333,7 @@ mod tests {
         assert!(
             matches!(
                 Expression::nom_parse("a+b^2", &variables),
-                Err(nom::Err::Failure(ExpressionCustomError::BadPunctuation(
+                Err(nom::Err::Failure(ExpressionCustomParseError::BadPunctuation(
                     punc
                 ))) if punc == "^"
             ),
@@ -423,16 +342,16 @@ mod tests {
         assert!(
             matches!(
                 Expression::nom_parse("dead", &variables),
-                Err(nom::Err::Failure(ExpressionCustomError::UndefinedVariable(
-                    "dead"
-                )))
+                Err(nom::Err::Failure(
+                    ExpressionCustomParseError::UndefinedVariable("dead")
+                ))
             ),
             "Multiplying several variables (another undefined variable)"
         );
         assert!(
             matches!(
                 Expression::nom_parse("+", &variables),
-                Err(nom::Err::Failure(ExpressionCustomError::BadPunctuation(
+                Err(nom::Err::Failure(ExpressionCustomParseError::BadPunctuation(
                     punc
                 ))) if punc == "+"
             ),
@@ -441,56 +360,11 @@ mod tests {
         assert!(
             matches!(
                 Expression::nom_parse("a+z", &variables),
-                Err(nom::Err::Failure(ExpressionCustomError::UndefinedVariable(
-                    "z"
-                )))
+                Err(nom::Err::Failure(
+                    ExpressionCustomParseError::UndefinedVariable("z")
+                ))
             ),
             "Undefined variable z"
-        );
-    }
-
-    #[test]
-    fn expression_simplify_test() {
-        assert_eq!(
-            Expression(vec![(2.into(), "a"), (3.into(), "a")])
-                .simplify()
-                .0,
-            vec![(5.into(), "a")]
-        );
-        assert_eq!(
-            Expression(vec![
-                (2.into(), "a"),
-                (Frac::new(3u32, 10u32), "b"),
-                (-Frac::new(1u32, 1u32), "a")
-            ])
-            .simplify()
-            .0,
-            vec![(1.into(), "a"), (Frac::new(3u32, 10u32), "b")]
-        );
-        assert_eq!(
-            Expression(vec![
-                (1.into(), "a"),
-                (1.into(), "a"),
-                (Frac::new(35u32, 10u32), "b"),
-                (-Frac::new(2u32, 1u32), "a")
-            ])
-            .simplify()
-            .0,
-            vec![(Frac::new(35u32, 10u32), "b")]
-        );
-        assert_eq!(
-            Expression(vec![
-                (Frac::new(23u32, 10u32), "x"),
-                (-Frac::new(2u32, 10u32), "y"),
-                (Frac::new(46u32, 10u32), "z")
-            ])
-            .simplify()
-            .0,
-            vec![
-                (Frac::new(23u32, 10u32), "x"),
-                (-Frac::new(2u32, 10u32), "y"),
-                (Frac::new(46u32, 10u32), "z")
-            ]
         );
     }
 }
