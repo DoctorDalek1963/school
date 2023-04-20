@@ -18,7 +18,18 @@ use fraction::Zero;
 use itertools::Itertools;
 use std::{collections::HashMap, fmt, iter};
 use tabled::{builder::Builder, Style};
+use thiserror::Error;
 use tracing::{debug, error, info, instrument};
+
+/// There is no feasible solution for the given [`LinProgSystem`].
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Error)]
+pub struct NoFeasibleSolution;
+
+impl fmt::Display for NoFeasibleSolution {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "No feasible solution for the given system")
+    }
+}
 
 /// The operation to be applied to a particular row.
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -444,10 +455,14 @@ impl<'v> Tableau<'v> {
 
     /// Check if there are any negative numbers in the bottom row of the tableau.
     pub fn negatives_in_bottom_row(&self) -> bool {
-        self.bottom_row().1.iter().any(|&n| match n {
-            TableauNumber::Simple(n) => n < Frac::zero(),
-            _ => false,
-        })
+        self.bottom_row()
+            .1
+            .iter()
+            .take(self.value_idx)
+            .any(|&n| match n {
+                TableauNumber::Simple(n) => n < Frac::zero(),
+                _ => false,
+            })
     }
 
     /// Return the index of the pivot column. This is calculated by finding the most negative
@@ -607,7 +622,7 @@ impl<'v> Tableau<'v> {
 
     /// Do a single iteration of the simplex tableaux algorithm.
     #[instrument(skip(self))]
-    pub fn do_iteration(&mut self) {
+    pub fn do_iteration(&mut self) -> Result<(), NoFeasibleSolution> {
         self.populate_theta_values();
         debug!(%self, "After populating theta values");
 
@@ -617,6 +632,56 @@ impl<'v> Tableau<'v> {
 
         self.perform_row_ops();
         info!(%self, "After performing row ops");
+
+        // If there are no negatives in the bottom row, then we need to check the value
+        let bottom_row = self.bottom_row();
+        if bottom_row.0 == RowLabel::TwoStageArtificial && !self.negatives_in_bottom_row() {
+            // The value needs to be zero. If it is, then we can continue and find the optimal
+            // solution. Otherwise, there is no feasible solution
+            if bottom_row.1[self.value_idx] == TableauNumber::Simple(Frac::zero()) {
+                // Remove the bottom row
+                self.rows.remove(self.rows.len() - 1);
+
+                // Get the indices of the artificial variable columns
+                let artificial_indices = self
+                    .column_labels
+                    .iter()
+                    .enumerate()
+                    .filter(|&(_, label)| {
+                        matches!(label, ColumnLabel::Variable(VariableType::Artificial(_)))
+                    })
+                    .map(|(idx, _)| idx)
+                    .collect::<Vec<_>>();
+
+                // Remove the artificial variables from the rows of the tableau
+                for (_label, numbers) in self.rows.iter_mut() {
+                    *numbers = numbers
+                        .iter_mut()
+                        .enumerate()
+                        .filter(|(idx, _)| !artificial_indices.contains(idx))
+                        .map(|(_, num)| *num)
+                        .collect();
+                }
+
+                // Keep all the non-artificial variables in the column labels
+                self.column_labels.retain(|label| {
+                    !matches!(label, ColumnLabel::Variable(VariableType::Artificial(_)))
+                });
+
+                // Update the internal indices
+                let offset = artificial_indices.len();
+                self.value_idx -= offset;
+                self.theta_idx -= offset;
+                self.row_ops_idx -= offset;
+
+                debug!(%self, "After removing TwoStageAr#");
+            } else {
+                error!(err = %NoFeasibleSolution {});
+                return Err(NoFeasibleSolution);
+            }
+        }
+
+        Ok(())
     }
 
     pub fn get_solution(self) -> SolutionSet<'v> {

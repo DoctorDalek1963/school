@@ -3,7 +3,11 @@ use crate::{
         config::Config, constraint::Constraint, expression::Expression,
         system::LinProgSystemBuilder, ObjectiveFunction, Variables,
     },
-    simplex::{solve_with_simplex_tableaux, tableau::Tableau, SolutionSet, VariableType},
+    simplex::{
+        solve_with_simplex_tableaux,
+        tableau::{NoFeasibleSolution, Tableau},
+        SolutionSet, VariableType,
+    },
     Frac,
 };
 use fraction::Zero;
@@ -285,10 +289,10 @@ fn create_initial_tableau_test() {
 
 #[test]
 #[traced_test]
-fn tableau_iteration_test() {
+fn tableau_iteration_test() -> Result<(), NoFeasibleSolution> {
     use pretty_assertions::assert_eq;
 
-    let system = &LinProgSystemBuilder {
+    let system = LinProgSystemBuilder {
         variables: Variables::from(["x", "y"]),
         config: Config::default(),
         objective_function_builder: |vars| {
@@ -319,7 +323,7 @@ fn tableau_iteration_test() {
         "Ch 7 Example 8 initial"
     );
 
-    tableau.do_iteration();
+    tableau.do_iteration()?;
     assert_eq!(
         tableau.to_string(),
         r#"
@@ -337,7 +341,7 @@ fn tableau_iteration_test() {
 
     // The floating point error is noticeable in this one. Those two values in the bottom row that
     // look like 0.2 should be exactly 0.2
-    tableau.do_iteration();
+    tableau.do_iteration()?;
     assert_eq!(
         tableau.to_string(),
         r#"
@@ -352,4 +356,6 @@ fn tableau_iteration_test() {
 └───────────┴───┴───┴───────┴───────┴───────┴───┴────────┘"#,
         "Ch 7 Example 8 after 2 complete iterations"
     );
+
+    Ok(())
 }

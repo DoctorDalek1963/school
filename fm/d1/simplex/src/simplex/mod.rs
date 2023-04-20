@@ -107,7 +107,7 @@ pub fn solve_with_simplex_tableaux<'v>(system: &'v LinProgSystem) -> Result<Solu
     let mut tableau: Tableau = Tableau::create_initial(system)?;
     info!(%tableau, "Initial tableau");
     while tableau.negatives_in_bottom_row() {
-        tableau.do_iteration();
+        tableau.do_iteration()?;
     }
 
     Ok(tableau.get_solution())
