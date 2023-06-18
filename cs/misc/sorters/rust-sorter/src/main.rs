@@ -31,6 +31,7 @@ fn main() {
         bubble_sort,
         insertion_sort,
         merge_sort,
+        threaded_merge_sort,
         stalin_sort,
         std_sort,
         std_sort_unstable,

@@ -1,7 +1,7 @@
-use std::time::{self, Duration};
-
+use num_format::{Locale, ToFormattedString};
 use rand::seq::SliceRandom;
 use rand::thread_rng;
+use std::time::{self, Duration};
 
 #[derive(Clone)]
 pub struct Sorter {
@@ -82,10 +82,11 @@ impl Sorter {
             }
 
             let mid = list.len() / 2;
+            let (left, right) = list.split_at_mut(mid);
 
             // Sort the left and right halves individually
-            recursive_merge_sort(&mut list[..mid]);
-            recursive_merge_sort(&mut list[mid..]);
+            recursive_merge_sort(left);
+            recursive_merge_sort(right);
 
             // Now we create a vector to store the newly merged list and scan through each half,
             // adding the smaller number each iteration
@@ -114,6 +115,76 @@ impl Sorter {
 
             // Then we just put the elements back into the list slice
             list.copy_from_slice(&vec[..list.len()]);
+        }
+
+        let mut list = self.list.clone();
+        recursive_merge_sort(&mut list[..]);
+        list
+    }
+
+    /// Perform a multi-threaded merge sort on the list.
+    ///
+    /// See [`Self::merge_sort`].
+    pub fn threaded_merge_sort(&self) -> Vec<u32> {
+        const THRESHOLD: usize = 100_000;
+
+        fn recursive_merge_sort(list: &mut [u32]) {
+            if list.len() < 2 {
+                return;
+            }
+
+            let mid = list.len() / 2;
+            let (left, right) = list.split_at_mut(mid);
+
+            // It's expensive to always spawn new threads, so only do it if the length is above a
+            // certain THRESHOLD.
+            if left.len() > THRESHOLD || right.len() > THRESHOLD {
+                use std::thread;
+
+                thread::scope(|s| {
+                    s.spawn(|| recursive_merge_sort(left));
+                    s.spawn(|| recursive_merge_sort(right));
+                });
+            } else {
+                recursive_merge_sort(left);
+                recursive_merge_sort(right);
+            }
+
+            // Now we create a vector to store the newly merged list and scan through each half,
+            // adding the smaller number each iteration
+            let mut left_index = 0;
+            let mut right_index = mid;
+            let mut vec = Vec::with_capacity(list.len());
+
+            while left_index < mid && right_index < list.len() {
+                if list[left_index] < list[right_index] {
+                    vec.push(list[left_index]);
+                    left_index += 1;
+                } else {
+                    vec.push(list[right_index]);
+                    right_index += 1;
+                }
+            }
+
+            // One of these slices will be empty, but the other will contain the unmerged, sorted
+            // elements
+            for elem in &list[left_index..mid] {
+                vec.push(*elem);
+            }
+            for elem in &list[right_index..] {
+                vec.push(*elem);
+            }
+
+            // Then we just put the elements back into the list slice
+            list.copy_from_slice(&vec[..list.len()]);
+        }
+
+        if self.list.len() <= 2 * THRESHOLD {
+            eprintln!(
+                "WARNING: threaded_merge_sort is only an advantage over merge_sort for \
+                lists with more than {} items",
+                (2 * THRESHOLD).to_formatted_string(&Locale::en)
+            );
         }
 
         let mut list = self.list.clone();
