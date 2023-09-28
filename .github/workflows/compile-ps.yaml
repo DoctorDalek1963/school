@@ -43,9 +43,9 @@ jobs:
         shell: bash
 
       - name: Deploy PDF
-        uses: peaceiris/actions-gh-pages@v3.8.0
+        uses: peaceiris/actions-gh-pages@v3.9.3
         with:
-          github_token: ${{ secrets.UPDATE_PS_DRAFT_LIST }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: pdf_dir/
           destination_dir: ps
           keep_files: true
